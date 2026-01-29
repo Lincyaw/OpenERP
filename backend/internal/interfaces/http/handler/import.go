@@ -62,12 +62,12 @@ type ValidationResponse struct {
 //	@Param			file		formData	file	true	"CSV file to validate"
 //	@Param			entity_type	formData	string	true	"Entity type"	Enums(products, customers, suppliers, inventory)
 //	@Success		200			{object}	APIResponse[ValidationResponse]
-//	@Failure		400			{object}	ErrorResponse
-//	@Failure		401			{object}	ErrorResponse
-//	@Failure		413			{object}	ErrorResponse
-//	@Failure		415			{object}	ErrorResponse
-//	@Failure		422			{object}	ErrorResponse
-//	@Failure		500			{object}	ErrorResponse
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		413			{object}	dto.ErrorResponse
+//	@Failure		415			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/import/validate [post]
 func (h *ImportHandler) Validate(c *gin.Context) {
@@ -173,10 +173,10 @@ func (h *ImportHandler) Validate(c *gin.Context) {
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
 //	@Param			id			path		string	true	"Session ID (UUID)"
 //	@Success		200			{object}	APIResponse[csvimport.ImportSession]
-//	@Failure		400			{object}	ErrorResponse
-//	@Failure		401			{object}	ErrorResponse
-//	@Failure		404			{object}	ErrorResponse
-//	@Failure		500			{object}	ErrorResponse
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/import/sessions/{id} [get]
 func (h *ImportHandler) GetSession(c *gin.Context) {

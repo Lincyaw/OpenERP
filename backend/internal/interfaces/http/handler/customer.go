@@ -21,7 +21,8 @@ func NewCustomerHandler(customerService *partnerapp.CustomerService) *CustomerHa
 }
 
 // CreateCustomerRequest represents a request to create a new customer
-// @Description Request body for creating a new customer
+//
+//	@Description	Request body for creating a new customer
 type CreateCustomerRequest struct {
 	Code        string   `json:"code" binding:"required,min=1,max=50" example:"CUST-001"`
 	Name        string   `json:"name" binding:"required,min=1,max=200" example:"Acme Corp"`
@@ -43,7 +44,8 @@ type CreateCustomerRequest struct {
 }
 
 // UpdateCustomerRequest represents a request to update a customer
-// @Description Request body for updating a customer
+//
+//	@Description	Request body for updating a customer
 type UpdateCustomerRequest struct {
 	Name        *string  `json:"name" binding:"omitempty,min=1,max=200" example:"Acme Corporation"`
 	ShortName   *string  `json:"short_name" binding:"omitempty,max=100" example:"Acme Co"`
@@ -64,39 +66,43 @@ type UpdateCustomerRequest struct {
 }
 
 // UpdateCustomerCodeRequest represents a request to update a customer's code
-// @Description Request body for updating a customer's code
+//
+//	@Description	Request body for updating a customer's code
 type UpdateCustomerCodeRequest struct {
 	Code string `json:"code" binding:"required,min=1,max=50" example:"CUST-002"`
 }
 
 // BalanceOperationRequest represents a request for balance operations
-// @Description Request body for balance operations (add/deduct/refund)
+//
+//	@Description	Request body for balance operations (add/deduct/refund)
 type BalanceOperationRequest struct {
 	Amount float64 `json:"amount" binding:"required,gt=0" example:"1000.00"`
 }
 
 // SetLevelRequest represents a request to set customer level
-// @Description Request body for setting customer level
+//
+//	@Description	Request body for setting customer level
 type SetLevelRequest struct {
 	Level string `json:"level" binding:"required,oneof=normal silver gold platinum vip" example:"gold"`
 }
 
 // Create godoc
-// @ID           createCustomer
-// @Summary      Create a new customer
-// @Description  Create a new customer in the partner module
-// @Tags         customers
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body CreateCustomerRequest true "Customer creation request"
-// @Success      201 {object} APIResponse[CustomerResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      409 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers [post]
+//
+//	@ID				createCustomer
+//	@Summary		Create a new customer
+//	@Description	Create a new customer in the partner module
+//	@Tags			customers
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			request		body		CreateCustomerRequest	true	"Customer creation request"
+//	@Success		201			{object}	APIResponse[CustomerResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		409			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers [post]
 func (h *CustomerHandler) Create(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -155,20 +161,21 @@ func (h *CustomerHandler) Create(c *gin.Context) {
 }
 
 // GetByID godoc
-// @ID           getCustomerById
-// @Summary      Get customer by ID
-// @Description  Retrieve a customer by its ID
-// @Tags         customers
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer ID" format(uuid)
-// @Success      200 {object} APIResponse[CustomerResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers/{id} [get]
+//
+//	@ID				getCustomerById
+//	@Summary		Get customer by ID
+//	@Description	Retrieve a customer by its ID
+//	@Tags			customers
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Customer ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[CustomerResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers/{id} [get]
 func (h *CustomerHandler) GetByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -192,20 +199,21 @@ func (h *CustomerHandler) GetByID(c *gin.Context) {
 }
 
 // GetByCode godoc
-// @ID           getCustomerByCode
-// @Summary      Get customer by code
-// @Description  Retrieve a customer by its code
-// @Tags         customers
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        code path string true "Customer Code"
-// @Success      200 {object} APIResponse[CustomerResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers/code/{code} [get]
+//
+//	@ID				getCustomerByCode
+//	@Summary		Get customer by code
+//	@Description	Retrieve a customer by its code
+//	@Tags			customers
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			code		path		string	true	"Customer Code"
+//	@Success		200			{object}	APIResponse[CustomerResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers/code/{code} [get]
 func (h *CustomerHandler) GetByCode(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -229,28 +237,29 @@ func (h *CustomerHandler) GetByCode(c *gin.Context) {
 }
 
 // List godoc
-// @ID           listCustomers
-// @Summary      List customers
-// @Description  Retrieve a paginated list of customers with optional filtering
-// @Tags         customers
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        search query string false "Search term (name, code, phone, email)"
-// @Param        status query string false "Customer status" Enums(active, inactive, suspended)
-// @Param        type query string false "Customer type" Enums(individual, organization)
-// @Param        level query string false "Customer level" Enums(normal, silver, gold, platinum, vip)
-// @Param        city query string false "City"
-// @Param        province query string false "Province"
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Param        order_by query string false "Order by field" default(sort_order)
-// @Param        order_dir query string false "Order direction" Enums(asc, desc) default(asc)
-// @Success      200 {object} APIResponse[[]CustomerListResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers [get]
+//
+//	@ID				listCustomers
+//	@Summary		List customers
+//	@Description	Retrieve a paginated list of customers with optional filtering
+//	@Tags			customers
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			search		query		string	false	"Search term (name, code, phone, email)"
+//	@Param			status		query		string	false	"Customer status"	Enums(active, inactive, suspended)
+//	@Param			type		query		string	false	"Customer type"		Enums(individual, organization)
+//	@Param			level		query		string	false	"Customer level"	Enums(normal, silver, gold, platinum, vip)
+//	@Param			city		query		string	false	"City"
+//	@Param			province	query		string	false	"Province"
+//	@Param			page		query		int		false	"Page number"		default(1)
+//	@Param			page_size	query		int		false	"Page size"			default(20)	maximum(100)
+//	@Param			order_by	query		string	false	"Order by field"	default(sort_order)
+//	@Param			order_dir	query		string	false	"Order direction"	Enums(asc, desc)	default(asc)
+//	@Success		200			{object}	APIResponse[[]CustomerListResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers [get]
 func (h *CustomerHandler) List(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -282,23 +291,24 @@ func (h *CustomerHandler) List(c *gin.Context) {
 }
 
 // Update godoc
-// @ID           updateCustomer
-// @Summary      Update a customer
-// @Description  Update an existing customer's details
-// @Tags         customers
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer ID" format(uuid)
-// @Param        request body UpdateCustomerRequest true "Customer update request"
-// @Success      200 {object} APIResponse[CustomerResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      409 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers/{id} [put]
+//
+//	@ID				updateCustomer
+//	@Summary		Update a customer
+//	@Description	Update an existing customer's details
+//	@Tags			customers
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string					true	"Customer ID"	format(uuid)
+//	@Param			request		body		UpdateCustomerRequest	true	"Customer update request"
+//	@Success		200			{object}	APIResponse[CustomerResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		409			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers/{id} [put]
 func (h *CustomerHandler) Update(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -352,23 +362,24 @@ func (h *CustomerHandler) Update(c *gin.Context) {
 }
 
 // UpdateCode godoc
-// @ID           updateCustomerCode
-// @Summary      Update customer code
-// @Description  Update a customer's code
-// @Tags         customers
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer ID" format(uuid)
-// @Param        request body UpdateCustomerCodeRequest true "New customer code"
-// @Success      200 {object} APIResponse[CustomerResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      409 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers/{id}/code [put]
+//
+//	@ID				updateCustomerCode
+//	@Summary		Update customer code
+//	@Description	Update a customer's code
+//	@Tags			customers
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Customer ID"	format(uuid)
+//	@Param			request		body		UpdateCustomerCodeRequest	true	"New customer code"
+//	@Success		200			{object}	APIResponse[CustomerResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		409			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers/{id}/code [put]
 func (h *CustomerHandler) UpdateCode(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -398,21 +409,22 @@ func (h *CustomerHandler) UpdateCode(c *gin.Context) {
 }
 
 // Delete godoc
-// @ID           deleteCustomer
-// @Summary      Delete a customer
-// @Description  Delete a customer by ID
-// @Tags         customers
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer ID" format(uuid)
-// @Success      204
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers/{id} [delete]
+//
+//	@ID				deleteCustomer
+//	@Summary		Delete a customer
+//	@Description	Delete a customer by ID
+//	@Tags			customers
+//	@Produce		json
+//	@Param			X-Tenant-ID	header	string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path	string	true	"Customer ID"	format(uuid)
+//	@Success		204
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		422	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers/{id} [delete]
 func (h *CustomerHandler) Delete(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -436,22 +448,23 @@ func (h *CustomerHandler) Delete(c *gin.Context) {
 }
 
 // Activate godoc
-// @ID           activateCustomer
-// @Summary      Activate a customer
-// @Description  Activate an inactive or suspended customer
-// @Tags         customers
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer ID" format(uuid)
-// @Success      200 {object} APIResponse[CustomerResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers/{id}/activate [post]
+//
+//	@ID				activateCustomer
+//	@Summary		Activate a customer
+//	@Description	Activate an inactive or suspended customer
+//	@Tags			customers
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Customer ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[CustomerResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers/{id}/activate [post]
 func (h *CustomerHandler) Activate(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -475,22 +488,23 @@ func (h *CustomerHandler) Activate(c *gin.Context) {
 }
 
 // Deactivate godoc
-// @ID           deactivateCustomer
-// @Summary      Deactivate a customer
-// @Description  Deactivate an active customer
-// @Tags         customers
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer ID" format(uuid)
-// @Success      200 {object} APIResponse[CustomerResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers/{id}/deactivate [post]
+//
+//	@ID				deactivateCustomer
+//	@Summary		Deactivate a customer
+//	@Description	Deactivate an active customer
+//	@Tags			customers
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Customer ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[CustomerResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers/{id}/deactivate [post]
 func (h *CustomerHandler) Deactivate(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -514,22 +528,23 @@ func (h *CustomerHandler) Deactivate(c *gin.Context) {
 }
 
 // Suspend godoc
-// @ID           suspendCustomer
-// @Summary      Suspend a customer
-// @Description  Suspend an active customer
-// @Tags         customers
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer ID" format(uuid)
-// @Success      200 {object} APIResponse[CustomerResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers/{id}/suspend [post]
+//
+//	@ID				suspendCustomer
+//	@Summary		Suspend a customer
+//	@Description	Suspend an active customer
+//	@Tags			customers
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Customer ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[CustomerResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers/{id}/suspend [post]
 func (h *CustomerHandler) Suspend(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -553,23 +568,24 @@ func (h *CustomerHandler) Suspend(c *gin.Context) {
 }
 
 // AddBalance godoc
-// @ID           addCustomerBalance
-// @Summary      Add balance to customer
-// @Description  Add to a customer's prepaid balance
-// @Tags         customers
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer ID" format(uuid)
-// @Param        request body BalanceOperationRequest true "Balance amount to add"
-// @Success      200 {object} APIResponse[CustomerResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers/{id}/balance/add [post]
+//
+//	@ID				addCustomerBalance
+//	@Summary		Add balance to customer
+//	@Description	Add to a customer's prepaid balance
+//	@Tags			customers
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string					true	"Customer ID"	format(uuid)
+//	@Param			request		body		BalanceOperationRequest	true	"Balance amount to add"
+//	@Success		200			{object}	APIResponse[CustomerResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers/{id}/balance/add [post]
 func (h *CustomerHandler) AddBalance(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -600,23 +616,24 @@ func (h *CustomerHandler) AddBalance(c *gin.Context) {
 }
 
 // DeductBalance godoc
-// @ID           deductCustomerBalance
-// @Summary      Deduct balance from customer
-// @Description  Deduct from a customer's prepaid balance
-// @Tags         customers
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer ID" format(uuid)
-// @Param        request body BalanceOperationRequest true "Balance amount to deduct"
-// @Success      200 {object} APIResponse[CustomerResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers/{id}/balance/deduct [post]
+//
+//	@ID				deductCustomerBalance
+//	@Summary		Deduct balance from customer
+//	@Description	Deduct from a customer's prepaid balance
+//	@Tags			customers
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string					true	"Customer ID"	format(uuid)
+//	@Param			request		body		BalanceOperationRequest	true	"Balance amount to deduct"
+//	@Success		200			{object}	APIResponse[CustomerResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers/{id}/balance/deduct [post]
 func (h *CustomerHandler) DeductBalance(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -647,23 +664,24 @@ func (h *CustomerHandler) DeductBalance(c *gin.Context) {
 }
 
 // SetLevel godoc
-// @ID           setCustomerLevel
-// @Summary      Set customer level
-// @Description  Set a customer's tier level
-// @Tags         customers
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer ID" format(uuid)
-// @Param        request body SetLevelRequest true "Customer level"
-// @Success      200 {object} APIResponse[CustomerResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers/{id}/level [put]
+//
+//	@ID				setCustomerLevel
+//	@Summary		Set customer level
+//	@Description	Set a customer's tier level
+//	@Tags			customers
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string			false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string			true	"Customer ID"	format(uuid)
+//	@Param			request		body		SetLevelRequest	true	"Customer level"
+//	@Success		200			{object}	APIResponse[CustomerResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers/{id}/level [put]
 func (h *CustomerHandler) SetLevel(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -701,18 +719,19 @@ type CustomerCountByStatusResponse struct {
 }
 
 // CountByStatus godoc
-// @ID           countCustomerByStatus
-// @Summary      Get customer counts by status
-// @Description  Get the count of customers grouped by status
-// @Tags         customers
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} APIResponse[CustomerCountByStatusResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customers/stats/count [get]
+//
+//	@ID				countCustomerByStatus
+//	@Summary		Get customer counts by status
+//	@Description	Get the count of customers grouped by status
+//	@Tags			customers
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Success		200			{object}	APIResponse[CustomerCountByStatusResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customers/stats/count [get]
 func (h *CustomerHandler) CountByStatus(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {

@@ -155,8 +155,9 @@ export default function FeatureFlagDetailPage() {
           )
           fetchFlag() // Refresh data
         } else {
+          const error = response.data.error as { message?: string } | undefined
           Toast.error(
-            response.data.error?.message ||
+            error?.message ||
               (checked
                 ? t('featureFlags.messages.enableError', 'Failed to enable feature flag')
                 : t('featureFlags.messages.disableError', 'Failed to disable feature flag'))

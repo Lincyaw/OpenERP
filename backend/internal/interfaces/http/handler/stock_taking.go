@@ -26,7 +26,8 @@ func NewStockTakingHandler(stockTakingService *inventoryapp.StockTakingService) 
 // ===================== Request/Response Types for Swagger =====================
 
 // CreateStockTakingRequest represents a request to create a stock taking
-// @Description Request body for creating a new stock taking
+//
+//	@Description	Request body for creating a new stock taking
 type CreateStockTakingRequest struct {
 	WarehouseID   string `json:"warehouse_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	WarehouseName string `json:"warehouse_name" binding:"required" example:"Main Warehouse"`
@@ -37,13 +38,15 @@ type CreateStockTakingRequest struct {
 }
 
 // UpdateStockTakingRequest represents a request to update a stock taking
-// @Description Request body for updating a stock taking
+//
+//	@Description	Request body for updating a stock taking
 type UpdateStockTakingRequest struct {
 	Remark string `json:"remark" example:"Updated remark"`
 }
 
 // AddStockTakingItemRequest represents a request to add an item to stock taking
-// @Description Request body for adding a product to stock taking
+//
+//	@Description	Request body for adding a product to stock taking
 type AddStockTakingItemRequest struct {
 	ProductID      string  `json:"product_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
 	ProductName    string  `json:"product_name" binding:"required" example:"Widget A"`
@@ -54,13 +57,15 @@ type AddStockTakingItemRequest struct {
 }
 
 // AddStockTakingItemsRequest represents a bulk request to add items
-// @Description Request body for adding multiple products to stock taking
+//
+//	@Description	Request body for adding multiple products to stock taking
 type AddStockTakingItemsRequest struct {
 	Items []AddStockTakingItemRequest `json:"items" binding:"required,min=1"`
 }
 
 // RecordCountRequest represents a request to record the actual count
-// @Description Request body for recording physical count for a product
+//
+//	@Description	Request body for recording physical count for a product
 type RecordCountRequest struct {
 	ProductID      string  `json:"product_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440002"`
 	ActualQuantity float64 `json:"actual_quantity" binding:"required,gte=0" example:"98.0"`
@@ -68,13 +73,15 @@ type RecordCountRequest struct {
 }
 
 // RecordCountsRequest represents a bulk request to record counts
-// @Description Request body for recording multiple physical counts
+//
+//	@Description	Request body for recording multiple physical counts
 type RecordCountsRequest struct {
 	Counts []RecordCountRequest `json:"counts" binding:"required,min=1"`
 }
 
 // ApproveStockTakingRequest represents a request to approve a stock taking
-// @Description Request body for approving a stock taking
+//
+//	@Description	Request body for approving a stock taking
 type ApproveStockTakingRequest struct {
 	ApproverID   string `json:"approver_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440003"`
 	ApproverName string `json:"approver_name" binding:"required" example:"Manager Smith"`
@@ -82,7 +89,8 @@ type ApproveStockTakingRequest struct {
 }
 
 // RejectStockTakingRequest represents a request to reject a stock taking
-// @Description Request body for rejecting a stock taking
+//
+//	@Description	Request body for rejecting a stock taking
 type RejectStockTakingRequest struct {
 	ApproverID   string `json:"approver_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440003"`
 	ApproverName string `json:"approver_name" binding:"required" example:"Manager Smith"`
@@ -90,13 +98,15 @@ type RejectStockTakingRequest struct {
 }
 
 // CancelStockTakingRequest represents a request to cancel a stock taking
-// @Description Request body for cancelling a stock taking
+//
+//	@Description	Request body for cancelling a stock taking
 type CancelStockTakingRequest struct {
 	Reason string `json:"reason" binding:"max=500" example:"Stock taking no longer required"`
 }
 
 // StockTakingItemResponse represents a stock taking item in API responses
-// @Description Stock taking item with count and difference information
+//
+//	@Description	Stock taking item with count and difference information
 type StockTakingItemResponse struct {
 	ID               string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
 	StockTakingID    string  `json:"stock_taking_id" example:"550e8400-e29b-41d4-a716-446655440000"`
@@ -116,7 +126,8 @@ type StockTakingItemResponse struct {
 }
 
 // StockTakingResponse represents a stock taking in API responses
-// @Description Stock taking document with full details
+//
+//	@Description	Stock taking document with full details
 type StockTakingResponse struct {
 	ID              string                    `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TenantID        string                    `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440100"`
@@ -146,7 +157,8 @@ type StockTakingResponse struct {
 }
 
 // StockTakingListResponse represents a stock taking in list views
-// @Description Stock taking summary for list views
+//
+//	@Description	Stock taking summary for list views
 type StockTakingListResponse struct {
 	ID              string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TakingNumber    string  `json:"taking_number" example:"ST-20240115-0001"`
@@ -166,7 +178,8 @@ type StockTakingListResponse struct {
 }
 
 // StockTakingProgressResponse represents progress of a stock taking
-// @Description Stock taking progress summary
+//
+//	@Description	Stock taking progress summary
 type StockTakingProgressResponse struct {
 	ID              string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TakingNumber    string  `json:"taking_number" example:"ST-20240115-0001"`
@@ -184,20 +197,21 @@ type StockTakingProgressResponse struct {
 // ===================== Query Handlers =====================
 
 // GetByID godoc
-// @ID           getStockTakingById
-// @Summary      Get stock taking by ID
-// @Description  Retrieve a stock taking document by its ID with all items
-// @Tags         stock-taking
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id} [get]
+//
+//	@ID				getStockTakingById
+//	@Summary		Get stock taking by ID
+//	@Description	Retrieve a stock taking document by its ID with all items
+//	@Tags			stock-taking
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Stock Taking ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[StockTakingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id} [get]
 func (h *StockTakingHandler) GetByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -221,20 +235,21 @@ func (h *StockTakingHandler) GetByID(c *gin.Context) {
 }
 
 // GetByTakingNumber godoc
-// @ID           getStockTakingByTakingNumber
-// @Summary      Get stock taking by number
-// @Description  Retrieve a stock taking document by its taking number
-// @Tags         stock-taking
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        taking_number path string true "Taking Number"
-// @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/by-number/{taking_number} [get]
+//
+//	@ID				getStockTakingByTakingNumber
+//	@Summary		Get stock taking by number
+//	@Description	Retrieve a stock taking document by its taking number
+//	@Tags			stock-taking
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string	false	"Tenant ID (optional for dev)"
+//	@Param			taking_number	path		string	true	"Taking Number"
+//	@Success		200				{object}	APIResponse[StockTakingResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		401				{object}	dto.ErrorResponse
+//	@Failure		404				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/by-number/{taking_number} [get]
 func (h *StockTakingHandler) GetByTakingNumber(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -258,28 +273,29 @@ func (h *StockTakingHandler) GetByTakingNumber(c *gin.Context) {
 }
 
 // List godoc
-// @ID           listStockTakings
-// @Summary      List stock takings
-// @Description  Retrieve a paginated list of stock takings with optional filtering
-// @Tags         stock-taking
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        search query string false "Search term (taking number, warehouse, creator)"
-// @Param        warehouse_id query string false "Filter by warehouse ID" format(uuid)
-// @Param        status query string false "Filter by status" Enums(DRAFT, COUNTING, PENDING_APPROVAL, APPROVED, REJECTED, CANCELLED)
-// @Param        start_date query string false "Filter by start date" format(date)
-// @Param        end_date query string false "Filter by end date" format(date)
-// @Param        created_by_id query string false "Filter by creator ID" format(uuid)
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Param        order_by query string false "Order by field" default(created_at) Enums(taking_number, taking_date, status, created_at, updated_at, total_items)
-// @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
-// @Success      200 {object} APIResponse[[]StockTakingListResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings [get]
+//
+//	@ID				listStockTakings
+//	@Summary		List stock takings
+//	@Description	Retrieve a paginated list of stock takings with optional filtering
+//	@Tags			stock-taking
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string	false	"Tenant ID (optional for dev)"
+//	@Param			search			query		string	false	"Search term (taking number, warehouse, creator)"
+//	@Param			warehouse_id	query		string	false	"Filter by warehouse ID"	format(uuid)
+//	@Param			status			query		string	false	"Filter by status"			Enums(DRAFT, COUNTING, PENDING_APPROVAL, APPROVED, REJECTED, CANCELLED)
+//	@Param			start_date		query		string	false	"Filter by start date"		format(date)
+//	@Param			end_date		query		string	false	"Filter by end date"		format(date)
+//	@Param			created_by_id	query		string	false	"Filter by creator ID"		format(uuid)
+//	@Param			page			query		int		false	"Page number"				default(1)
+//	@Param			page_size		query		int		false	"Page size"					default(20)			maximum(100)
+//	@Param			order_by		query		string	false	"Order by field"			default(created_at)	Enums(taking_number, taking_date, status, created_at, updated_at, total_items)
+//	@Param			order_dir		query		string	false	"Order direction"			Enums(asc, desc)	default(desc)
+//	@Success		200				{object}	APIResponse[[]StockTakingListResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		401				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings [get]
 func (h *StockTakingHandler) List(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -359,23 +375,24 @@ func (h *StockTakingHandler) List(c *gin.Context) {
 }
 
 // ListPendingApproval godoc
-// @ID           listStockTakingPendingApproval
-// @Summary      List stock takings pending approval
-// @Description  Retrieve stock takings that are awaiting approval
-// @Tags         stock-taking
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        search query string false "Search term"
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Param        order_by query string false "Order by field" default(created_at)
-// @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
-// @Success      200 {object} APIResponse[[]StockTakingListResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/pending-approval [get]
+//
+//	@ID				listStockTakingPendingApproval
+//	@Summary		List stock takings pending approval
+//	@Description	Retrieve stock takings that are awaiting approval
+//	@Tags			stock-taking
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			search		query		string	false	"Search term"
+//	@Param			page		query		int		false	"Page number"		default(1)
+//	@Param			page_size	query		int		false	"Page size"			default(20)	maximum(100)
+//	@Param			order_by	query		string	false	"Order by field"	default(created_at)
+//	@Param			order_dir	query		string	false	"Order direction"	Enums(asc, desc)	default(desc)
+//	@Success		200			{object}	APIResponse[[]StockTakingListResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/pending-approval [get]
 func (h *StockTakingHandler) ListPendingApproval(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -407,20 +424,21 @@ func (h *StockTakingHandler) ListPendingApproval(c *gin.Context) {
 }
 
 // GetProgress godoc
-// @ID           getStockTakingProgress
-// @Summary      Get stock taking progress
-// @Description  Retrieve the counting progress of a stock taking
-// @Tags         stock-taking
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Success      200 {object} APIResponse[StockTakingProgressResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id}/progress [get]
+//
+//	@ID				getStockTakingProgress
+//	@Summary		Get stock taking progress
+//	@Description	Retrieve the counting progress of a stock taking
+//	@Tags			stock-taking
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Stock Taking ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[StockTakingProgressResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id}/progress [get]
 func (h *StockTakingHandler) GetProgress(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -448,20 +466,21 @@ func (h *StockTakingHandler) GetProgress(c *gin.Context) {
 // ===================== Command Handlers =====================
 
 // Create godoc
-// @ID           createStockTaking
-// @Summary      Create stock taking
-// @Description  Create a new stock taking document
-// @Tags         stock-taking
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body CreateStockTakingRequest true "Stock taking creation request"
-// @Success      201 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings [post]
+//
+//	@ID				createStockTaking
+//	@Summary		Create stock taking
+//	@Description	Create a new stock taking document
+//	@Tags			stock-taking
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			request		body		CreateStockTakingRequest	true	"Stock taking creation request"
+//	@Success		201			{object}	APIResponse[StockTakingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings [post]
 func (h *StockTakingHandler) Create(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -523,23 +542,24 @@ func (h *StockTakingHandler) Create(c *gin.Context) {
 }
 
 // Update godoc
-// @ID           updateStockTaking
-// @Summary      Update stock taking
-// @Description  Update a stock taking document (only in DRAFT status)
-// @Tags         stock-taking
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Param        request body UpdateStockTakingRequest true "Stock taking update request"
-// @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id} [put]
+//
+//	@ID				updateStockTaking
+//	@Summary		Update stock taking
+//	@Description	Update a stock taking document (only in DRAFT status)
+//	@Tags			stock-taking
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Stock Taking ID"	format(uuid)
+//	@Param			request		body		UpdateStockTakingRequest	true	"Stock taking update request"
+//	@Success		200			{object}	APIResponse[StockTakingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id} [put]
 func (h *StockTakingHandler) Update(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -573,21 +593,22 @@ func (h *StockTakingHandler) Update(c *gin.Context) {
 }
 
 // Delete godoc
-// @ID           deleteStockTaking
-// @Summary      Delete stock taking
-// @Description  Delete a stock taking document (only in DRAFT status)
-// @Tags         stock-taking
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Success      204
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id} [delete]
+//
+//	@ID				deleteStockTaking
+//	@Summary		Delete stock taking
+//	@Description	Delete a stock taking document (only in DRAFT status)
+//	@Tags			stock-taking
+//	@Produce		json
+//	@Param			X-Tenant-ID	header	string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path	string	true	"Stock Taking ID"	format(uuid)
+//	@Success		204
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		422	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id} [delete]
 func (h *StockTakingHandler) Delete(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -610,23 +631,24 @@ func (h *StockTakingHandler) Delete(c *gin.Context) {
 }
 
 // AddItem godoc
-// @ID           addStockTakingItem
-// @Summary      Add item to stock taking
-// @Description  Add a product to the stock taking document
-// @Tags         stock-taking
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Param        request body AddStockTakingItemRequest true "Item to add"
-// @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id}/items [post]
+//
+//	@ID				addStockTakingItem
+//	@Summary		Add item to stock taking
+//	@Description	Add a product to the stock taking document
+//	@Tags			stock-taking
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Stock Taking ID"	format(uuid)
+//	@Param			request		body		AddStockTakingItemRequest	true	"Item to add"
+//	@Success		200			{object}	APIResponse[StockTakingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id}/items [post]
 func (h *StockTakingHandler) AddItem(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -671,23 +693,24 @@ func (h *StockTakingHandler) AddItem(c *gin.Context) {
 }
 
 // AddItems godoc
-// @ID           addItemsStockTaking
-// @Summary      Add multiple items to stock taking
-// @Description  Add multiple products to the stock taking document
-// @Tags         stock-taking
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Param        request body AddStockTakingItemsRequest true "Items to add"
-// @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id}/items/bulk [post]
+//
+//	@ID				addItemsStockTaking
+//	@Summary		Add multiple items to stock taking
+//	@Description	Add multiple products to the stock taking document
+//	@Tags			stock-taking
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Stock Taking ID"	format(uuid)
+//	@Param			request		body		AddStockTakingItemsRequest	true	"Items to add"
+//	@Success		200			{object}	APIResponse[StockTakingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id}/items/bulk [post]
 func (h *StockTakingHandler) AddItems(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -739,22 +762,23 @@ func (h *StockTakingHandler) AddItems(c *gin.Context) {
 }
 
 // RemoveItem godoc
-// @ID           removeStockTakingItem
-// @Summary      Remove item from stock taking
-// @Description  Remove a product from the stock taking document
-// @Tags         stock-taking
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Param        product_id path string true "Product ID" format(uuid)
-// @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id}/items/{product_id} [delete]
+//
+//	@ID				removeStockTakingItem
+//	@Summary		Remove item from stock taking
+//	@Description	Remove a product from the stock taking document
+//	@Tags			stock-taking
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Stock Taking ID"	format(uuid)
+//	@Param			product_id	path		string	true	"Product ID"		format(uuid)
+//	@Success		200			{object}	APIResponse[StockTakingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id}/items/{product_id} [delete]
 func (h *StockTakingHandler) RemoveItem(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -784,22 +808,23 @@ func (h *StockTakingHandler) RemoveItem(c *gin.Context) {
 }
 
 // StartCounting godoc
-// @ID           startCountingStockTaking
-// @Summary      Start counting
-// @Description  Transition the stock taking to counting status
-// @Tags         stock-taking
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id}/start [post]
+//
+//	@ID				startCountingStockTaking
+//	@Summary		Start counting
+//	@Description	Transition the stock taking to counting status
+//	@Tags			stock-taking
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Stock Taking ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[StockTakingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id}/start [post]
 func (h *StockTakingHandler) StartCounting(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -823,23 +848,24 @@ func (h *StockTakingHandler) StartCounting(c *gin.Context) {
 }
 
 // RecordCount godoc
-// @ID           recordStockTakingCount
-// @Summary      Record count for an item
-// @Description  Record the actual physical count for a product
-// @Tags         stock-taking
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Param        request body RecordCountRequest true "Count record"
-// @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id}/count [post]
+//
+//	@ID				recordStockTakingCount
+//	@Summary		Record count for an item
+//	@Description	Record the actual physical count for a product
+//	@Tags			stock-taking
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string				false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string				true	"Stock Taking ID"	format(uuid)
+//	@Param			request		body		RecordCountRequest	true	"Count record"
+//	@Success		200			{object}	APIResponse[StockTakingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id}/count [post]
 func (h *StockTakingHandler) RecordCount(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -881,23 +907,24 @@ func (h *StockTakingHandler) RecordCount(c *gin.Context) {
 }
 
 // RecordCounts godoc
-// @ID           recordCountsStockTaking
-// @Summary      Record counts for multiple items
-// @Description  Record actual physical counts for multiple products
-// @Tags         stock-taking
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Param        request body RecordCountsRequest true "Count records"
-// @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id}/counts [post]
+//
+//	@ID				recordCountsStockTaking
+//	@Summary		Record counts for multiple items
+//	@Description	Record actual physical counts for multiple products
+//	@Tags			stock-taking
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string				false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string				true	"Stock Taking ID"	format(uuid)
+//	@Param			request		body		RecordCountsRequest	true	"Count records"
+//	@Success		200			{object}	APIResponse[StockTakingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id}/counts [post]
 func (h *StockTakingHandler) RecordCounts(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -946,22 +973,23 @@ func (h *StockTakingHandler) RecordCounts(c *gin.Context) {
 }
 
 // SubmitForApproval godoc
-// @ID           submitForApprovalStockTaking
-// @Summary      Submit for approval
-// @Description  Submit the stock taking for approval (all items must be counted)
-// @Tags         stock-taking
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id}/submit [post]
+//
+//	@ID				submitForApprovalStockTaking
+//	@Summary		Submit for approval
+//	@Description	Submit the stock taking for approval (all items must be counted)
+//	@Tags			stock-taking
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Stock Taking ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[StockTakingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id}/submit [post]
 func (h *StockTakingHandler) SubmitForApproval(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -985,23 +1013,24 @@ func (h *StockTakingHandler) SubmitForApproval(c *gin.Context) {
 }
 
 // Approve godoc
-// @ID           approveStockTaking
-// @Summary      Approve stock taking
-// @Description  Approve the stock taking and trigger inventory adjustments
-// @Tags         stock-taking
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Param        request body ApproveStockTakingRequest true "Approval request"
-// @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id}/approve [post]
+//
+//	@ID				approveStockTaking
+//	@Summary		Approve stock taking
+//	@Description	Approve the stock taking and trigger inventory adjustments
+//	@Tags			stock-taking
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Stock Taking ID"	format(uuid)
+//	@Param			request		body		ApproveStockTakingRequest	true	"Approval request"
+//	@Success		200			{object}	APIResponse[StockTakingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id}/approve [post]
 func (h *StockTakingHandler) Approve(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -1043,23 +1072,24 @@ func (h *StockTakingHandler) Approve(c *gin.Context) {
 }
 
 // Reject godoc
-// @ID           rejectStockTaking
-// @Summary      Reject stock taking
-// @Description  Reject the stock taking with a reason
-// @Tags         stock-taking
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Param        request body RejectStockTakingRequest true "Rejection request"
-// @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id}/reject [post]
+//
+//	@ID				rejectStockTaking
+//	@Summary		Reject stock taking
+//	@Description	Reject the stock taking with a reason
+//	@Tags			stock-taking
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Stock Taking ID"	format(uuid)
+//	@Param			request		body		RejectStockTakingRequest	true	"Rejection request"
+//	@Success		200			{object}	APIResponse[StockTakingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id}/reject [post]
 func (h *StockTakingHandler) Reject(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -1101,23 +1131,24 @@ func (h *StockTakingHandler) Reject(c *gin.Context) {
 }
 
 // Cancel godoc
-// @ID           cancelStockTaking
-// @Summary      Cancel stock taking
-// @Description  Cancel the stock taking (only in DRAFT or COUNTING status)
-// @Tags         stock-taking
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Stock Taking ID" format(uuid)
-// @Param        request body CancelStockTakingRequest true "Cancellation request"
-// @Success      200 {object} APIResponse[StockTakingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock-takings/{id}/cancel [post]
+//
+//	@ID				cancelStockTaking
+//	@Summary		Cancel stock taking
+//	@Description	Cancel the stock taking (only in DRAFT or COUNTING status)
+//	@Tags			stock-taking
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Stock Taking ID"	format(uuid)
+//	@Param			request		body		CancelStockTakingRequest	true	"Cancellation request"
+//	@Success		200			{object}	APIResponse[StockTakingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock-takings/{id}/cancel [post]
 func (h *StockTakingHandler) Cancel(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {

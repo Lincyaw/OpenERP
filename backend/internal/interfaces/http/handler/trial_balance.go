@@ -25,7 +25,8 @@ func NewTrialBalanceHandler(trialBalanceService *financeapp.TrialBalanceService)
 // ===================== Request/Response DTOs =====================
 
 // TrialBalanceCheckRequest represents a request to perform a trial balance check
-// @Description Request body for performing a trial balance check
+//
+//	@Description	Request body for performing a trial balance check
 type TrialBalanceCheckRequest struct {
 	PeriodStart                 *string `json:"period_start" example:"2026-01-01"`
 	PeriodEnd                   *string `json:"period_end" example:"2026-01-31"`
@@ -42,7 +43,8 @@ type TrialBalanceCheckRequest struct {
 }
 
 // TrialBalanceResponse represents the trial balance check result
-// @Description Trial balance check response
+//
+//	@Description	Trial balance check response
 type TrialBalanceResponse struct {
 	ID                  string                `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TenantID            string                `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -75,7 +77,8 @@ type TrialBalanceResponse struct {
 }
 
 // DiscrepancyResponse represents a balance discrepancy in API responses
-// @Description Balance discrepancy response
+//
+//	@Description	Balance discrepancy response
 type DiscrepancyResponse struct {
 	ID              string                  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Type            string                  `json:"type" example:"RECEIVABLE_AMOUNT_MISMATCH"`
@@ -92,7 +95,8 @@ type DiscrepancyResponse struct {
 }
 
 // RelatedEntityResponse represents a related entity in a discrepancy
-// @Description Related entity response
+//
+//	@Description	Related entity response
 type RelatedEntityResponse struct {
 	EntityType string `json:"entity_type" example:"ReceiptVoucher"`
 	EntityID   string `json:"entity_id" example:"550e8400-e29b-41d4-a716-446655440000"`
@@ -100,7 +104,8 @@ type RelatedEntityResponse struct {
 }
 
 // BalanceCheckGuardResponse represents the result of a pre-operation balance check
-// @Description Balance check guard response
+//
+//	@Description	Balance check guard response
 type BalanceCheckGuardResponse struct {
 	Allowed       bool                  `json:"allowed" example:"true"`
 	Status        string                `json:"status" example:"BALANCED"`
@@ -109,7 +114,8 @@ type BalanceCheckGuardResponse struct {
 }
 
 // ReconciliationReportResponse represents a detailed reconciliation report
-// @Description Reconciliation report response
+//
+//	@Description	Reconciliation report response
 type ReconciliationReportResponse struct {
 	TrialBalance         TrialBalanceResponse `json:"trial_balance"`
 	GeneratedAt          time.Time            `json:"generated_at"`
@@ -121,7 +127,8 @@ type ReconciliationReportResponse struct {
 }
 
 // AuditLogResponse represents a trial balance audit log entry
-// @Description Trial balance audit log response
+//
+//	@Description	Trial balance audit log response
 type AuditLogResponse struct {
 	ID               string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TenantID         string     `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -146,19 +153,20 @@ type AuditLogResponse struct {
 // ===================== Handler Methods =====================
 
 // PerformTrialBalanceCheck godoc
-// @ID           performTrialBalanceCheckFinanceTrialBalance
-// @Summary      Perform trial balance check
-// @Description  Performs a comprehensive trial balance check and returns discrepancies
-// @Tags         finance-trial-balance
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body TrialBalanceCheckRequest false "Trial balance check options"
-// @Success      200 {object} APIResponse[TrialBalanceResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/trial-balance/check [post]
+//
+//	@ID				performTrialBalanceCheckFinanceTrialBalance
+//	@Summary		Perform trial balance check
+//	@Description	Performs a comprehensive trial balance check and returns discrepancies
+//	@Tags			finance-trial-balance
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			request		body		TrialBalanceCheckRequest	false	"Trial balance check options"
+//	@Success		200			{object}	APIResponse[TrialBalanceResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/trial-balance/check [post]
 func (h *TrialBalanceHandler) PerformTrialBalanceCheck(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -240,17 +248,18 @@ func (h *TrialBalanceHandler) PerformTrialBalanceCheck(c *gin.Context) {
 }
 
 // QuickBalanceCheck godoc
-// @ID           quickBalanceCheckFinanceTrialBalance
-// @Summary      Quick balance check
-// @Description  Performs a quick balance check (minimal validation) for use before operations
-// @Tags         finance-trial-balance
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} APIResponse[BalanceCheckGuardResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/trial-balance/quick-check [get]
+//
+//	@ID				quickBalanceCheckFinanceTrialBalance
+//	@Summary		Quick balance check
+//	@Description	Performs a quick balance check (minimal validation) for use before operations
+//	@Tags			finance-trial-balance
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Success		200			{object}	APIResponse[BalanceCheckGuardResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/trial-balance/quick-check [get]
 func (h *TrialBalanceHandler) QuickBalanceCheck(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -268,17 +277,18 @@ func (h *TrialBalanceHandler) QuickBalanceCheck(c *gin.Context) {
 }
 
 // GetReconciliationReport godoc
-// @ID           getFinanceTrialBalanceReconciliationReport
-// @Summary      Get reconciliation report
-// @Description  Generates a detailed reconciliation report with health score and recommendations
-// @Tags         finance-trial-balance
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} APIResponse[ReconciliationReportResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/trial-balance/reconciliation-report [get]
+//
+//	@ID				getFinanceTrialBalanceReconciliationReport
+//	@Summary		Get reconciliation report
+//	@Description	Generates a detailed reconciliation report with health score and recommendations
+//	@Tags			finance-trial-balance
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Success		200			{object}	APIResponse[ReconciliationReportResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/trial-balance/reconciliation-report [get]
 func (h *TrialBalanceHandler) GetReconciliationReport(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -302,18 +312,19 @@ func (h *TrialBalanceHandler) GetReconciliationReport(c *gin.Context) {
 }
 
 // GetAuditLogs godoc
-// @ID           getFinanceTrialBalanceAuditLogs
-// @Summary      Get trial balance audit logs
-// @Description  Retrieves the most recent trial balance audit logs
-// @Tags         finance-trial-balance
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        limit query int false "Number of logs to retrieve" default(20) maximum(100)
-// @Success      200 {object} APIResponse[[]AuditLogResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/trial-balance/audit-logs [get]
+//
+//	@ID				getFinanceTrialBalanceAuditLogs
+//	@Summary		Get trial balance audit logs
+//	@Description	Retrieves the most recent trial balance audit logs
+//	@Tags			finance-trial-balance
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			limit		query		int		false	"Number of logs to retrieve"	default(20)	maximum(100)
+//	@Success		200			{object}	APIResponse[[]AuditLogResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/trial-balance/audit-logs [get]
 func (h *TrialBalanceHandler) GetAuditLogs(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {

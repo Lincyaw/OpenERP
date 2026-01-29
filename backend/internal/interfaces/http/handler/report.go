@@ -40,7 +40,8 @@ func (h *ReportHandler) SetCronScheduler(cronScheduler *scheduler.ReportCronSche
 // ===================== Request DTOs =====================
 
 // SalesReportFilterRequest defines the filter for sales reports
-// @Description Filter for sales report queries
+//
+//	@Description	Filter for sales report queries
 type SalesReportFilterRequest struct {
 	StartDate  string `form:"start_date" binding:"required" example:"2026-01-01"`
 	EndDate    string `form:"end_date" binding:"required" example:"2026-01-31"`
@@ -51,7 +52,8 @@ type SalesReportFilterRequest struct {
 }
 
 // InventoryReportFilterRequest defines the filter for inventory reports
-// @Description Filter for inventory report queries
+//
+//	@Description	Filter for inventory report queries
 type InventoryReportFilterRequest struct {
 	StartDate   string `form:"start_date" binding:"required" example:"2026-01-01"`
 	EndDate     string `form:"end_date" binding:"required" example:"2026-01-31"`
@@ -62,7 +64,8 @@ type InventoryReportFilterRequest struct {
 }
 
 // FinanceReportFilterRequest defines the filter for finance reports
-// @Description Filter for finance report queries
+//
+//	@Description	Filter for finance report queries
 type FinanceReportFilterRequest struct {
 	StartDate  string `form:"start_date" binding:"required" example:"2026-01-01"`
 	EndDate    string `form:"end_date" binding:"required" example:"2026-01-31"`
@@ -75,7 +78,8 @@ type FinanceReportFilterRequest struct {
 // ===================== Response DTOs (for Swagger) =====================
 
 // SalesSummaryResponse represents the sales summary response
-// @Description Sales summary data for a period
+//
+//	@Description	Sales summary data for a period
 type SalesSummaryResponse struct {
 	PeriodStart      string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
 	PeriodEnd        string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
@@ -89,7 +93,8 @@ type SalesSummaryResponse struct {
 }
 
 // DailySalesTrendResponse represents daily sales trend data
-// @Description Daily sales trend data point
+//
+//	@Description	Daily sales trend data point
 type DailySalesTrendResponse struct {
 	Date        string  `json:"date" example:"2026-01-15"`
 	OrderCount  int64   `json:"order_count" example:"25"`
@@ -99,7 +104,8 @@ type DailySalesTrendResponse struct {
 }
 
 // ProductSalesRankingResponse represents product sales ranking
-// @Description Product sales ranking item
+//
+//	@Description	Product sales ranking item
 type ProductSalesRankingResponse struct {
 	Rank          int     `json:"rank" example:"1"`
 	ProductID     string  `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440000"`
@@ -113,7 +119,8 @@ type ProductSalesRankingResponse struct {
 }
 
 // CustomerSalesRankingResponse represents customer sales ranking
-// @Description Customer sales ranking item
+//
+//	@Description	Customer sales ranking item
 type CustomerSalesRankingResponse struct {
 	Rank          int     `json:"rank" example:"1"`
 	CustomerID    string  `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440000"`
@@ -125,7 +132,8 @@ type CustomerSalesRankingResponse struct {
 }
 
 // InventorySummaryResponse represents inventory summary
-// @Description Inventory summary data
+//
+//	@Description	Inventory summary data
 type InventorySummaryResponse struct {
 	TotalProducts     int64   `json:"total_products" example:"500"`
 	TotalWarehouses   int64   `json:"total_warehouses" example:"5"`
@@ -140,7 +148,8 @@ type InventorySummaryResponse struct {
 }
 
 // InventoryMovementResponse represents inventory movement data
-// @Description Inventory movement summary
+//
+//	@Description	Inventory movement summary
 type InventoryMovementResponse struct {
 	PeriodStart      string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
 	PeriodEnd        string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
@@ -153,7 +162,8 @@ type InventoryMovementResponse struct {
 }
 
 // InventoryTurnoverResponse represents inventory turnover data
-// @Description Inventory turnover data
+//
+//	@Description	Inventory turnover data
 type InventoryTurnoverResponse struct {
 	ProductID         string  `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	ProductName       string  `json:"product_name" example:"Sample Product"`
@@ -165,7 +175,8 @@ type InventoryTurnoverResponse struct {
 }
 
 // InventoryValueByCategoryResponse represents inventory value by category
-// @Description Inventory value grouped by category
+//
+//	@Description	Inventory value grouped by category
 type InventoryValueByCategoryResponse struct {
 	CategoryID     string  `json:"category_id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	CategoryName   string  `json:"category_name" example:"Electronics"`
@@ -176,7 +187,8 @@ type InventoryValueByCategoryResponse struct {
 }
 
 // ProfitLossResponse represents profit and loss data
-// @Description Profit and loss statement data
+//
+//	@Description	Profit and loss statement data
 type ProfitLossResponse struct {
 	PeriodStart       string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
 	PeriodEnd         string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
@@ -192,7 +204,8 @@ type ProfitLossResponse struct {
 }
 
 // CashFlowResponse represents cash flow data
-// @Description Cash flow data
+//
+//	@Description	Cash flow data
 type CashFlowResponse struct {
 	PeriodStart        string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
 	PeriodEnd          string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
@@ -207,7 +220,8 @@ type CashFlowResponse struct {
 }
 
 // ReceivableSummaryReportResponse represents receivable summary
-// @Description Accounts receivable summary
+//
+//	@Description	Accounts receivable summary
 type ReceivableSummaryReportResponse struct {
 	TotalReceivable   float64 `json:"total_receivable" example:"50000.00"`
 	CollectedAmount   float64 `json:"collected_amount" example:"35000.00"`
@@ -217,7 +231,8 @@ type ReceivableSummaryReportResponse struct {
 }
 
 // PayableSummaryReportResponse represents payable summary
-// @Description Accounts payable summary
+//
+//	@Description	Accounts payable summary
 type PayableSummaryReportResponse struct {
 	TotalPayable      float64 `json:"total_payable" example:"40000.00"`
 	PaidAmount        float64 `json:"paid_amount" example:"30000.00"`
@@ -227,7 +242,8 @@ type PayableSummaryReportResponse struct {
 }
 
 // CustomerReceivableResponse represents customer receivable data
-// @Description Customer receivable data
+//
+//	@Description	Customer receivable data
 type CustomerReceivableResponse struct {
 	CustomerID        string  `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	CustomerName      string  `json:"customer_name" example:"ABC Company"`
@@ -238,7 +254,8 @@ type CustomerReceivableResponse struct {
 }
 
 // InventoryValueByWarehouseResponse represents inventory value by warehouse
-// @Description Inventory value grouped by warehouse
+//
+//	@Description	Inventory value grouped by warehouse
 type InventoryValueByWarehouseResponse struct {
 	WarehouseID    string  `json:"warehouse_id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	WarehouseName  string  `json:"warehouse_name" example:"Main Warehouse"`
@@ -249,7 +266,8 @@ type InventoryValueByWarehouseResponse struct {
 }
 
 // ProfitLossStatementResponse represents profit and loss statement
-// @Description Detailed profit and loss statement
+//
+//	@Description	Detailed profit and loss statement
 type ProfitLossStatementResponse struct {
 	PeriodStart     string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
 	PeriodEnd       string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
@@ -267,7 +285,8 @@ type ProfitLossStatementResponse struct {
 }
 
 // MonthlyProfitTrendResponse represents monthly profit trend
-// @Description Monthly profit trend data point
+//
+//	@Description	Monthly profit trend data point
 type MonthlyProfitTrendResponse struct {
 	Year         int     `json:"year" example:"2026"`
 	Month        int     `json:"month" example:"1"`
@@ -279,7 +298,8 @@ type MonthlyProfitTrendResponse struct {
 }
 
 // ProfitByProductResponse represents profit by product
-// @Description Profit breakdown by product
+//
+//	@Description	Profit breakdown by product
 type ProfitByProductResponse struct {
 	ProductID    string  `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	ProductSKU   string  `json:"product_sku" example:"SKU-001"`
@@ -293,7 +313,8 @@ type ProfitByProductResponse struct {
 }
 
 // CashFlowStatementResponse represents cash flow statement
-// @Description Cash flow statement
+//
+//	@Description	Cash flow statement
 type CashFlowStatementResponse struct {
 	PeriodStart           string  `json:"period_start" example:"2026-01-01T00:00:00Z"`
 	PeriodEnd             string  `json:"period_end" example:"2026-01-31T23:59:59Z"`
@@ -308,7 +329,8 @@ type CashFlowStatementResponse struct {
 }
 
 // CashFlowItemResponse represents cash flow item
-// @Description Individual cash flow item
+//
+//	@Description	Individual cash flow item
 type CashFlowItemResponse struct {
 	Date           string  `json:"date" example:"2026-01-15T00:00:00Z"`
 	Type           string  `json:"type" example:"receipt"`
@@ -323,20 +345,21 @@ type CashFlowItemResponse struct {
 // ===================== Sales Report Endpoints =====================
 
 // GetSalesSummary godoc
-// @ID           getReportSalesSummary
-// @Summary      Get sales summary
-// @Description  Get aggregated sales summary for the specified period
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Param        product_id query string false "Filter by product ID"
-// @Param        category_id query string false "Filter by category ID"
-// @Param        customer_id query string false "Filter by customer ID"
-// @Success      200 {object} APIResponse[SalesSummaryResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/sales/summary [get]
+//
+//	@ID				getReportSalesSummary
+//	@Summary		Get sales summary
+//	@Description	Get aggregated sales summary for the specified period
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date	query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date	query		string	true	"End date (YYYY-MM-DD)"
+//	@Param			product_id	query		string	false	"Filter by product ID"
+//	@Param			category_id	query		string	false	"Filter by category ID"
+//	@Param			customer_id	query		string	false	"Filter by customer ID"
+//	@Success		200			{object}	APIResponse[SalesSummaryResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/reports/sales/summary [get]
 func (h *ReportHandler) GetSalesSummary(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -366,17 +389,18 @@ func (h *ReportHandler) GetSalesSummary(c *gin.Context) {
 }
 
 // GetDailySalesTrend godoc
-// @ID           getReportDailySalesTrend
-// @Summary      Get daily sales trend
-// @Description  Get daily sales trend data for the specified period
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Success      200 {object} APIResponse[[]DailySalesTrendResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/sales/daily-trend [get]
+//
+//	@ID				getReportDailySalesTrend
+//	@Summary		Get daily sales trend
+//	@Description	Get daily sales trend data for the specified period
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date	query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date	query		string	true	"End date (YYYY-MM-DD)"
+//	@Success		200			{object}	APIResponse[[]DailySalesTrendResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/reports/sales/daily-trend [get]
 func (h *ReportHandler) GetDailySalesTrend(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -406,19 +430,20 @@ func (h *ReportHandler) GetDailySalesTrend(c *gin.Context) {
 }
 
 // GetProductSalesRanking godoc
-// @ID           getReportProductSalesRanking
-// @Summary      Get product sales ranking
-// @Description  Get top products by sales for the specified period
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Param        category_id query string false "Filter by category ID"
-// @Param        top_n query int false "Number of top products (default 10)"
-// @Success      200 {object} APIResponse[[]ProductSalesRankingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/sales/products/ranking [get]
+//
+//	@ID				getReportProductSalesRanking
+//	@Summary		Get product sales ranking
+//	@Description	Get top products by sales for the specified period
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date	query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date	query		string	true	"End date (YYYY-MM-DD)"
+//	@Param			category_id	query		string	false	"Filter by category ID"
+//	@Param			top_n		query		int		false	"Number of top products (default 10)"
+//	@Success		200			{object}	APIResponse[[]ProductSalesRankingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/reports/sales/products/ranking [get]
 func (h *ReportHandler) GetProductSalesRanking(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -448,18 +473,19 @@ func (h *ReportHandler) GetProductSalesRanking(c *gin.Context) {
 }
 
 // GetCustomerSalesRanking godoc
-// @ID           getReportCustomerSalesRanking
-// @Summary      Get customer sales ranking
-// @Description  Get top customers by sales for the specified period
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Param        top_n query int false "Number of top customers (default 10)"
-// @Success      200 {object} APIResponse[[]CustomerSalesRankingResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/sales/customers/ranking [get]
+//
+//	@ID				getReportCustomerSalesRanking
+//	@Summary		Get customer sales ranking
+//	@Description	Get top customers by sales for the specified period
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date	query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date	query		string	true	"End date (YYYY-MM-DD)"
+//	@Param			top_n		query		int		false	"Number of top customers (default 10)"
+//	@Success		200			{object}	APIResponse[[]CustomerSalesRankingResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/reports/sales/customers/ranking [get]
 func (h *ReportHandler) GetCustomerSalesRanking(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -493,19 +519,20 @@ func (h *ReportHandler) GetCustomerSalesRanking(c *gin.Context) {
 // ===================== Inventory Report Endpoints =====================
 
 // GetInventorySummary godoc
-// @ID           getReportInventorySummary
-// @Summary      Get inventory summary
-// @Description  Get aggregated inventory summary
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Param        warehouse_id query string false "Filter by warehouse ID"
-// @Param        category_id query string false "Filter by category ID"
-// @Success      200 {object} APIResponse[InventorySummaryResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/inventory/summary [get]
+//
+//	@ID				getReportInventorySummary
+//	@Summary		Get inventory summary
+//	@Description	Get aggregated inventory summary
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date		query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date		query		string	true	"End date (YYYY-MM-DD)"
+//	@Param			warehouse_id	query		string	false	"Filter by warehouse ID"
+//	@Param			category_id		query		string	false	"Filter by category ID"
+//	@Success		200				{object}	APIResponse[InventorySummaryResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Router			/reports/inventory/summary [get]
 func (h *ReportHandler) GetInventorySummary(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -535,20 +562,21 @@ func (h *ReportHandler) GetInventorySummary(c *gin.Context) {
 }
 
 // GetInventoryTurnover godoc
-// @ID           getReportInventoryTurnover
-// @Summary      Get inventory turnover
-// @Description  Get inventory turnover data for products
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Param        warehouse_id query string false "Filter by warehouse ID"
-// @Param        category_id query string false "Filter by category ID"
-// @Param        product_id query string false "Filter by product ID"
-// @Success      200 {object} APIResponse[[]InventoryTurnoverResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/inventory/turnover [get]
+//
+//	@ID				getReportInventoryTurnover
+//	@Summary		Get inventory turnover
+//	@Description	Get inventory turnover data for products
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date		query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date		query		string	true	"End date (YYYY-MM-DD)"
+//	@Param			warehouse_id	query		string	false	"Filter by warehouse ID"
+//	@Param			category_id		query		string	false	"Filter by category ID"
+//	@Param			product_id		query		string	false	"Filter by product ID"
+//	@Success		200				{object}	APIResponse[[]InventoryTurnoverResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Router			/reports/inventory/turnover [get]
 func (h *ReportHandler) GetInventoryTurnover(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -578,17 +606,18 @@ func (h *ReportHandler) GetInventoryTurnover(c *gin.Context) {
 }
 
 // GetInventoryValueByCategory godoc
-// @ID           getReportInventoryValueByCategory
-// @Summary      Get inventory value by category
-// @Description  Get inventory value grouped by category
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Success      200 {object} APIResponse[[]InventoryValueByCategoryResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/inventory/value-by-category [get]
+//
+//	@ID				getReportInventoryValueByCategory
+//	@Summary		Get inventory value by category
+//	@Description	Get inventory value grouped by category
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date	query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date	query		string	true	"End date (YYYY-MM-DD)"
+//	@Success		200			{object}	APIResponse[[]InventoryValueByCategoryResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/reports/inventory/value-by-category [get]
 func (h *ReportHandler) GetInventoryValueByCategory(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -618,17 +647,18 @@ func (h *ReportHandler) GetInventoryValueByCategory(c *gin.Context) {
 }
 
 // GetInventoryValueByWarehouse godoc
-// @ID           getReportInventoryValueByWarehouse
-// @Summary      Get inventory value by warehouse
-// @Description  Get inventory value grouped by warehouse
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Success      200 {object} APIResponse[[]InventoryValueByWarehouseResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/inventory/value-by-warehouse [get]
+//
+//	@ID				getReportInventoryValueByWarehouse
+//	@Summary		Get inventory value by warehouse
+//	@Description	Get inventory value grouped by warehouse
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date	query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date	query		string	true	"End date (YYYY-MM-DD)"
+//	@Success		200			{object}	APIResponse[[]InventoryValueByWarehouseResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/reports/inventory/value-by-warehouse [get]
 func (h *ReportHandler) GetInventoryValueByWarehouse(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -658,19 +688,20 @@ func (h *ReportHandler) GetInventoryValueByWarehouse(c *gin.Context) {
 }
 
 // GetSlowMovingProducts godoc
-// @ID           getReportSlowMovingProducts
-// @Summary      Get slow moving products
-// @Description  Get products with low turnover rate
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Param        warehouse_id query string false "Filter by warehouse ID"
-// @Param        top_n query int false "Number of products (default 10)"
-// @Success      200 {object} APIResponse[[]InventoryTurnoverResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/inventory/slow-moving [get]
+//
+//	@ID				getReportSlowMovingProducts
+//	@Summary		Get slow moving products
+//	@Description	Get products with low turnover rate
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date		query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date		query		string	true	"End date (YYYY-MM-DD)"
+//	@Param			warehouse_id	query		string	false	"Filter by warehouse ID"
+//	@Param			top_n			query		int		false	"Number of products (default 10)"
+//	@Success		200				{object}	APIResponse[[]InventoryTurnoverResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Router			/reports/inventory/slow-moving [get]
 func (h *ReportHandler) GetSlowMovingProducts(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -704,17 +735,18 @@ func (h *ReportHandler) GetSlowMovingProducts(c *gin.Context) {
 // ===================== Finance Report Endpoints =====================
 
 // GetProfitLossStatement godoc
-// @ID           getReportProfitLossStatement
-// @Summary      Get profit and loss statement
-// @Description  Get P&L statement for the specified period
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Success      200 {object} APIResponse[ProfitLossStatementResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/finance/profit-loss [get]
+//
+//	@ID				getReportProfitLossStatement
+//	@Summary		Get profit and loss statement
+//	@Description	Get P&L statement for the specified period
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date	query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date	query		string	true	"End date (YYYY-MM-DD)"
+//	@Success		200			{object}	APIResponse[ProfitLossStatementResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/reports/finance/profit-loss [get]
 func (h *ReportHandler) GetProfitLossStatement(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -744,17 +776,18 @@ func (h *ReportHandler) GetProfitLossStatement(c *gin.Context) {
 }
 
 // GetMonthlyProfitTrend godoc
-// @ID           getReportMonthlyProfitTrend
-// @Summary      Get monthly profit trend
-// @Description  Get monthly profit trend for the specified period
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Success      200 {object} APIResponse[[]MonthlyProfitTrendResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/finance/monthly-trend [get]
+//
+//	@ID				getReportMonthlyProfitTrend
+//	@Summary		Get monthly profit trend
+//	@Description	Get monthly profit trend for the specified period
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date	query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date	query		string	true	"End date (YYYY-MM-DD)"
+//	@Success		200			{object}	APIResponse[[]MonthlyProfitTrendResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/reports/finance/monthly-trend [get]
 func (h *ReportHandler) GetMonthlyProfitTrend(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -784,19 +817,20 @@ func (h *ReportHandler) GetMonthlyProfitTrend(c *gin.Context) {
 }
 
 // GetProfitByProduct godoc
-// @ID           getReportProfitByProduct
-// @Summary      Get profit by product
-// @Description  Get profit analysis by product
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Param        category_id query string false "Filter by category ID"
-// @Param        top_n query int false "Number of products (default 10)"
-// @Success      200 {object} APIResponse[[]ProfitByProductResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/finance/profit-by-product [get]
+//
+//	@ID				getReportProfitByProduct
+//	@Summary		Get profit by product
+//	@Description	Get profit analysis by product
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date	query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date	query		string	true	"End date (YYYY-MM-DD)"
+//	@Param			category_id	query		string	false	"Filter by category ID"
+//	@Param			top_n		query		int		false	"Number of products (default 10)"
+//	@Success		200			{object}	APIResponse[[]ProfitByProductResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/reports/finance/profit-by-product [get]
 func (h *ReportHandler) GetProfitByProduct(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -826,17 +860,18 @@ func (h *ReportHandler) GetProfitByProduct(c *gin.Context) {
 }
 
 // GetCashFlowStatement godoc
-// @ID           getReportCashFlowStatement
-// @Summary      Get cash flow statement
-// @Description  Get cash flow statement for the specified period
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Success      200 {object} APIResponse[CashFlowStatementResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/finance/cash-flow [get]
+//
+//	@ID				getReportCashFlowStatement
+//	@Summary		Get cash flow statement
+//	@Description	Get cash flow statement for the specified period
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date	query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date	query		string	true	"End date (YYYY-MM-DD)"
+//	@Success		200			{object}	APIResponse[CashFlowStatementResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/reports/finance/cash-flow [get]
 func (h *ReportHandler) GetCashFlowStatement(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -866,17 +901,18 @@ func (h *ReportHandler) GetCashFlowStatement(c *gin.Context) {
 }
 
 // GetCashFlowItems godoc
-// @ID           getReportCashFlowItems
-// @Summary      Get cash flow items
-// @Description  Get detailed cash flow items for the specified period
-// @Tags         reports
-// @Produce      json
-// @Param        start_date query string true "Start date (YYYY-MM-DD)"
-// @Param        end_date query string true "End date (YYYY-MM-DD)"
-// @Success      200 {object} APIResponse[[]CashFlowItemResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /reports/finance/cash-flow/items [get]
+//
+//	@ID				getReportCashFlowItems
+//	@Summary		Get cash flow items
+//	@Description	Get detailed cash flow items for the specified period
+//	@Tags			reports
+//	@Produce		json
+//	@Param			start_date	query		string	true	"Start date (YYYY-MM-DD)"
+//	@Param			end_date	query		string	true	"End date (YYYY-MM-DD)"
+//	@Success		200			{object}	APIResponse[[]CashFlowItemResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/reports/finance/cash-flow/items [get]
 func (h *ReportHandler) GetCashFlowItems(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -1051,7 +1087,8 @@ func (h *ReportHandler) parseFinanceFilter(req FinanceReportFilterRequest) (repo
 // ===================== Manual Refresh Endpoints =====================
 
 // RefreshReportRequest defines the request for manual report refresh
-// @Description Request for manual report cache refresh
+//
+//	@Description	Request for manual report cache refresh
 type RefreshReportRequest struct {
 	ReportType string `json:"report_type" binding:"required" example:"SALES_SUMMARY"`
 	StartDate  string `json:"start_date" binding:"required" example:"2026-01-01"`
@@ -1059,32 +1096,35 @@ type RefreshReportRequest struct {
 }
 
 // RefreshAllReportsRequest defines the request for refreshing all reports
-// @Description Request for refreshing all report caches
+//
+//	@Description	Request for refreshing all report caches
 type RefreshAllReportsRequest struct {
 	StartDate string `json:"start_date" binding:"required" example:"2026-01-01"`
 	EndDate   string `json:"end_date" binding:"required" example:"2026-01-31"`
 }
 
 // RefreshReportResponse represents the response for report refresh
-// @Description Response for report refresh operation
+//
+//	@Description	Response for report refresh operation
 type RefreshReportResponse struct {
 	Message    string `json:"message" example:"Report refresh scheduled"`
 	ReportType string `json:"report_type,omitempty" example:"SALES_SUMMARY"`
 }
 
 // RefreshReport godoc
-// @ID           refreshReportReport
-// @Summary      Manually refresh a report cache
-// @Description  Triggers manual refresh of a specific report type cache
-// @Tags         reports
-// @Accept       json
-// @Produce      json
-// @Param        request body RefreshReportRequest true "Report refresh request"
-// @Success      200 {object} APIResponse[RefreshReportResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /reports/refresh [post]
+//
+//	@ID				refreshReportReport
+//	@Summary		Manually refresh a report cache
+//	@Description	Triggers manual refresh of a specific report type cache
+//	@Tags			reports
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		RefreshReportRequest	true	"Report refresh request"
+//	@Success		200		{object}	APIResponse[RefreshReportResponse]
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/reports/refresh [post]
 func (h *ReportHandler) RefreshReport(c *gin.Context) {
 	if h.aggregationService == nil {
 		h.InternalError(c, "Report aggregation service not configured")
@@ -1138,18 +1178,19 @@ func (h *ReportHandler) RefreshReport(c *gin.Context) {
 }
 
 // RefreshAllReports godoc
-// @ID           refreshAllReportsReport
-// @Summary      Refresh all report caches
-// @Description  Triggers manual refresh of all report type caches
-// @Tags         reports
-// @Accept       json
-// @Produce      json
-// @Param        request body RefreshAllReportsRequest true "Report refresh request"
-// @Success      200 {object} APIResponse[RefreshReportResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /reports/refresh/all [post]
+//
+//	@ID				refreshAllReportsReport
+//	@Summary		Refresh all report caches
+//	@Description	Triggers manual refresh of all report type caches
+//	@Tags			reports
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		RefreshAllReportsRequest	true	"Report refresh request"
+//	@Success		200		{object}	APIResponse[RefreshReportResponse]
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/reports/refresh/all [post]
 func (h *ReportHandler) RefreshAllReports(c *gin.Context) {
 	if h.aggregationService == nil {
 		h.InternalError(c, "Report aggregation service not configured")
@@ -1194,15 +1235,16 @@ func (h *ReportHandler) RefreshAllReports(c *gin.Context) {
 }
 
 // GetSchedulerStatus godoc
-// @ID           getReportSchedulerStatus
-// @Summary      Get report scheduler status
-// @Description  Returns the current status of the report scheduler
-// @Tags         reports
-// @Produce      json
-// @Success      200 {object} APIResponse[SchedulerStatusData]
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /reports/scheduler/status [get]
+//
+//	@ID				getReportSchedulerStatus
+//	@Summary		Get report scheduler status
+//	@Description	Returns the current status of the report scheduler
+//	@Tags			reports
+//	@Produce		json
+//	@Success		200	{object}	APIResponse[SchedulerStatusData]
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/reports/scheduler/status [get]
 func (h *ReportHandler) GetSchedulerStatus(c *gin.Context) {
 	status := map[string]any{
 		"enabled":            h.aggregationService != nil,
@@ -1220,25 +1262,27 @@ func (h *ReportHandler) GetSchedulerStatus(c *gin.Context) {
 }
 
 // TriggerDailyAggregationRequest defines the request for triggering daily aggregation
-// @Description Request for triggering daily report aggregation
+//
+//	@Description	Request for triggering daily report aggregation
 type TriggerDailyAggregationRequest struct {
 	StartDate string `json:"start_date" example:"2026-01-01"`
 	EndDate   string `json:"end_date" example:"2026-01-31"`
 }
 
 // TriggerDailyAggregation godoc
-// @ID           triggerDailyAggregationReport
-// @Summary      Trigger daily report aggregation
-// @Description  Manually triggers the daily report aggregation for a specific date range
-// @Tags         reports
-// @Accept       json
-// @Produce      json
-// @Param        request body TriggerDailyAggregationRequest false "Date range (optional, defaults to yesterday)"
-// @Success      200 {object} APIResponse[RefreshReportResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /reports/scheduler/trigger [post]
+//
+//	@ID				triggerDailyAggregationReport
+//	@Summary		Trigger daily report aggregation
+//	@Description	Manually triggers the daily report aggregation for a specific date range
+//	@Tags			reports
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		TriggerDailyAggregationRequest	false	"Date range (optional, defaults to yesterday)"
+//	@Success		200		{object}	APIResponse[RefreshReportResponse]
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/reports/scheduler/trigger [post]
 func (h *ReportHandler) TriggerDailyAggregation(c *gin.Context) {
 	if h.cronScheduler == nil {
 		h.InternalError(c, "Report cron scheduler not configured")

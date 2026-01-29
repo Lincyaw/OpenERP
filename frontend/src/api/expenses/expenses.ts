@@ -23,13 +23,13 @@ import type {
   ApproveExpenseExpensBody,
   CancelExpenseExpensBody,
   CreateExpensExpenseBody,
+  DtoErrorResponse,
   GetExpensCashFlowParams,
   GetExpensExpensesSummaryParams,
   HandlerAPIResponseArrayHandlerExpenseRecordResponse,
   HandlerAPIResponseHandlerCashFlowSummaryResponse,
   HandlerAPIResponseHandlerExpenseRecordResponse,
   HandlerAPIResponseHandlerExpenseSummaryResponse,
-  HandlerErrorResponse,
   HandlerSuccessResponse,
   ListExpensExpensesParams,
   MarkExpensePaidExpensBody,
@@ -52,17 +52,17 @@ export type getExpensCashFlowResponse200 = {
 }
 
 export type getExpensCashFlowResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getExpensCashFlowResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getExpensCashFlowResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -113,7 +113,7 @@ export const getGetExpensCashFlowQueryKey = (params?: GetExpensCashFlowParams) =
 
 export const getGetExpensCashFlowQueryOptions = <
   TData = Awaited<ReturnType<typeof getExpensCashFlow>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: GetExpensCashFlowParams,
   options?: {
@@ -138,11 +138,11 @@ export const getGetExpensCashFlowQueryOptions = <
 export type GetExpensCashFlowQueryResult = NonNullable<
   Awaited<ReturnType<typeof getExpensCashFlow>>
 >
-export type GetExpensCashFlowQueryError = HandlerErrorResponse
+export type GetExpensCashFlowQueryError = DtoErrorResponse
 
 export function useGetExpensCashFlow<
   TData = Awaited<ReturnType<typeof getExpensCashFlow>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params: undefined | GetExpensCashFlowParams,
   options: {
@@ -161,7 +161,7 @@ export function useGetExpensCashFlow<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetExpensCashFlow<
   TData = Awaited<ReturnType<typeof getExpensCashFlow>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: GetExpensCashFlowParams,
   options?: {
@@ -180,7 +180,7 @@ export function useGetExpensCashFlow<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetExpensCashFlow<
   TData = Awaited<ReturnType<typeof getExpensCashFlow>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: GetExpensCashFlowParams,
   options?: {
@@ -195,7 +195,7 @@ export function useGetExpensCashFlow<
 
 export function useGetExpensCashFlow<
   TData = Awaited<ReturnType<typeof getExpensCashFlow>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: GetExpensCashFlowParams,
   options?: {
@@ -223,17 +223,17 @@ export type listExpensExpensesResponse200 = {
 }
 
 export type listExpensExpensesResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type listExpensExpensesResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type listExpensExpensesResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -284,7 +284,7 @@ export const getListExpensExpensesQueryKey = (params?: ListExpensExpensesParams)
 
 export const getListExpensExpensesQueryOptions = <
   TData = Awaited<ReturnType<typeof listExpensExpenses>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListExpensExpensesParams,
   options?: {
@@ -309,11 +309,11 @@ export const getListExpensExpensesQueryOptions = <
 export type ListExpensExpensesQueryResult = NonNullable<
   Awaited<ReturnType<typeof listExpensExpenses>>
 >
-export type ListExpensExpensesQueryError = HandlerErrorResponse
+export type ListExpensExpensesQueryError = DtoErrorResponse
 
 export function useListExpensExpenses<
   TData = Awaited<ReturnType<typeof listExpensExpenses>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params: undefined | ListExpensExpensesParams,
   options: {
@@ -332,7 +332,7 @@ export function useListExpensExpenses<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListExpensExpenses<
   TData = Awaited<ReturnType<typeof listExpensExpenses>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListExpensExpensesParams,
   options?: {
@@ -353,7 +353,7 @@ export function useListExpensExpenses<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListExpensExpenses<
   TData = Awaited<ReturnType<typeof listExpensExpenses>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListExpensExpensesParams,
   options?: {
@@ -368,7 +368,7 @@ export function useListExpensExpenses<
 
 export function useListExpensExpenses<
   TData = Awaited<ReturnType<typeof listExpensExpenses>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListExpensExpensesParams,
   options?: {
@@ -396,17 +396,17 @@ export type createExpensExpenseResponse201 = {
 }
 
 export type createExpensExpenseResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type createExpensExpenseResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type createExpensExpenseResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -442,7 +442,7 @@ export const createExpensExpense = async (
 }
 
 export const getCreateExpensExpenseMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -481,12 +481,12 @@ export type CreateExpensExpenseMutationResult = NonNullable<
   Awaited<ReturnType<typeof createExpensExpense>>
 >
 export type CreateExpensExpenseMutationBody = CreateExpensExpenseBody
-export type CreateExpensExpenseMutationError = HandlerErrorResponse
+export type CreateExpensExpenseMutationError = DtoErrorResponse
 
 /**
  * @summary Create expense record
  */
-export const useCreateExpensExpense = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useCreateExpensExpense = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof createExpensExpense>>,
@@ -515,22 +515,22 @@ export type deleteExpensExpenseResponse200 = {
 }
 
 export type deleteExpensExpenseResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type deleteExpensExpenseResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type deleteExpensExpenseResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type deleteExpensExpenseResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -565,7 +565,7 @@ export const deleteExpensExpense = async (
 }
 
 export const getDeleteExpensExpenseMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -604,12 +604,12 @@ export type DeleteExpensExpenseMutationResult = NonNullable<
   Awaited<ReturnType<typeof deleteExpensExpense>>
 >
 
-export type DeleteExpensExpenseMutationError = HandlerErrorResponse
+export type DeleteExpensExpenseMutationError = DtoErrorResponse
 
 /**
  * @summary Delete expense record
  */
-export const useDeleteExpensExpense = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useDeleteExpensExpense = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof deleteExpensExpense>>,
@@ -638,22 +638,22 @@ export type getExpensExpenseResponse200 = {
 }
 
 export type getExpensExpenseResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getExpensExpenseResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getExpensExpenseResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type getExpensExpenseResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -693,7 +693,7 @@ export const getGetExpensExpenseQueryKey = (id: string) => {
 
 export const getGetExpensExpenseQueryOptions = <
   TData = Awaited<ReturnType<typeof getExpensExpense>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -716,11 +716,11 @@ export const getGetExpensExpenseQueryOptions = <
 }
 
 export type GetExpensExpenseQueryResult = NonNullable<Awaited<ReturnType<typeof getExpensExpense>>>
-export type GetExpensExpenseQueryError = HandlerErrorResponse
+export type GetExpensExpenseQueryError = DtoErrorResponse
 
 export function useGetExpensExpense<
   TData = Awaited<ReturnType<typeof getExpensExpense>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options: {
@@ -739,7 +739,7 @@ export function useGetExpensExpense<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetExpensExpense<
   TData = Awaited<ReturnType<typeof getExpensExpense>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -758,7 +758,7 @@ export function useGetExpensExpense<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetExpensExpense<
   TData = Awaited<ReturnType<typeof getExpensExpense>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -773,7 +773,7 @@ export function useGetExpensExpense<
 
 export function useGetExpensExpense<
   TData = Awaited<ReturnType<typeof getExpensExpense>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -801,22 +801,22 @@ export type updateExpensExpenseResponse200 = {
 }
 
 export type updateExpensExpenseResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type updateExpensExpenseResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type updateExpensExpenseResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type updateExpensExpenseResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -854,7 +854,7 @@ export const updateExpensExpense = async (
 }
 
 export const getUpdateExpensExpenseMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -893,12 +893,12 @@ export type UpdateExpensExpenseMutationResult = NonNullable<
   Awaited<ReturnType<typeof updateExpensExpense>>
 >
 export type UpdateExpensExpenseMutationBody = UpdateExpensExpenseBody
-export type UpdateExpensExpenseMutationError = HandlerErrorResponse
+export type UpdateExpensExpenseMutationError = DtoErrorResponse
 
 /**
  * @summary Update expense record
  */
-export const useUpdateExpensExpense = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useUpdateExpensExpense = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateExpensExpense>>,
@@ -927,22 +927,22 @@ export type approveExpenseExpensResponse200 = {
 }
 
 export type approveExpenseExpensResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type approveExpenseExpensResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type approveExpenseExpensResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type approveExpenseExpensResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -980,7 +980,7 @@ export const approveExpenseExpens = async (
 }
 
 export const getApproveExpenseExpensMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1019,12 +1019,12 @@ export type ApproveExpenseExpensMutationResult = NonNullable<
   Awaited<ReturnType<typeof approveExpenseExpens>>
 >
 export type ApproveExpenseExpensMutationBody = ApproveExpenseExpensBody
-export type ApproveExpenseExpensMutationError = HandlerErrorResponse
+export type ApproveExpenseExpensMutationError = DtoErrorResponse
 
 /**
  * @summary Approve expense
  */
-export const useApproveExpenseExpens = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useApproveExpenseExpens = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof approveExpenseExpens>>,
@@ -1053,22 +1053,22 @@ export type cancelExpenseExpensResponse200 = {
 }
 
 export type cancelExpenseExpensResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type cancelExpenseExpensResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type cancelExpenseExpensResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type cancelExpenseExpensResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1106,7 +1106,7 @@ export const cancelExpenseExpens = async (
 }
 
 export const getCancelExpenseExpensMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1145,12 +1145,12 @@ export type CancelExpenseExpensMutationResult = NonNullable<
   Awaited<ReturnType<typeof cancelExpenseExpens>>
 >
 export type CancelExpenseExpensMutationBody = CancelExpenseExpensBody
-export type CancelExpenseExpensMutationError = HandlerErrorResponse
+export type CancelExpenseExpensMutationError = DtoErrorResponse
 
 /**
  * @summary Cancel expense
  */
-export const useCancelExpenseExpens = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useCancelExpenseExpens = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof cancelExpenseExpens>>,
@@ -1179,22 +1179,22 @@ export type markExpensePaidExpensResponse200 = {
 }
 
 export type markExpensePaidExpensResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type markExpensePaidExpensResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type markExpensePaidExpensResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type markExpensePaidExpensResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1232,7 +1232,7 @@ export const markExpensePaidExpens = async (
 }
 
 export const getMarkExpensePaidExpensMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1271,12 +1271,12 @@ export type MarkExpensePaidExpensMutationResult = NonNullable<
   Awaited<ReturnType<typeof markExpensePaidExpens>>
 >
 export type MarkExpensePaidExpensMutationBody = MarkExpensePaidExpensBody
-export type MarkExpensePaidExpensMutationError = HandlerErrorResponse
+export type MarkExpensePaidExpensMutationError = DtoErrorResponse
 
 /**
  * @summary Mark expense as paid
  */
-export const useMarkExpensePaidExpens = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useMarkExpensePaidExpens = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof markExpensePaidExpens>>,
@@ -1305,22 +1305,22 @@ export type rejectExpenseExpensResponse200 = {
 }
 
 export type rejectExpenseExpensResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type rejectExpenseExpensResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type rejectExpenseExpensResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type rejectExpenseExpensResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1358,7 +1358,7 @@ export const rejectExpenseExpens = async (
 }
 
 export const getRejectExpenseExpensMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1397,12 +1397,12 @@ export type RejectExpenseExpensMutationResult = NonNullable<
   Awaited<ReturnType<typeof rejectExpenseExpens>>
 >
 export type RejectExpenseExpensMutationBody = RejectExpenseExpensBody
-export type RejectExpenseExpensMutationError = HandlerErrorResponse
+export type RejectExpenseExpensMutationError = DtoErrorResponse
 
 /**
  * @summary Reject expense
  */
-export const useRejectExpenseExpens = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useRejectExpenseExpens = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof rejectExpenseExpens>>,
@@ -1431,22 +1431,22 @@ export type submitExpenseExpensResponse200 = {
 }
 
 export type submitExpenseExpensResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type submitExpenseExpensResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type submitExpenseExpensResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type submitExpenseExpensResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1484,7 +1484,7 @@ export const submitExpenseExpens = async (
 }
 
 export const getSubmitExpenseExpensMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1523,12 +1523,12 @@ export type SubmitExpenseExpensMutationResult = NonNullable<
   Awaited<ReturnType<typeof submitExpenseExpens>>
 >
 export type SubmitExpenseExpensMutationBody = SubmitExpenseExpensBody
-export type SubmitExpenseExpensMutationError = HandlerErrorResponse
+export type SubmitExpenseExpensMutationError = DtoErrorResponse
 
 /**
  * @summary Submit expense for approval
  */
-export const useSubmitExpenseExpens = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useSubmitExpenseExpens = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof submitExpenseExpens>>,
@@ -1557,17 +1557,17 @@ export type getExpensExpensesSummaryResponse200 = {
 }
 
 export type getExpensExpensesSummaryResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getExpensExpensesSummaryResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getExpensExpensesSummaryResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1618,7 +1618,7 @@ export const getGetExpensExpensesSummaryQueryKey = (params?: GetExpensExpensesSu
 
 export const getGetExpensExpensesSummaryQueryOptions = <
   TData = Awaited<ReturnType<typeof getExpensExpensesSummary>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: GetExpensExpensesSummaryParams,
   options?: {
@@ -1646,11 +1646,11 @@ export const getGetExpensExpensesSummaryQueryOptions = <
 export type GetExpensExpensesSummaryQueryResult = NonNullable<
   Awaited<ReturnType<typeof getExpensExpensesSummary>>
 >
-export type GetExpensExpensesSummaryQueryError = HandlerErrorResponse
+export type GetExpensExpensesSummaryQueryError = DtoErrorResponse
 
 export function useGetExpensExpensesSummary<
   TData = Awaited<ReturnType<typeof getExpensExpensesSummary>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params: undefined | GetExpensExpensesSummaryParams,
   options: {
@@ -1671,7 +1671,7 @@ export function useGetExpensExpensesSummary<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetExpensExpensesSummary<
   TData = Awaited<ReturnType<typeof getExpensExpensesSummary>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: GetExpensExpensesSummaryParams,
   options?: {
@@ -1692,7 +1692,7 @@ export function useGetExpensExpensesSummary<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetExpensExpensesSummary<
   TData = Awaited<ReturnType<typeof getExpensExpensesSummary>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: GetExpensExpensesSummaryParams,
   options?: {
@@ -1709,7 +1709,7 @@ export function useGetExpensExpensesSummary<
 
 export function useGetExpensExpensesSummary<
   TData = Awaited<ReturnType<typeof getExpensExpensesSummary>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: GetExpensExpensesSummaryParams,
   options?: {

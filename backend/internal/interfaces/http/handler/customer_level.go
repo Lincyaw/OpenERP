@@ -34,7 +34,8 @@ func NewCustomerLevelHandler(levelService *partnerapp.CustomerLevelService) *Cus
 // =============================================================================
 
 // CustomerLevelResponse represents a customer level in API responses
-// @Description Customer level details
+//
+//	@Description	Customer level details
 type CustomerLevelResponse struct {
 	ID              string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TenantID        string  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -52,7 +53,8 @@ type CustomerLevelResponse struct {
 }
 
 // CustomerLevelListResponse represents a customer level list item
-// @Description Customer level list item with customer count
+//
+//	@Description	Customer level list item with customer count
 type CustomerLevelListResponse struct {
 	ID              string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Code            string  `json:"code" example:"gold"`
@@ -70,7 +72,8 @@ type CustomerLevelListResponse struct {
 // =============================================================================
 
 // CreateCustomerLevelRequest represents a request to create a customer level
-// @Description Request body for creating a customer level
+//
+//	@Description	Request body for creating a customer level
 type CreateCustomerLevelRequest struct {
 	Code         string  `json:"code" binding:"required,min=1,max=50" example:"gold"`
 	Name         string  `json:"name" binding:"required,min=1,max=100" example:"金卡会员"`
@@ -82,7 +85,8 @@ type CreateCustomerLevelRequest struct {
 }
 
 // UpdateCustomerLevelRequest represents a request to update a customer level
-// @Description Request body for updating a customer level
+//
+//	@Description	Request body for updating a customer level
 type UpdateCustomerLevelRequest struct {
 	Name         *string  `json:"name" binding:"omitempty,min=1,max=100" example:"金卡会员"`
 	DiscountRate *float64 `json:"discount_rate" binding:"omitempty,gte=0,lte=1" example:"0.08"`
@@ -93,21 +97,22 @@ type UpdateCustomerLevelRequest struct {
 }
 
 // Create godoc
-// @ID           createCustomerLevel
-// @Summary      Create a new customer level
-// @Description  Create a new customer level for the tenant
-// @Tags         customer-levels
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body CreateCustomerLevelRequest true "Customer level creation request"
-// @Success      201 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      409 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customer-levels [post]
+//
+//	@ID				createCustomerLevel
+//	@Summary		Create a new customer level
+//	@Description	Create a new customer level for the tenant
+//	@Tags			customer-levels
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			request		body		CreateCustomerLevelRequest	true	"Customer level creation request"
+//	@Success		201			{object}	APIResponse[CustomerLevelResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		409			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customer-levels [post]
 func (h *CustomerLevelHandler) Create(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -141,20 +146,21 @@ func (h *CustomerLevelHandler) Create(c *gin.Context) {
 }
 
 // GetByID godoc
-// @ID           getCustomerLevelById
-// @Summary      Get customer level by ID
-// @Description  Retrieve a customer level by its ID
-// @Tags         customer-levels
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer Level ID" format(uuid)
-// @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customer-levels/{id} [get]
+//
+//	@ID				getCustomerLevelById
+//	@Summary		Get customer level by ID
+//	@Description	Retrieve a customer level by its ID
+//	@Tags			customer-levels
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Customer Level ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[CustomerLevelResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customer-levels/{id} [get]
 func (h *CustomerLevelHandler) GetByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -178,20 +184,21 @@ func (h *CustomerLevelHandler) GetByID(c *gin.Context) {
 }
 
 // GetByCode godoc
-// @ID           getCustomerLevelByCode
-// @Summary      Get customer level by code
-// @Description  Retrieve a customer level by its code
-// @Tags         customer-levels
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        code path string true "Customer Level Code"
-// @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customer-levels/code/{code} [get]
+//
+//	@ID				getCustomerLevelByCode
+//	@Summary		Get customer level by code
+//	@Description	Retrieve a customer level by its code
+//	@Tags			customer-levels
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			code		path		string	true	"Customer Level Code"
+//	@Success		200			{object}	APIResponse[CustomerLevelResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customer-levels/code/{code} [get]
 func (h *CustomerLevelHandler) GetByCode(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -219,19 +226,20 @@ func (h *CustomerLevelHandler) GetByCode(c *gin.Context) {
 }
 
 // GetDefault godoc
-// @ID           getCustomerLevelDefault
-// @Summary      Get default customer level
-// @Description  Retrieve the default customer level for the tenant
-// @Tags         customer-levels
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customer-levels/default [get]
+//
+//	@ID				getCustomerLevelDefault
+//	@Summary		Get default customer level
+//	@Description	Retrieve the default customer level for the tenant
+//	@Tags			customer-levels
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Success		200			{object}	APIResponse[CustomerLevelResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customer-levels/default [get]
 func (h *CustomerLevelHandler) GetDefault(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -249,19 +257,20 @@ func (h *CustomerLevelHandler) GetDefault(c *gin.Context) {
 }
 
 // List godoc
-// @ID           listCustomerLevels
-// @Summary      List customer levels
-// @Description  Retrieve all customer levels for the tenant
-// @Tags         customer-levels
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        active_only query bool false "Only return active levels" default(false)
-// @Success      200 {object} APIResponse[[]CustomerLevelListResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customer-levels [get]
+//
+//	@ID				listCustomerLevels
+//	@Summary		List customer levels
+//	@Description	Retrieve all customer levels for the tenant
+//	@Tags			customer-levels
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			active_only	query		bool	false	"Only return active levels"	default(false)
+//	@Success		200			{object}	APIResponse[[]CustomerLevelListResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customer-levels [get]
 func (h *CustomerLevelHandler) List(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -281,22 +290,23 @@ func (h *CustomerLevelHandler) List(c *gin.Context) {
 }
 
 // Update godoc
-// @ID           updateCustomerLevel
-// @Summary      Update a customer level
-// @Description  Update an existing customer level's details
-// @Tags         customer-levels
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer Level ID" format(uuid)
-// @Param        request body UpdateCustomerLevelRequest true "Customer level update request"
-// @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customer-levels/{id} [put]
+//
+//	@ID				updateCustomerLevel
+//	@Summary		Update a customer level
+//	@Description	Update an existing customer level's details
+//	@Tags			customer-levels
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Customer Level ID"	format(uuid)
+//	@Param			request		body		UpdateCustomerLevelRequest	true	"Customer level update request"
+//	@Success		200			{object}	APIResponse[CustomerLevelResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customer-levels/{id} [put]
 func (h *CustomerLevelHandler) Update(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -335,21 +345,22 @@ func (h *CustomerLevelHandler) Update(c *gin.Context) {
 }
 
 // Delete godoc
-// @ID           deleteCustomerLevel
-// @Summary      Delete a customer level
-// @Description  Delete a customer level by ID
-// @Tags         customer-levels
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer Level ID" format(uuid)
-// @Success      204
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customer-levels/{id} [delete]
+//
+//	@ID				deleteCustomerLevel
+//	@Summary		Delete a customer level
+//	@Description	Delete a customer level by ID
+//	@Tags			customer-levels
+//	@Produce		json
+//	@Param			X-Tenant-ID	header	string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path	string	true	"Customer Level ID"	format(uuid)
+//	@Success		204
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		422	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customer-levels/{id} [delete]
 func (h *CustomerLevelHandler) Delete(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -373,22 +384,23 @@ func (h *CustomerLevelHandler) Delete(c *gin.Context) {
 }
 
 // SetDefault godoc
-// @ID           setDefaultCustomerLevel
-// @Summary      Set default customer level
-// @Description  Set a customer level as the default for new customers
-// @Tags         customer-levels
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer Level ID" format(uuid)
-// @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customer-levels/{id}/set-default [post]
+//
+//	@ID				setDefaultCustomerLevel
+//	@Summary		Set default customer level
+//	@Description	Set a customer level as the default for new customers
+//	@Tags			customer-levels
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Customer Level ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[CustomerLevelResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customer-levels/{id}/set-default [post]
 func (h *CustomerLevelHandler) SetDefault(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -412,21 +424,22 @@ func (h *CustomerLevelHandler) SetDefault(c *gin.Context) {
 }
 
 // Activate godoc
-// @ID           activateCustomerLevel
-// @Summary      Activate a customer level
-// @Description  Activate an inactive customer level
-// @Tags         customer-levels
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer Level ID" format(uuid)
-// @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customer-levels/{id}/activate [post]
+//
+//	@ID				activateCustomerLevel
+//	@Summary		Activate a customer level
+//	@Description	Activate an inactive customer level
+//	@Tags			customer-levels
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Customer Level ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[CustomerLevelResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customer-levels/{id}/activate [post]
 func (h *CustomerLevelHandler) Activate(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -450,22 +463,23 @@ func (h *CustomerLevelHandler) Activate(c *gin.Context) {
 }
 
 // Deactivate godoc
-// @ID           deactivateCustomerLevel
-// @Summary      Deactivate a customer level
-// @Description  Deactivate an active customer level
-// @Tags         customer-levels
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Customer Level ID" format(uuid)
-// @Success      200 {object} APIResponse[CustomerLevelResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customer-levels/{id}/deactivate [post]
+//
+//	@ID				deactivateCustomerLevel
+//	@Summary		Deactivate a customer level
+//	@Description	Deactivate an active customer level
+//	@Tags			customer-levels
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Customer Level ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[CustomerLevelResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customer-levels/{id}/deactivate [post]
 func (h *CustomerLevelHandler) Deactivate(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -489,19 +503,20 @@ func (h *CustomerLevelHandler) Deactivate(c *gin.Context) {
 }
 
 // InitializeDefaultLevels godoc
-// @ID           initializeDefaultLevelsCustomerLevel
-// @Summary      Initialize default customer levels
-// @Description  Create the default customer levels for a tenant
-// @Tags         customer-levels
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} APIResponse[map[string]string]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /partner/customer-levels/initialize [post]
+//
+//	@ID				initializeDefaultLevelsCustomerLevel
+//	@Summary		Initialize default customer levels
+//	@Description	Create the default customer levels for a tenant
+//	@Tags			customer-levels
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Success		200			{object}	APIResponse[map[string]string]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/partner/customer-levels/initialize [post]
 func (h *CustomerLevelHandler) InitializeDefaultLevels(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {

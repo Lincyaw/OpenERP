@@ -5,10 +5,10 @@
  */
 import type { DtoErrorInfo } from './dtoErrorInfo'
 import type { DtoMeta } from './dtoMeta'
-import type { HandlerTemplateResponse } from './handlerTemplateResponse'
+import type { HandlerCustomerImportResponse } from './handlerCustomerImportResponse'
 
-export interface HandlerAPIResponseHandlerTemplateResponse {
-  data?: HandlerTemplateResponse
+export interface HandlerAPIResponseHandlerCustomerImportResponse {
+  data?: HandlerCustomerImportResponse
   error?: DtoErrorInfo
   meta?: DtoMeta
   success?: boolean

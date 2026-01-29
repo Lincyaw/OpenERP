@@ -475,24 +475,24 @@ func (r *GormFinanceReportRepository) GetProfitByCustomer(filter report.FinanceR
 
 // GetCashFlowStatement returns cash flow statement for the period
 func (r *GormFinanceReportRepository) GetCashFlowStatement(filter report.FinanceReportFilter) (*report.CashFlowStatement, error) {
-	// Get receipts from customers
+	// Get receipts from customers (CONFIRMED and ALLOCATED status)
 	var receiptsFromCustomers decimal.Decimal
 	if err := r.db.Table("receipt_vouchers").
 		Select("COALESCE(SUM(amount), 0)").
 		Where("tenant_id = ?", filter.TenantID).
 		Where("receipt_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
-		Where("status = ?", "CONFIRMED").
+		Where("status IN ?", []string{"CONFIRMED", "ALLOCATED"}).
 		Scan(&receiptsFromCustomers).Error; err != nil {
 		receiptsFromCustomers = decimal.Zero
 	}
 
-	// Get payments to suppliers
+	// Get payments to suppliers (CONFIRMED and ALLOCATED status)
 	var paymentsToSuppliers decimal.Decimal
 	if err := r.db.Table("payment_vouchers").
 		Select("COALESCE(SUM(amount), 0)").
 		Where("tenant_id = ?", filter.TenantID).
 		Where("payment_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
-		Where("status = ?", "CONFIRMED").
+		Where("status IN ?", []string{"CONFIRMED", "ALLOCATED"}).
 		Scan(&paymentsToSuppliers).Error; err != nil {
 		paymentsToSuppliers = decimal.Zero
 	}
@@ -564,7 +564,7 @@ func (r *GormFinanceReportRepository) GetCashFlowItems(filter report.FinanceRepo
 		`).
 		Where("tenant_id = ?", filter.TenantID).
 		Where("receipt_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
-		Where("status = ?", "CONFIRMED").
+		Where("status IN ?", []string{"CONFIRMED", "ALLOCATED"}).
 		Scan(&receipts)
 
 	for _, rec := range receipts {
@@ -589,7 +589,7 @@ func (r *GormFinanceReportRepository) GetCashFlowItems(filter report.FinanceRepo
 		`).
 		Where("tenant_id = ?", filter.TenantID).
 		Where("payment_date BETWEEN ? AND ?", filter.StartDate, filter.EndDate).
-		Where("status = ?", "CONFIRMED").
+		Where("status IN ?", []string{"CONFIRMED", "ALLOCATED"}).
 		Scan(&payments)
 
 	for _, pay := range payments {

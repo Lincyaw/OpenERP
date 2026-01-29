@@ -12,8 +12,8 @@ import type {
 } from '@tanstack/react-query'
 
 import type {
+  DtoErrorResponse,
   HandlerAPIResponseHandlerPreviewHTTPResponse,
-  HandlerErrorResponse,
   PreviewDocumentPrintPreviewBody,
 } from '.././models'
 
@@ -31,27 +31,27 @@ export type previewDocumentPrintPreviewResponse200 = {
 }
 
 export type previewDocumentPrintPreviewResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type previewDocumentPrintPreviewResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type previewDocumentPrintPreviewResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type previewDocumentPrintPreviewResponse422 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 422
 }
 
 export type previewDocumentPrintPreviewResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -89,7 +89,7 @@ export const previewDocumentPrintPreview = async (
 }
 
 export const getPreviewDocumentPrintPreviewMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -128,12 +128,12 @@ export type PreviewDocumentPrintPreviewMutationResult = NonNullable<
   Awaited<ReturnType<typeof previewDocumentPrintPreview>>
 >
 export type PreviewDocumentPrintPreviewMutationBody = PreviewDocumentPrintPreviewBody
-export type PreviewDocumentPrintPreviewMutationError = HandlerErrorResponse
+export type PreviewDocumentPrintPreviewMutationError = DtoErrorResponse
 
 /**
  * @summary Preview document as HTML
  */
-export const usePreviewDocumentPrintPreview = <TError = HandlerErrorResponse, TContext = unknown>(
+export const usePreviewDocumentPrintPreview = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof previewDocumentPrintPreview>>,

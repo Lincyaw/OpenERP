@@ -4,4 +4,4 @@
  *
  */
 
-export type SubmitSalesReturnBody = { [key: string]: unknown }
+export type SetProductAttachmentAsMainImageBody = { [key: string]: unknown }

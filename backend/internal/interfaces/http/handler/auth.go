@@ -73,19 +73,20 @@ func (h *AuthHandler) clearRefreshTokenCookie(c *gin.Context) {
 }
 
 // Login godoc
-// @ID           loginAuth
-// @Summary      User login
-// @Description  Authenticate user with username and password. Returns access token in response body and sets refresh token as httpOnly cookie.
-// @Tags         auth
-// @Accept       json
-// @Produce      json
-// @Param        request body LoginRequest true "Login credentials"
-// @Success      200 {object} APIResponse[LoginResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /auth/login [post]
+//
+//	@ID				loginAuth
+//	@Summary		User login
+//	@Description	Authenticate user with username and password. Returns access token in response body and sets refresh token as httpOnly cookie.
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		LoginRequest	true	"Login credentials"
+//	@Success		200		{object}	APIResponse[LoginResponse]
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		422		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Router			/auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -144,18 +145,19 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 // RefreshToken godoc
-// @ID           refreshTokenAuth
-// @Summary      Refresh access token
-// @Description  Get new access token using refresh token from httpOnly cookie. Falls back to request body for backward compatibility.
-// @Tags         auth
-// @Accept       json
-// @Produce      json
-// @Param        request body RefreshTokenRequest false "Refresh token (optional, prefer cookie)"
-// @Success      200 {object} APIResponse[RefreshTokenResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /auth/refresh [post]
+//
+//	@ID				refreshTokenAuth
+//	@Summary		Refresh access token
+//	@Description	Get new access token using refresh token from httpOnly cookie. Falls back to request body for backward compatibility.
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		RefreshTokenRequest	false	"Refresh token (optional, prefer cookie)"
+//	@Success		200		{object}	APIResponse[RefreshTokenResponse]
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Router			/auth/refresh [post]
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	var refreshToken string
 
@@ -207,17 +209,18 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 }
 
 // Logout godoc
-// @ID           logoutAuth
-// @Summary      User logout
-// @Description  Logout and invalidate the current session. Clears refresh token cookie.
-// @Tags         auth
-// @Accept       json
-// @Produce      json
-// @Success      200 {object} APIResponse[LogoutResponse]
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /auth/logout [post]
+//
+//	@ID				logoutAuth
+//	@Summary		User logout
+//	@Description	Logout and invalidate the current session. Clears refresh token cookie.
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	APIResponse[LogoutResponse]
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
 	claims := middleware.GetJWTClaims(c)
 	if claims == nil {
@@ -256,16 +259,17 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 }
 
 // GetCurrentUser godoc
-// @ID           getAuthCurrentUser
-// @Summary      Get current user
-// @Description  Get the currently authenticated user's information
-// @Tags         auth
-// @Produce      json
-// @Success      200 {object} APIResponse[CurrentUserResponse]
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /auth/me [get]
+//
+//	@ID				getAuthCurrentUser
+//	@Summary		Get current user
+//	@Description	Get the currently authenticated user's information
+//	@Tags			auth
+//	@Produce		json
+//	@Success		200	{object}	APIResponse[CurrentUserResponse]
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/auth/me [get]
 func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
 	claims := middleware.GetJWTClaims(c)
 	if claims == nil {
@@ -319,20 +323,21 @@ func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
 }
 
 // ChangePassword godoc
-// @ID           changePasswordAuth
-// @Summary      Change password
-// @Description  Change the current user's password
-// @Tags         auth
-// @Accept       json
-// @Produce      json
-// @Param        request body ChangePasswordRequest true "Password change request"
-// @Success      200 {object} SuccessResponse
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /auth/password [put]
+//
+//	@ID				changePasswordAuth
+//	@Summary		Change password
+//	@Description	Change the current user's password
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		ChangePasswordRequest	true	"Password change request"
+//	@Success		200		{object}	SuccessResponse
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		422		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/auth/password [put]
 func (h *AuthHandler) ChangePassword(c *gin.Context) {
 	claims := middleware.GetJWTClaims(c)
 	if claims == nil {
@@ -368,21 +373,22 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 }
 
 // ForceLogout godoc
-// @ID           forceLogoutAuth
-// @Summary      Force logout user (Admin)
-// @Description  Invalidate all sessions for a specific user. Requires user:force_logout permission.
-// @Tags         auth
-// @Accept       json
-// @Produce      json
-// @Param        request body ForceLogoutRequest true "Force logout request"
-// @Success      200 {object} APIResponse[ForceLogoutResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      403 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /auth/force-logout [post]
+//
+//	@ID				forceLogoutAuth
+//	@Summary		Force logout user (Admin)
+//	@Description	Invalidate all sessions for a specific user. Requires user:force_logout permission.
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		ForceLogoutRequest	true	"Force logout request"
+//	@Success		200		{object}	APIResponse[ForceLogoutResponse]
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		403		{object}	dto.ErrorResponse
+//	@Failure		404		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/auth/force-logout [post]
 func (h *AuthHandler) ForceLogout(c *gin.Context) {
 	claims := middleware.GetJWTClaims(c)
 	if claims == nil {

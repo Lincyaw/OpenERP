@@ -197,7 +197,8 @@ type AccountPayableRepository interface {
 type ReceiptVoucherFilter struct {
 	shared.Filter
 	CustomerID     *uuid.UUID       // Filter by customer
-	Status         *VoucherStatus   // Filter by status
+	Status         *VoucherStatus   // Filter by single status (deprecated, use Statuses)
+	Statuses       []VoucherStatus  // Filter by multiple statuses (e.g., CONFIRMED and ALLOCATED)
 	PaymentMethod  *PaymentMethod   // Filter by payment method
 	FromDate       *time.Time       // Filter by receipt date range start
 	ToDate         *time.Time       // Filter by receipt date range end
@@ -275,7 +276,8 @@ type ReceiptVoucherRepository interface {
 type PaymentVoucherFilter struct {
 	shared.Filter
 	SupplierID     *uuid.UUID       // Filter by supplier
-	Status         *VoucherStatus   // Filter by status
+	Status         *VoucherStatus   // Filter by single status (deprecated, use Statuses)
+	Statuses       []VoucherStatus  // Filter by multiple statuses (e.g., CONFIRMED and ALLOCATED)
 	PaymentMethod  *PaymentMethod   // Filter by payment method
 	FromDate       *time.Time       // Filter by payment date range start
 	ToDate         *time.Time       // Filter by payment date range end

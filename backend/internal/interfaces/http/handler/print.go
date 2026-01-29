@@ -135,7 +135,8 @@ type PaperSizeResponse struct {
 // =============================================================================
 
 // GetTemplatesByDocType godoc
-// @ID           getPrintTemplateTemplatesByDocType
+//
+//	@ID				getPrintTemplateTemplatesByDocType
 //
 //	@Summary		Get templates by document type
 //	@Description	Retrieve all templates for a specific document type
@@ -143,9 +144,9 @@ type PaperSizeResponse struct {
 //	@Produce		json
 //	@Param			doc_type	path		string	true	"Document type"
 //	@Success		200			{object}	APIResponse[[]TemplateResponse]
-//	@Failure		400			{object}	ErrorResponse
-//	@Failure		401			{object}	ErrorResponse
-//	@Failure		500			{object}	ErrorResponse
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/templates/by-doc-type/{doc_type} [get]
 func (h *PrintHandler) GetTemplatesByDocType(c *gin.Context) {
@@ -169,7 +170,8 @@ func (h *PrintHandler) GetTemplatesByDocType(c *gin.Context) {
 // =============================================================================
 
 // PreviewDocument godoc
-// @ID           previewDocumentPrintPreview
+//
+//	@ID				previewDocumentPrintPreview
 //
 //	@Summary		Preview document as HTML
 //	@Description	Generate HTML preview for a document using a print template
@@ -178,11 +180,11 @@ func (h *PrintHandler) GetTemplatesByDocType(c *gin.Context) {
 //	@Produce		json
 //	@Param			request	body		PreviewDocumentRequest	true	"Preview request"
 //	@Success		200		{object}	APIResponse[PreviewHTTPResponse]
-//	@Failure		400		{object}	ErrorResponse
-//	@Failure		401		{object}	ErrorResponse
-//	@Failure		404		{object}	ErrorResponse
-//	@Failure		422		{object}	ErrorResponse
-//	@Failure		500		{object}	ErrorResponse
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		404		{object}	dto.ErrorResponse
+//	@Failure		422		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/preview [post]
 func (h *PrintHandler) PreviewDocument(c *gin.Context) {
@@ -229,7 +231,8 @@ func (h *PrintHandler) PreviewDocument(c *gin.Context) {
 }
 
 // GeneratePDF godoc
-// @ID           generatePDFPrintJob
+//
+//	@ID				generatePDFPrintJob
 //
 //	@Summary		Generate PDF
 //	@Description	Generate a PDF for a document and create a print job
@@ -238,11 +241,11 @@ func (h *PrintHandler) PreviewDocument(c *gin.Context) {
 //	@Produce		json
 //	@Param			request	body		GeneratePDFHTTPRequest	true	"PDF generation request"
 //	@Success		201		{object}	APIResponse[PrintJobResponse]
-//	@Failure		400		{object}	ErrorResponse
-//	@Failure		401		{object}	ErrorResponse
-//	@Failure		404		{object}	ErrorResponse
-//	@Failure		422		{object}	ErrorResponse
-//	@Failure		500		{object}	ErrorResponse
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		404		{object}	dto.ErrorResponse
+//	@Failure		422		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/generate [post]
 func (h *PrintHandler) GeneratePDF(c *gin.Context) {
@@ -301,7 +304,8 @@ func (h *PrintHandler) GeneratePDF(c *gin.Context) {
 // =============================================================================
 
 // GetJob godoc
-// @ID           getPrintJobJob
+//
+//	@ID				getPrintJobJob
 //
 //	@Summary		Get print job by ID
 //	@Description	Retrieve a print job by its ID
@@ -309,10 +313,10 @@ func (h *PrintHandler) GeneratePDF(c *gin.Context) {
 //	@Produce		json
 //	@Param			id	path		string	true	"Job ID"	format(uuid)
 //	@Success		200	{object}	APIResponse[PrintJobResponse]
-//	@Failure		400	{object}	ErrorResponse
-//	@Failure		401	{object}	ErrorResponse
-//	@Failure		404	{object}	ErrorResponse
-//	@Failure		500	{object}	ErrorResponse
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/jobs/{id} [get]
 func (h *PrintHandler) GetJob(c *gin.Context) {
@@ -338,7 +342,8 @@ func (h *PrintHandler) GetJob(c *gin.Context) {
 }
 
 // ListJobs godoc
-// @ID           listPrintJobJobs
+//
+//	@ID				listPrintJobJobs
 //
 //	@Summary		List print jobs
 //	@Description	Retrieve a paginated list of print jobs
@@ -351,9 +356,9 @@ func (h *PrintHandler) GetJob(c *gin.Context) {
 //	@Param			doc_type	query		string	false	"Filter by document type"
 //	@Param			status		query		string	false	"Filter by status"
 //	@Success		200			{object}	APIResponse[[]PrintJobResponse]
-//	@Failure		400			{object}	ErrorResponse
-//	@Failure		401			{object}	ErrorResponse
-//	@Failure		500			{object}	ErrorResponse
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/jobs [get]
 func (h *PrintHandler) ListJobs(c *gin.Context) {
@@ -392,7 +397,8 @@ func (h *PrintHandler) ListJobs(c *gin.Context) {
 }
 
 // GetJobsByDocument godoc
-// @ID           getPrintJobJobsByDocument
+//
+//	@ID				getPrintJobJobsByDocument
 //
 //	@Summary		Get jobs by document
 //	@Description	Retrieve print jobs for a specific document
@@ -401,9 +407,9 @@ func (h *PrintHandler) ListJobs(c *gin.Context) {
 //	@Param			doc_type	path		string	true	"Document type"
 //	@Param			document_id	path		string	true	"Document ID"	format(uuid)
 //	@Success		200			{object}	APIResponse[[]PrintJobResponse]
-//	@Failure		400			{object}	ErrorResponse
-//	@Failure		401			{object}	ErrorResponse
-//	@Failure		500			{object}	ErrorResponse
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/jobs/by-document/{doc_type}/{document_id} [get]
 func (h *PrintHandler) GetJobsByDocument(c *gin.Context) {
@@ -435,7 +441,8 @@ func (h *PrintHandler) GetJobsByDocument(c *gin.Context) {
 }
 
 // DownloadPDF godoc
-// @ID           downloadPDFPrintJob
+//
+//	@ID				downloadPDFPrintJob
 //
 //	@Summary		Download PDF
 //	@Description	Download the PDF file for a completed print job
@@ -443,10 +450,10 @@ func (h *PrintHandler) GetJobsByDocument(c *gin.Context) {
 //	@Produce		application/pdf
 //	@Param			id	path		string	true	"Job ID"	format(uuid)
 //	@Success		200	{file}		binary	"PDF file"
-//	@Failure		400	{object}	ErrorResponse
-//	@Failure		401	{object}	ErrorResponse
-//	@Failure		404	{object}	ErrorResponse
-//	@Failure		500	{object}	ErrorResponse
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/print/jobs/{id}/download [get]
 func (h *PrintHandler) DownloadPDF(c *gin.Context) {
@@ -493,7 +500,8 @@ func (h *PrintHandler) DownloadPDF(c *gin.Context) {
 // =============================================================================
 
 // GetDocumentTypes godoc
-// @ID           getPrintReferenceDocumentTypes
+//
+//	@ID				getPrintReferenceDocumentTypes
 //
 //	@Summary		Get available document types
 //	@Description	Retrieve all available document types that can be printed
@@ -508,7 +516,8 @@ func (h *PrintHandler) GetDocumentTypes(c *gin.Context) {
 }
 
 // GetPaperSizes godoc
-// @ID           getPrintReferencePaperSizes
+//
+//	@ID				getPrintReferencePaperSizes
 //
 //	@Summary		Get available paper sizes
 //	@Description	Retrieve all available paper sizes for printing
@@ -527,7 +536,8 @@ func (h *PrintHandler) GetPaperSizes(c *gin.Context) {
 // =============================================================================
 
 // ServePDF godoc
-// @ID           servePDFPrintFile
+//
+//	@ID				servePDFPrintFile
 //
 //	@Summary		Serve PDF file
 //	@Description	Serve a PDF file from storage
@@ -538,9 +548,9 @@ func (h *PrintHandler) GetPaperSizes(c *gin.Context) {
 //	@Param			month		path		string	true	"Month"
 //	@Param			filename	path		string	true	"Filename"
 //	@Success		200			{file}		binary	"PDF file"
-//	@Failure		400			{object}	ErrorResponse
-//	@Failure		404			{object}	ErrorResponse
-//	@Failure		500			{object}	ErrorResponse
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/prints/{tenant_id}/{year}/{month}/{filename} [get]
 func (h *PrintHandler) ServePDF(c *gin.Context, storage interface {

@@ -40270,3 +40270,57 @@ These issues are in the application layer (ATTACH-BE-005), not the HTTP handler 
 - ATTACH-TEST-001: Write ProductAttachmentUploader.test.tsx unit tests
 - ATTACH-SEC-001: Fix SVG XSS vulnerability (remove SVG from allowed types)
 - ATTACH-SEC-002: Remove StorageKey from API responses
+
+2025-01-29 - ATTACH-FE-002: Integrate attachment uploader into ProductForm
+
+=== Implementation Details ===
+
+Modified `frontend/src/features/catalog/ProductForm.tsx` to integrate the ProductAttachmentUploader component:
+
+1. **Import Addition**
+   - Added import for `ProductAttachmentUploader` from `./ProductAttachmentUploader`
+
+2. **Image Management FormSection**
+   - Added new FormSection after Stock Settings section
+   - Section only displays in edit mode (when productId is defined)
+   - Uses existing i18n translations for title/description from `attachments.title` and `attachments.description`
+   - Passes `disabled={isSubmitting}` prop to prevent uploads during form submission
+
+3. **Conditional Rendering Logic**
+   - Attachment uploader is hidden in create mode (no product ID exists yet)
+   - Only visible in edit mode when productId is truthy
+   - This matches the backend requirement that attachments must be associated with an existing product
+
+=== Key Design Decisions ===
+
+1. **Edit-mode only**: Attachments require a productId, so the uploader is only shown when editing an existing product. Users must first create the product, then can add images/files by editing.
+
+2. **Disabled during submit**: The uploader is disabled while the form is submitting to prevent concurrent operations.
+
+3. **Reused existing i18n**: The attachments section already has translations added in ATTACH-FE-001, so no new locale changes needed.
+
+=== Files Modified ===
+
+| File | Changes |
+|------|---------|
+| frontend/src/features/catalog/ProductForm.tsx | Added import + FormSection with ProductAttachmentUploader |
+
+=== Verification ===
+
+- TypeScript type checking: PASSED (npm run type-check)
+- ESLint: PASSED (auto-fixed formatting)
+- No console.log statements
+- No hardcoded values
+
+=== Requirements Checklist ===
+
+- [x] 修改 features/catalog/ProductForm.tsx
+- [x] 添加图片管理 FormSection
+- [x] 编辑模式下加载现有附件 (via useListProductAttachments in uploader)
+- [x] 添加国际化文案 (already added in ATTACH-FE-001)
+
+=== Next Steps ===
+
+- ATTACH-TEST-001: Write unit tests for ProductAttachmentUploader
+- ATTACH-INFRA-002: Implement real S3/RustFS ObjectStorageService
+- Consider adding a hint in create mode to inform users they can add images after saving

@@ -107,9 +107,9 @@ export function OverrideForm({
         Toast.success(t('featureFlags.overrides.createSuccess', 'Override created successfully'))
         onSuccess()
       } else {
+        const error = response.data.error as { message?: string } | undefined
         Toast.error(
-          response.data.error?.message ||
-            t('featureFlags.overrides.createError', 'Failed to create override')
+          error?.message || t('featureFlags.overrides.createError', 'Failed to create override')
         )
       }
     } catch {

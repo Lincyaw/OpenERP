@@ -19,6 +19,7 @@ import { Container } from '@/components/common/layout'
 import { createProduct, updateProduct } from '@/api/products/products'
 import { useListCategories } from '@/api/categories/categories'
 import type { HandlerProductResponse } from '@/api/models'
+import { ProductAttachmentUploader } from './ProductAttachmentUploader'
 import './ProductForm.css'
 
 const { Title } = Typography
@@ -193,7 +194,8 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
         sort_order: data.sort_order,
       })
       if (response.status !== 200 || !response.data.success) {
-        throw new Error(response.data.error?.message || t('products.messages.updateError'))
+        const error = response.data.error as { message?: string } | undefined
+        throw new Error(error?.message || t('products.messages.updateError'))
       }
     } else {
       // Create new product
@@ -210,7 +212,8 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
         sort_order: data.sort_order,
       })
       if (response.status !== 201 || !response.data.success) {
-        throw new Error(response.data.error?.message || t('products.messages.createError'))
+        const error = response.data.error as { message?: string } | undefined
+        throw new Error(error?.message || t('products.messages.createError'))
       }
     }
   }
@@ -350,6 +353,13 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
               />
             </FormRow>
           </FormSection>
+
+          {/* Image management section - only shown in edit mode */}
+          {isEditMode && productId && (
+            <FormSection title={t('attachments.title')} description={t('attachments.description')}>
+              <ProductAttachmentUploader productId={productId} disabled={isSubmitting} />
+            </FormSection>
+          )}
 
           <FormActions
             submitText={isEditMode ? t('common:actions.save') : t('common:actions.create')}

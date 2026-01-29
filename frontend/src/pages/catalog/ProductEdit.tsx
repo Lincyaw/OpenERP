@@ -35,7 +35,8 @@ export default function ProductEditPage() {
         if (response.status === 200 && response.data.success && response.data.data) {
           setProduct(response.data.data)
         } else {
-          Toast.error(response.data.error?.message || t('products.messages.loadError'))
+          const error = response.data.error as { message?: string } | undefined
+          Toast.error(error?.message || t('products.messages.loadError'))
           navigate('/catalog/products')
         }
       } catch {

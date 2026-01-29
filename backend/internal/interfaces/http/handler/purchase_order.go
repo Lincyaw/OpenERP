@@ -25,7 +25,8 @@ func NewPurchaseOrderHandler(orderService *tradeapp.PurchaseOrderService) *Purch
 }
 
 // CreatePurchaseOrderRequest represents a request to create a new purchase order
-// @Description Request body for creating a new purchase order
+//
+//	@Description	Request body for creating a new purchase order
 type CreatePurchaseOrderRequest struct {
 	SupplierID   string                         `json:"supplier_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
 	SupplierName string                         `json:"supplier_name" binding:"required,min=1,max=200" example:"供应商A"`
@@ -36,7 +37,8 @@ type CreatePurchaseOrderRequest struct {
 }
 
 // CreatePurchaseOrderItemInput represents an item in the create order request
-// @Description Purchase order item for creation
+//
+//	@Description	Purchase order item for creation
 type CreatePurchaseOrderItemInput struct {
 	ProductID      string  `json:"product_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440002"`
 	ProductName    string  `json:"product_name" binding:"required,min=1,max=200" example:"测试商品"`
@@ -50,7 +52,8 @@ type CreatePurchaseOrderItemInput struct {
 }
 
 // UpdatePurchaseOrderRequest represents a request to update a purchase order
-// @Description Request body for updating a purchase order (draft only)
+//
+//	@Description	Request body for updating a purchase order (draft only)
 type UpdatePurchaseOrderRequest struct {
 	WarehouseID *string  `json:"warehouse_id" example:"550e8400-e29b-41d4-a716-446655440001"`
 	Discount    *float64 `json:"discount" example:"50.00"`
@@ -58,7 +61,8 @@ type UpdatePurchaseOrderRequest struct {
 }
 
 // AddPurchaseOrderItemRequest represents a request to add an item to an order
-// @Description Request body for adding an item to a purchase order
+//
+//	@Description	Request body for adding an item to a purchase order
 type AddPurchaseOrderItemRequest struct {
 	ProductID      string  `json:"product_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440002"`
 	ProductName    string  `json:"product_name" binding:"required,min=1,max=200" example:"测试商品"`
@@ -72,7 +76,8 @@ type AddPurchaseOrderItemRequest struct {
 }
 
 // UpdatePurchaseOrderItemRequest represents a request to update an order item
-// @Description Request body for updating a purchase order item
+//
+//	@Description	Request body for updating a purchase order item
 type UpdatePurchaseOrderItemRequest struct {
 	Quantity *float64 `json:"quantity" example:"8"`
 	UnitCost *float64 `json:"unit_cost" example:"55.00"`
@@ -80,13 +85,15 @@ type UpdatePurchaseOrderItemRequest struct {
 }
 
 // ConfirmPurchaseOrderRequest represents a request to confirm an order
-// @Description Request body for confirming a purchase order
+//
+//	@Description	Request body for confirming a purchase order
 type ConfirmPurchaseOrderRequest struct {
 	WarehouseID *string `json:"warehouse_id" example:"550e8400-e29b-41d4-a716-446655440001"`
 }
 
 // ReceiveItemInput represents an item to receive
-// @Description Item to receive in a purchase order
+//
+//	@Description	Item to receive in a purchase order
 type ReceiveItemInput struct {
 	ProductID   string     `json:"product_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440002"`
 	Quantity    float64    `json:"quantity" binding:"required,gt=0" example:"5"`
@@ -96,20 +103,23 @@ type ReceiveItemInput struct {
 }
 
 // ReceivePurchaseOrderRequest represents a request to receive goods
-// @Description Request body for receiving goods in a purchase order
+//
+//	@Description	Request body for receiving goods in a purchase order
 type ReceivePurchaseOrderRequest struct {
 	WarehouseID *string            `json:"warehouse_id" example:"550e8400-e29b-41d4-a716-446655440001"`
 	Items       []ReceiveItemInput `json:"items" binding:"required,min=1"`
 }
 
 // CancelPurchaseOrderRequest represents a request to cancel an order
-// @Description Request body for cancelling a purchase order
+//
+//	@Description	Request body for cancelling a purchase order
 type CancelPurchaseOrderRequest struct {
 	Reason string `json:"reason" binding:"required,min=1,max=500" example:"供应商无法供货"`
 }
 
 // PurchaseOrderResponse represents a purchase order in API responses
-// @Description Purchase order response
+//
+//	@Description	Purchase order response
 type PurchaseOrderResponse struct {
 	ID               string                      `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
 	TenantID         string                      `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440000"`
@@ -137,7 +147,8 @@ type PurchaseOrderResponse struct {
 }
 
 // PurchaseOrderListResponse represents a purchase order in list responses
-// @Description Purchase order list item response
+//
+//	@Description	Purchase order list item response
 type PurchaseOrderListResponse struct {
 	ID              string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
 	OrderNumber     string     `json:"order_number" example:"PO-2026-00001"`
@@ -156,7 +167,8 @@ type PurchaseOrderListResponse struct {
 }
 
 // PurchaseOrderItemResponse represents an order item in API responses
-// @Description Purchase order item response
+//
+//	@Description	Purchase order item response
 type PurchaseOrderItemResponse struct {
 	ID                string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440020"`
 	ProductID         string    `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440002"`
@@ -174,7 +186,8 @@ type PurchaseOrderItemResponse struct {
 }
 
 // ReceivedItemResponse represents received item info in responses
-// @Description Received item info response
+//
+//	@Description	Received item info response
 type ReceivedItemResponse struct {
 	ItemID      string     `json:"item_id" example:"550e8400-e29b-41d4-a716-446655440020"`
 	ProductID   string     `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440002"`
@@ -188,7 +201,8 @@ type ReceivedItemResponse struct {
 }
 
 // ReceiveResultResponse represents the result of a receive operation
-// @Description Receive operation result response
+//
+//	@Description	Receive operation result response
 type ReceiveResultResponse struct {
 	Order           PurchaseOrderResponse  `json:"order"`
 	ReceivedItems   []ReceivedItemResponse `json:"received_items"`
@@ -196,7 +210,8 @@ type ReceiveResultResponse struct {
 }
 
 // PurchaseOrderStatusSummaryResponse represents order count summary by status
-// @Description Purchase order status summary response
+//
+//	@Description	Purchase order status summary response
 type PurchaseOrderStatusSummaryResponse struct {
 	Draft           int64 `json:"draft" example:"5"`
 	Confirmed       int64 `json:"confirmed" example:"10"`
@@ -208,20 +223,21 @@ type PurchaseOrderStatusSummaryResponse struct {
 }
 
 // Create godoc
-// @ID           createPurchaseOrder
-// @Summary      Create a new purchase order
-// @Description  Create a new purchase order with optional items
-// @Tags         purchase-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body CreatePurchaseOrderRequest true "Purchase order creation request"
-// @Success      201 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders [post]
+//
+//	@ID				createPurchaseOrder
+//	@Summary		Create a new purchase order
+//	@Description	Create a new purchase order with optional items
+//	@Tags			purchase-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			request		body		CreatePurchaseOrderRequest	true	"Purchase order creation request"
+//	@Success		201			{object}	APIResponse[PurchaseOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders [post]
 func (h *PurchaseOrderHandler) Create(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -313,20 +329,21 @@ func (h *PurchaseOrderHandler) Create(c *gin.Context) {
 }
 
 // GetByID godoc
-// @ID           getPurchaseOrderById
-// @Summary      Get purchase order by ID
-// @Description  Retrieve a purchase order by its ID
-// @Tags         purchase-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Purchase Order ID" format(uuid)
-// @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders/{id} [get]
+//
+//	@ID				getPurchaseOrderById
+//	@Summary		Get purchase order by ID
+//	@Description	Retrieve a purchase order by its ID
+//	@Tags			purchase-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Purchase Order ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[PurchaseOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders/{id} [get]
 func (h *PurchaseOrderHandler) GetByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -350,20 +367,21 @@ func (h *PurchaseOrderHandler) GetByID(c *gin.Context) {
 }
 
 // GetByOrderNumber godoc
-// @ID           getPurchaseOrderByOrderNumber
-// @Summary      Get purchase order by order number
-// @Description  Retrieve a purchase order by its order number
-// @Tags         purchase-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        order_number path string true "Order Number" example:"PO-2026-00001"
-// @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders/number/{order_number} [get]
+//
+//	@ID				getPurchaseOrderByOrderNumber
+//	@Summary		Get purchase order by order number
+//	@Description	Retrieve a purchase order by its order number
+//	@Tags			purchase-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string	false	"Tenant ID (optional for dev)"
+//	@Param			order_number	path		string	true	"Order Number"	example:"PO-2026-00001"
+//	@Success		200				{object}	APIResponse[PurchaseOrderResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		401				{object}	dto.ErrorResponse
+//	@Failure		404				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders/number/{order_number} [get]
 func (h *PurchaseOrderHandler) GetByOrderNumber(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -387,31 +405,32 @@ func (h *PurchaseOrderHandler) GetByOrderNumber(c *gin.Context) {
 }
 
 // List godoc
-// @ID           listPurchaseOrders
-// @Summary      List purchase orders
-// @Description  Retrieve a paginated list of purchase orders with optional filtering
-// @Tags         purchase-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        search query string false "Search term (order number, supplier name)"
-// @Param        supplier_id query string false "Supplier ID" format(uuid)
-// @Param        warehouse_id query string false "Warehouse ID" format(uuid)
-// @Param        status query string false "Order status" Enums(draft, confirmed, partial_received, completed, cancelled)
-// @Param        statuses query []string false "Multiple order statuses"
-// @Param        start_date query string false "Start date (ISO 8601)" format(date-time)
-// @Param        end_date query string false "End date (ISO 8601)" format(date-time)
-// @Param        min_amount query number false "Minimum payable amount"
-// @Param        max_amount query number false "Maximum payable amount"
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Param        order_by query string false "Order by field" default(created_at)
-// @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
-// @Success      200 {object} APIResponse[[]PurchaseOrderListResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders [get]
+//
+//	@ID				listPurchaseOrders
+//	@Summary		List purchase orders
+//	@Description	Retrieve a paginated list of purchase orders with optional filtering
+//	@Tags			purchase-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string		false	"Tenant ID (optional for dev)"
+//	@Param			search			query		string		false	"Search term (order number, supplier name)"
+//	@Param			supplier_id		query		string		false	"Supplier ID"	format(uuid)
+//	@Param			warehouse_id	query		string		false	"Warehouse ID"	format(uuid)
+//	@Param			status			query		string		false	"Order status"	Enums(draft, confirmed, partial_received, completed, cancelled)
+//	@Param			statuses		query		[]string	false	"Multiple order statuses"
+//	@Param			start_date		query		string		false	"Start date (ISO 8601)"	format(date-time)
+//	@Param			end_date		query		string		false	"End date (ISO 8601)"	format(date-time)
+//	@Param			min_amount		query		number		false	"Minimum payable amount"
+//	@Param			max_amount		query		number		false	"Maximum payable amount"
+//	@Param			page			query		int			false	"Page number"		default(1)
+//	@Param			page_size		query		int			false	"Page size"			default(20)	maximum(100)
+//	@Param			order_by		query		string		false	"Order by field"	default(created_at)
+//	@Param			order_dir		query		string		false	"Order direction"	Enums(asc, desc)	default(desc)
+//	@Success		200				{object}	APIResponse[[]PurchaseOrderListResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		401				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders [get]
 func (h *PurchaseOrderHandler) List(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -443,23 +462,24 @@ func (h *PurchaseOrderHandler) List(c *gin.Context) {
 }
 
 // ListPendingReceipt godoc
-// @ID           listPurchaseOrderPendingReceipt
-// @Summary      List purchase orders pending receipt
-// @Description  Retrieve purchase orders that are waiting to receive goods (CONFIRMED or PARTIAL_RECEIVED)
-// @Tags         purchase-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        search query string false "Search term"
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Param        order_by query string false "Order by field" default(created_at)
-// @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
-// @Success      200 {object} APIResponse[[]PurchaseOrderListResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders/pending-receipt [get]
+//
+//	@ID				listPurchaseOrderPendingReceipt
+//	@Summary		List purchase orders pending receipt
+//	@Description	Retrieve purchase orders that are waiting to receive goods (CONFIRMED or PARTIAL_RECEIVED)
+//	@Tags			purchase-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			search		query		string	false	"Search term"
+//	@Param			page		query		int		false	"Page number"		default(1)
+//	@Param			page_size	query		int		false	"Page size"			default(20)	maximum(100)
+//	@Param			order_by	query		string	false	"Order by field"	default(created_at)
+//	@Param			order_dir	query		string	false	"Order direction"	Enums(asc, desc)	default(desc)
+//	@Success		200			{object}	APIResponse[[]PurchaseOrderListResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders/pending-receipt [get]
 func (h *PurchaseOrderHandler) ListPendingReceipt(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -491,23 +511,24 @@ func (h *PurchaseOrderHandler) ListPendingReceipt(c *gin.Context) {
 }
 
 // Update godoc
-// @ID           updatePurchaseOrder
-// @Summary      Update a purchase order
-// @Description  Update a purchase order (only allowed in DRAFT status)
-// @Tags         purchase-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Purchase Order ID" format(uuid)
-// @Param        request body UpdatePurchaseOrderRequest true "Purchase order update request"
-// @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders/{id} [put]
+//
+//	@ID				updatePurchaseOrder
+//	@Summary		Update a purchase order
+//	@Description	Update a purchase order (only allowed in DRAFT status)
+//	@Tags			purchase-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Purchase Order ID"	format(uuid)
+//	@Param			request		body		UpdatePurchaseOrderRequest	true	"Purchase order update request"
+//	@Success		200			{object}	APIResponse[PurchaseOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders/{id} [put]
 func (h *PurchaseOrderHandler) Update(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -564,21 +585,22 @@ func (h *PurchaseOrderHandler) Update(c *gin.Context) {
 }
 
 // Delete godoc
-// @ID           deletePurchaseOrder
-// @Summary      Delete a purchase order
-// @Description  Delete a purchase order (only allowed in DRAFT status)
-// @Tags         purchase-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Purchase Order ID" format(uuid)
-// @Success      204
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders/{id} [delete]
+//
+//	@ID				deletePurchaseOrder
+//	@Summary		Delete a purchase order
+//	@Description	Delete a purchase order (only allowed in DRAFT status)
+//	@Tags			purchase-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID	header	string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path	string	true	"Purchase Order ID"	format(uuid)
+//	@Success		204
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		422	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders/{id} [delete]
 func (h *PurchaseOrderHandler) Delete(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -602,23 +624,24 @@ func (h *PurchaseOrderHandler) Delete(c *gin.Context) {
 }
 
 // AddItem godoc
-// @ID           addPurchaseOrderItem
-// @Summary      Add item to purchase order
-// @Description  Add a new item to a purchase order (only allowed in DRAFT status)
-// @Tags         purchase-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Purchase Order ID" format(uuid)
-// @Param        request body AddPurchaseOrderItemRequest true "Order item to add"
-// @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders/{id}/items [post]
+//
+//	@ID				addPurchaseOrderItem
+//	@Summary		Add item to purchase order
+//	@Description	Add a new item to a purchase order (only allowed in DRAFT status)
+//	@Tags			purchase-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Purchase Order ID"	format(uuid)
+//	@Param			request		body		AddPurchaseOrderItemRequest	true	"Order item to add"
+//	@Success		200			{object}	APIResponse[PurchaseOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders/{id}/items [post]
 func (h *PurchaseOrderHandler) AddItem(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -676,24 +699,25 @@ func (h *PurchaseOrderHandler) AddItem(c *gin.Context) {
 }
 
 // UpdateItem godoc
-// @ID           updatePurchaseOrderItem
-// @Summary      Update order item
-// @Description  Update an item in a purchase order (only allowed in DRAFT status)
-// @Tags         purchase-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Purchase Order ID" format(uuid)
-// @Param        item_id path string true "Order Item ID" format(uuid)
-// @Param        request body UpdatePurchaseOrderItemRequest true "Order item update request"
-// @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders/{id}/items/{item_id} [put]
+//
+//	@ID				updatePurchaseOrderItem
+//	@Summary		Update order item
+//	@Description	Update an item in a purchase order (only allowed in DRAFT status)
+//	@Tags			purchase-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string							false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string							true	"Purchase Order ID"	format(uuid)
+//	@Param			item_id		path		string							true	"Order Item ID"		format(uuid)
+//	@Param			request		body		UpdatePurchaseOrderItemRequest	true	"Order item update request"
+//	@Success		200			{object}	APIResponse[PurchaseOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders/{id}/items/{item_id} [put]
 func (h *PurchaseOrderHandler) UpdateItem(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -743,22 +767,23 @@ func (h *PurchaseOrderHandler) UpdateItem(c *gin.Context) {
 }
 
 // RemoveItem godoc
-// @ID           removePurchaseOrderItem
-// @Summary      Remove item from purchase order
-// @Description  Remove an item from a purchase order (only allowed in DRAFT status)
-// @Tags         purchase-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Purchase Order ID" format(uuid)
-// @Param        item_id path string true "Order Item ID" format(uuid)
-// @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders/{id}/items/{item_id} [delete]
+//
+//	@ID				removePurchaseOrderItem
+//	@Summary		Remove item from purchase order
+//	@Description	Remove an item from a purchase order (only allowed in DRAFT status)
+//	@Tags			purchase-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Purchase Order ID"	format(uuid)
+//	@Param			item_id		path		string	true	"Order Item ID"		format(uuid)
+//	@Success		200			{object}	APIResponse[PurchaseOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders/{id}/items/{item_id} [delete]
 func (h *PurchaseOrderHandler) RemoveItem(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -788,23 +813,24 @@ func (h *PurchaseOrderHandler) RemoveItem(c *gin.Context) {
 }
 
 // Confirm godoc
-// @ID           confirmPurchaseOrder
-// @Summary      Confirm a purchase order
-// @Description  Confirm a purchase order (transitions from DRAFT to CONFIRMED)
-// @Tags         purchase-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Purchase Order ID" format(uuid)
-// @Param        request body ConfirmPurchaseOrderRequest false "Confirm order request"
-// @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders/{id}/confirm [post]
+//
+//	@ID				confirmPurchaseOrder
+//	@Summary		Confirm a purchase order
+//	@Description	Confirm a purchase order (transitions from DRAFT to CONFIRMED)
+//	@Tags			purchase-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Purchase Order ID"	format(uuid)
+//	@Param			request		body		ConfirmPurchaseOrderRequest	false	"Confirm order request"
+//	@Success		200			{object}	APIResponse[PurchaseOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders/{id}/confirm [post]
 func (h *PurchaseOrderHandler) Confirm(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -843,23 +869,24 @@ func (h *PurchaseOrderHandler) Confirm(c *gin.Context) {
 }
 
 // Receive godoc
-// @ID           receivePurchaseOrder
-// @Summary      Receive goods for a purchase order
-// @Description  Process receipt of goods for a purchase order (supports partial receipt)
-// @Tags         purchase-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Purchase Order ID" format(uuid)
-// @Param        request body ReceivePurchaseOrderRequest true "Receive goods request"
-// @Success      200 {object} APIResponse[ReceiveResultResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders/{id}/receive [post]
+//
+//	@ID				receivePurchaseOrder
+//	@Summary		Receive goods for a purchase order
+//	@Description	Process receipt of goods for a purchase order (supports partial receipt)
+//	@Tags			purchase-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Purchase Order ID"	format(uuid)
+//	@Param			request		body		ReceivePurchaseOrderRequest	true	"Receive goods request"
+//	@Success		200			{object}	APIResponse[ReceiveResultResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders/{id}/receive [post]
 func (h *PurchaseOrderHandler) Receive(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -921,23 +948,24 @@ func (h *PurchaseOrderHandler) Receive(c *gin.Context) {
 }
 
 // Cancel godoc
-// @ID           cancelPurchaseOrder
-// @Summary      Cancel a purchase order
-// @Description  Cancel a purchase order (only from DRAFT or CONFIRMED status)
-// @Tags         purchase-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Purchase Order ID" format(uuid)
-// @Param        request body CancelPurchaseOrderRequest true "Cancel order request"
-// @Success      200 {object} APIResponse[PurchaseOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders/{id}/cancel [post]
+//
+//	@ID				cancelPurchaseOrder
+//	@Summary		Cancel a purchase order
+//	@Description	Cancel a purchase order (only from DRAFT or CONFIRMED status)
+//	@Tags			purchase-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string						true	"Purchase Order ID"	format(uuid)
+//	@Param			request		body		CancelPurchaseOrderRequest	true	"Cancel order request"
+//	@Success		200			{object}	APIResponse[PurchaseOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders/{id}/cancel [post]
 func (h *PurchaseOrderHandler) Cancel(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -971,18 +999,19 @@ func (h *PurchaseOrderHandler) Cancel(c *gin.Context) {
 }
 
 // GetStatusSummary godoc
-// @ID           getPurchaseOrderStatusSummary
-// @Summary      Get purchase order status summary
-// @Description  Get count of purchase orders by status for dashboard
-// @Tags         purchase-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} APIResponse[PurchaseOrderStatusSummaryResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders/stats/summary [get]
+//
+//	@ID				getPurchaseOrderStatusSummary
+//	@Summary		Get purchase order status summary
+//	@Description	Get count of purchase orders by status for dashboard
+//	@Tags			purchase-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Success		200			{object}	APIResponse[PurchaseOrderStatusSummaryResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders/stats/summary [get]
 func (h *PurchaseOrderHandler) GetStatusSummary(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -1008,21 +1037,22 @@ func (h *PurchaseOrderHandler) GetStatusSummary(c *gin.Context) {
 }
 
 // GetReceivableItems godoc
-// @ID           getPurchaseOrderReceivableItems
-// @Summary      Get receivable items for a purchase order
-// @Description  Get items that can still receive goods for a purchase order
-// @Tags         purchase-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Purchase Order ID" format(uuid)
-// @Success      200 {object} APIResponse[[]PurchaseOrderItemResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/purchase-orders/{id}/receivable-items [get]
+//
+//	@ID				getPurchaseOrderReceivableItems
+//	@Summary		Get receivable items for a purchase order
+//	@Description	Get items that can still receive goods for a purchase order
+//	@Tags			purchase-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Purchase Order ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[[]PurchaseOrderItemResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/purchase-orders/{id}/receivable-items [get]
 func (h *PurchaseOrderHandler) GetReceivableItems(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {

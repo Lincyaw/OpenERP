@@ -24,11 +24,11 @@ import type {
   CreateProductBody,
   DeactivateProductBody,
   DiscontinueProductBody,
+  DtoErrorResponse,
   GetProductByCategoryParams,
   HandlerAPIResponseArrayHandlerProductListResponse,
   HandlerAPIResponseHandlerCountByStatusResponse,
   HandlerAPIResponseHandlerProductResponse,
-  HandlerErrorResponse,
   ListProductsParams,
   UpdateProductBody,
   UpdateProductCodeBody,
@@ -48,22 +48,22 @@ export type getProductByCategoryResponse200 = {
 }
 
 export type getProductByCategoryResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getProductByCategoryResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getProductByCategoryResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type getProductByCategoryResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -125,7 +125,7 @@ export const getGetProductByCategoryQueryKey = (
 
 export const getGetProductByCategoryQueryOptions = <
   TData = Awaited<ReturnType<typeof getProductByCategory>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   categoryId: string,
   params?: GetProductByCategoryParams,
@@ -153,11 +153,11 @@ export const getGetProductByCategoryQueryOptions = <
 export type GetProductByCategoryQueryResult = NonNullable<
   Awaited<ReturnType<typeof getProductByCategory>>
 >
-export type GetProductByCategoryQueryError = HandlerErrorResponse
+export type GetProductByCategoryQueryError = DtoErrorResponse
 
 export function useGetProductByCategory<
   TData = Awaited<ReturnType<typeof getProductByCategory>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   categoryId: string,
   params: undefined | GetProductByCategoryParams,
@@ -179,7 +179,7 @@ export function useGetProductByCategory<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetProductByCategory<
   TData = Awaited<ReturnType<typeof getProductByCategory>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   categoryId: string,
   params?: GetProductByCategoryParams,
@@ -201,7 +201,7 @@ export function useGetProductByCategory<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetProductByCategory<
   TData = Awaited<ReturnType<typeof getProductByCategory>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   categoryId: string,
   params?: GetProductByCategoryParams,
@@ -219,7 +219,7 @@ export function useGetProductByCategory<
 
 export function useGetProductByCategory<
   TData = Awaited<ReturnType<typeof getProductByCategory>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   categoryId: string,
   params?: GetProductByCategoryParams,
@@ -250,17 +250,17 @@ export type listProductsResponse200 = {
 }
 
 export type listProductsResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type listProductsResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type listProductsResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -309,7 +309,7 @@ export const getListProductsQueryKey = (params?: ListProductsParams) => {
 
 export const getListProductsQueryOptions = <
   TData = Awaited<ReturnType<typeof listProducts>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListProductsParams,
   options?: {
@@ -332,11 +332,11 @@ export const getListProductsQueryOptions = <
 }
 
 export type ListProductsQueryResult = NonNullable<Awaited<ReturnType<typeof listProducts>>>
-export type ListProductsQueryError = HandlerErrorResponse
+export type ListProductsQueryError = DtoErrorResponse
 
 export function useListProducts<
   TData = Awaited<ReturnType<typeof listProducts>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params: undefined | ListProductsParams,
   options: {
@@ -355,7 +355,7 @@ export function useListProducts<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListProducts<
   TData = Awaited<ReturnType<typeof listProducts>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListProductsParams,
   options?: {
@@ -374,7 +374,7 @@ export function useListProducts<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListProducts<
   TData = Awaited<ReturnType<typeof listProducts>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListProductsParams,
   options?: {
@@ -389,7 +389,7 @@ export function useListProducts<
 
 export function useListProducts<
   TData = Awaited<ReturnType<typeof listProducts>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListProductsParams,
   options?: {
@@ -417,22 +417,22 @@ export type createProductResponse201 = {
 }
 
 export type createProductResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type createProductResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type createProductResponse409 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 409
 }
 
 export type createProductResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -467,7 +467,7 @@ export const createProduct = async (
 }
 
 export const getCreateProductMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -504,12 +504,12 @@ export const getCreateProductMutationOptions = <
 
 export type CreateProductMutationResult = NonNullable<Awaited<ReturnType<typeof createProduct>>>
 export type CreateProductMutationBody = CreateProductBody
-export type CreateProductMutationError = HandlerErrorResponse
+export type CreateProductMutationError = DtoErrorResponse
 
 /**
  * @summary Create a new product
  */
-export const useCreateProduct = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useCreateProduct = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof createProduct>>,
@@ -538,22 +538,22 @@ export type deleteProductResponse204 = {
 }
 
 export type deleteProductResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type deleteProductResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type deleteProductResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type deleteProductResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -586,7 +586,7 @@ export const deleteProduct = async (
 }
 
 export const getDeleteProductMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -622,12 +622,12 @@ export const getDeleteProductMutationOptions = <
 
 export type DeleteProductMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProduct>>>
 
-export type DeleteProductMutationError = HandlerErrorResponse
+export type DeleteProductMutationError = DtoErrorResponse
 
 /**
  * @summary Delete a product
  */
-export const useDeleteProduct = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useDeleteProduct = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof deleteProduct>>,
@@ -656,22 +656,22 @@ export type getProductByIdResponse200 = {
 }
 
 export type getProductByIdResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getProductByIdResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getProductByIdResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type getProductByIdResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -709,7 +709,7 @@ export const getGetProductByIdQueryKey = (id: string) => {
 
 export const getGetProductByIdQueryOptions = <
   TData = Awaited<ReturnType<typeof getProductById>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -732,11 +732,11 @@ export const getGetProductByIdQueryOptions = <
 }
 
 export type GetProductByIdQueryResult = NonNullable<Awaited<ReturnType<typeof getProductById>>>
-export type GetProductByIdQueryError = HandlerErrorResponse
+export type GetProductByIdQueryError = DtoErrorResponse
 
 export function useGetProductById<
   TData = Awaited<ReturnType<typeof getProductById>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options: {
@@ -755,7 +755,7 @@ export function useGetProductById<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetProductById<
   TData = Awaited<ReturnType<typeof getProductById>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -774,7 +774,7 @@ export function useGetProductById<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetProductById<
   TData = Awaited<ReturnType<typeof getProductById>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -789,7 +789,7 @@ export function useGetProductById<
 
 export function useGetProductById<
   TData = Awaited<ReturnType<typeof getProductById>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -817,27 +817,27 @@ export type updateProductResponse200 = {
 }
 
 export type updateProductResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type updateProductResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type updateProductResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type updateProductResponse409 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 409
 }
 
 export type updateProductResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -874,7 +874,7 @@ export const updateProduct = async (
 }
 
 export const getUpdateProductMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -911,12 +911,12 @@ export const getUpdateProductMutationOptions = <
 
 export type UpdateProductMutationResult = NonNullable<Awaited<ReturnType<typeof updateProduct>>>
 export type UpdateProductMutationBody = UpdateProductBody
-export type UpdateProductMutationError = HandlerErrorResponse
+export type UpdateProductMutationError = DtoErrorResponse
 
 /**
  * @summary Update a product
  */
-export const useUpdateProduct = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useUpdateProduct = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateProduct>>,
@@ -945,27 +945,27 @@ export type activateProductResponse200 = {
 }
 
 export type activateProductResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type activateProductResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type activateProductResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type activateProductResponse422 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 422
 }
 
 export type activateProductResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1002,7 +1002,7 @@ export const activateProduct = async (
 }
 
 export const getActivateProductMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1039,12 +1039,12 @@ export const getActivateProductMutationOptions = <
 
 export type ActivateProductMutationResult = NonNullable<Awaited<ReturnType<typeof activateProduct>>>
 export type ActivateProductMutationBody = ActivateProductBody
-export type ActivateProductMutationError = HandlerErrorResponse
+export type ActivateProductMutationError = DtoErrorResponse
 
 /**
  * @summary Activate a product
  */
-export const useActivateProduct = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useActivateProduct = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof activateProduct>>,
@@ -1073,27 +1073,27 @@ export type updateProductCodeResponse200 = {
 }
 
 export type updateProductCodeResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type updateProductCodeResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type updateProductCodeResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type updateProductCodeResponse409 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 409
 }
 
 export type updateProductCodeResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1132,7 +1132,7 @@ export const updateProductCode = async (
 }
 
 export const getUpdateProductCodeMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1171,12 +1171,12 @@ export type UpdateProductCodeMutationResult = NonNullable<
   Awaited<ReturnType<typeof updateProductCode>>
 >
 export type UpdateProductCodeMutationBody = UpdateProductCodeBody
-export type UpdateProductCodeMutationError = HandlerErrorResponse
+export type UpdateProductCodeMutationError = DtoErrorResponse
 
 /**
  * @summary Update product code
  */
-export const useUpdateProductCode = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useUpdateProductCode = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateProductCode>>,
@@ -1205,27 +1205,27 @@ export type deactivateProductResponse200 = {
 }
 
 export type deactivateProductResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type deactivateProductResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type deactivateProductResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type deactivateProductResponse422 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 422
 }
 
 export type deactivateProductResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1264,7 +1264,7 @@ export const deactivateProduct = async (
 }
 
 export const getDeactivateProductMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1303,12 +1303,12 @@ export type DeactivateProductMutationResult = NonNullable<
   Awaited<ReturnType<typeof deactivateProduct>>
 >
 export type DeactivateProductMutationBody = DeactivateProductBody
-export type DeactivateProductMutationError = HandlerErrorResponse
+export type DeactivateProductMutationError = DtoErrorResponse
 
 /**
  * @summary Deactivate a product
  */
-export const useDeactivateProduct = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useDeactivateProduct = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof deactivateProduct>>,
@@ -1337,27 +1337,27 @@ export type discontinueProductResponse200 = {
 }
 
 export type discontinueProductResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type discontinueProductResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type discontinueProductResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type discontinueProductResponse422 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 422
 }
 
 export type discontinueProductResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1396,7 +1396,7 @@ export const discontinueProduct = async (
 }
 
 export const getDiscontinueProductMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1435,12 +1435,12 @@ export type DiscontinueProductMutationResult = NonNullable<
   Awaited<ReturnType<typeof discontinueProduct>>
 >
 export type DiscontinueProductMutationBody = DiscontinueProductBody
-export type DiscontinueProductMutationError = HandlerErrorResponse
+export type DiscontinueProductMutationError = DtoErrorResponse
 
 /**
  * @summary Discontinue a product
  */
-export const useDiscontinueProduct = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useDiscontinueProduct = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof discontinueProduct>>,
@@ -1469,22 +1469,22 @@ export type getProductByCodeResponse200 = {
 }
 
 export type getProductByCodeResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getProductByCodeResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getProductByCodeResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type getProductByCodeResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1524,7 +1524,7 @@ export const getGetProductByCodeQueryKey = (code: string) => {
 
 export const getGetProductByCodeQueryOptions = <
   TData = Awaited<ReturnType<typeof getProductByCode>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   code: string,
   options?: {
@@ -1547,11 +1547,11 @@ export const getGetProductByCodeQueryOptions = <
 }
 
 export type GetProductByCodeQueryResult = NonNullable<Awaited<ReturnType<typeof getProductByCode>>>
-export type GetProductByCodeQueryError = HandlerErrorResponse
+export type GetProductByCodeQueryError = DtoErrorResponse
 
 export function useGetProductByCode<
   TData = Awaited<ReturnType<typeof getProductByCode>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   code: string,
   options: {
@@ -1570,7 +1570,7 @@ export function useGetProductByCode<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetProductByCode<
   TData = Awaited<ReturnType<typeof getProductByCode>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   code: string,
   options?: {
@@ -1589,7 +1589,7 @@ export function useGetProductByCode<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetProductByCode<
   TData = Awaited<ReturnType<typeof getProductByCode>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   code: string,
   options?: {
@@ -1604,7 +1604,7 @@ export function useGetProductByCode<
 
 export function useGetProductByCode<
   TData = Awaited<ReturnType<typeof getProductByCode>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   code: string,
   options?: {
@@ -1632,17 +1632,17 @@ export type countProductByStatusResponse200 = {
 }
 
 export type countProductByStatusResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type countProductByStatusResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type countProductByStatusResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1680,7 +1680,7 @@ export const getCountProductByStatusQueryKey = () => {
 
 export const getCountProductByStatusQueryOptions = <
   TData = Awaited<ReturnType<typeof countProductByStatus>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(options?: {
   query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof countProductByStatus>>, TError, TData>>
   request?: SecondParameter<typeof customInstance>
@@ -1702,11 +1702,11 @@ export const getCountProductByStatusQueryOptions = <
 export type CountProductByStatusQueryResult = NonNullable<
   Awaited<ReturnType<typeof countProductByStatus>>
 >
-export type CountProductByStatusQueryError = HandlerErrorResponse
+export type CountProductByStatusQueryError = DtoErrorResponse
 
 export function useCountProductByStatus<
   TData = Awaited<ReturnType<typeof countProductByStatus>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options: {
     query: Partial<
@@ -1726,7 +1726,7 @@ export function useCountProductByStatus<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useCountProductByStatus<
   TData = Awaited<ReturnType<typeof countProductByStatus>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options?: {
     query?: Partial<
@@ -1746,7 +1746,7 @@ export function useCountProductByStatus<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useCountProductByStatus<
   TData = Awaited<ReturnType<typeof countProductByStatus>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options?: {
     query?: Partial<
@@ -1762,7 +1762,7 @@ export function useCountProductByStatus<
 
 export function useCountProductByStatus<
   TData = Awaited<ReturnType<typeof countProductByStatus>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options?: {
     query?: Partial<

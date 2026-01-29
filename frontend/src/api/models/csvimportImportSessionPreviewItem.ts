@@ -4,4 +4,4 @@
  *
  */
 
-export type ActivateTemplatePrintTemplateBody = { [key: string]: unknown }
+export type CsvimportImportSessionPreviewItem = { [key: string]: unknown }

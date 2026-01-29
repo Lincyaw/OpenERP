@@ -8,6 +8,237 @@ const docTemplate = `{
     "schemes": {{ marshal .Schemes }},
     "components": {
         "schemas": {
+            "catalog.AttachmentListResponse": {
+                "properties": {
+                    "content_type": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "file_name": {
+                        "type": "string"
+                    },
+                    "file_size": {
+                        "type": "integer"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "product_id": {
+                        "type": "string"
+                    },
+                    "sort_order": {
+                        "type": "integer"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "thumbnail_url": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "uploaded_by": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "catalog.AttachmentResponse": {
+                "properties": {
+                    "content_type": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "file_name": {
+                        "type": "string"
+                    },
+                    "file_size": {
+                        "type": "integer"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "product_id": {
+                        "type": "string"
+                    },
+                    "sort_order": {
+                        "type": "integer"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "storage_key": {
+                        "type": "string"
+                    },
+                    "tenant_id": {
+                        "type": "string"
+                    },
+                    "thumbnail_key": {
+                        "type": "string"
+                    },
+                    "thumbnail_url": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    },
+                    "uploaded_by": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "catalog.InitiateUploadResponse": {
+                "properties": {
+                    "attachment_id": {
+                        "type": "string"
+                    },
+                    "expires_at": {
+                        "type": "string"
+                    },
+                    "storage_key": {
+                        "type": "string"
+                    },
+                    "upload_url": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "csvimport.EntityType": {
+                "enum": [
+                    "products",
+                    "customers",
+                    "suppliers",
+                    "inventory",
+                    "categories"
+                ],
+                "type": "string",
+                "x-enum-varnames": [
+                    "EntityProducts",
+                    "EntityCustomers",
+                    "EntitySuppliers",
+                    "EntityInventory",
+                    "EntityCategories"
+                ]
+            },
+            "csvimport.ImportSession": {
+                "properties": {
+                    "completed_at": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "entity_type": {
+                        "$ref": "#/components/schemas/csvimport.EntityType"
+                    },
+                    "error_rows": {
+                        "type": "integer"
+                    },
+                    "errors": {
+                        "items": {
+                            "$ref": "#/components/schemas/csvimport.RowError"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "file_name": {
+                        "type": "string"
+                    },
+                    "file_size": {
+                        "type": "integer"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "preview": {
+                        "items": {
+                            "additionalProperties": {},
+                            "type": "object"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "state": {
+                        "$ref": "#/components/schemas/csvimport.ImportState"
+                    },
+                    "tenant_id": {
+                        "type": "string"
+                    },
+                    "total_rows": {
+                        "type": "integer"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    },
+                    "user_id": {
+                        "type": "string"
+                    },
+                    "valid_rows": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "csvimport.ImportState": {
+                "enum": [
+                    "created",
+                    "validating",
+                    "validated",
+                    "importing",
+                    "completed",
+                    "failed",
+                    "cancelled"
+                ],
+                "type": "string",
+                "x-enum-varnames": [
+                    "StateCreated",
+                    "StateValidating",
+                    "StateValidated",
+                    "StateImporting",
+                    "StateCompleted",
+                    "StateFailed",
+                    "StateCancelled"
+                ]
+            },
+            "csvimport.RowError": {
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "column": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "row": {
+                        "type": "integer"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "dto.AuditLogListResponse": {
                 "properties": {
                     "audit_logs": {
@@ -430,6 +661,27 @@ const docTemplate = `{
                     },
                     "message": {
                         "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.APIResponse-array_catalog_AttachmentListResponse": {
+                "properties": {
+                    "data": {
+                        "items": {
+                            "$ref": "#/components/schemas/catalog.AttachmentListResponse"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
                     }
                 },
                 "type": "object"
@@ -1274,6 +1526,57 @@ const docTemplate = `{
                 },
                 "type": "object"
             },
+            "handler.APIResponse-catalog_AttachmentResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/catalog.AttachmentResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.APIResponse-catalog_InitiateUploadResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/catalog.InitiateUploadResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.APIResponse-csvimport_ImportSession": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/csvimport.ImportSession"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
             "handler.APIResponse-dto_AuditLogListResponse": {
                 "properties": {
                     "data": {
@@ -1682,6 +1985,23 @@ const docTemplate = `{
                 },
                 "type": "object"
             },
+            "handler.APIResponse-handler_CustomerImportResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.CustomerImportResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
             "handler.APIResponse-handler_CustomerLevelResponse": {
                 "properties": {
                     "data": {
@@ -1703,6 +2023,23 @@ const docTemplate = `{
                 "properties": {
                     "data": {
                         "$ref": "#/components/schemas/handler.CustomerResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.APIResponse-handler_CustomerValidationResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.CustomerValidationResponse"
                     },
                     "error": {
                         "$ref": "#/components/schemas/dto.ErrorInfo"
@@ -2056,6 +2393,23 @@ const docTemplate = `{
                 },
                 "type": "object"
             },
+            "handler.APIResponse-handler_ProductImportResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.ProductImportResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
             "handler.APIResponse-handler_ProductResponse": {
                 "properties": {
                     "data": {
@@ -2077,6 +2431,23 @@ const docTemplate = `{
                 "properties": {
                     "data": {
                         "$ref": "#/components/schemas/handler.ProductUnitResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.APIResponse-handler_ProductValidationResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.ProductValidationResponse"
                     },
                     "error": {
                         "$ref": "#/components/schemas/dto.ErrorInfo"
@@ -2672,6 +3043,23 @@ const docTemplate = `{
                 "properties": {
                     "data": {
                         "$ref": "#/components/schemas/handler.UserResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.APIResponse-handler_ValidationResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.ValidationResponse"
                     },
                     "error": {
                         "$ref": "#/components/schemas/dto.ErrorInfo"
@@ -3682,6 +4070,13 @@ const docTemplate = `{
                         "uniqueItems": false
                     },
                     "income_items": {
+                        "items": {
+                            "$ref": "#/components/schemas/handler.ExpenseIncomeCashFlowItem"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "items": {
                         "items": {
                             "$ref": "#/components/schemas/handler.ExpenseIncomeCashFlowItem"
                         },
@@ -5294,6 +5689,67 @@ const docTemplate = `{
                 },
                 "type": "object"
             },
+            "handler.CustomerImportRequest": {
+                "properties": {
+                    "conflict_mode": {
+                        "enum": [
+                            "skip",
+                            "update",
+                            "fail"
+                        ],
+                        "type": "string"
+                    },
+                    "validation_id": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "conflict_mode",
+                    "validation_id"
+                ],
+                "type": "object"
+            },
+            "handler.CustomerImportResponse": {
+                "description": "Response from customer bulk import operation",
+                "properties": {
+                    "error_rows": {
+                        "example": 0,
+                        "type": "integer"
+                    },
+                    "errors": {
+                        "items": {
+                            "$ref": "#/components/schemas/csvimport.RowError"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "imported_rows": {
+                        "example": 95,
+                        "type": "integer"
+                    },
+                    "is_truncated": {
+                        "example": false,
+                        "type": "boolean"
+                    },
+                    "skipped_rows": {
+                        "example": 2,
+                        "type": "integer"
+                    },
+                    "total_errors": {
+                        "example": 0,
+                        "type": "integer"
+                    },
+                    "total_rows": {
+                        "example": 100,
+                        "type": "integer"
+                    },
+                    "updated_rows": {
+                        "example": 3,
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
             "handler.CustomerLevelListResponse": {
                 "description": "Customer level list item with customer count",
                 "properties": {
@@ -5628,6 +6084,56 @@ const docTemplate = `{
                 },
                 "type": "object"
             },
+            "handler.CustomerValidationResponse": {
+                "description": "Response from customer CSV validation",
+                "properties": {
+                    "error_rows": {
+                        "example": 2,
+                        "type": "integer"
+                    },
+                    "errors": {
+                        "items": {
+                            "$ref": "#/components/schemas/csvimport.RowError"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "is_truncated": {
+                        "type": "boolean"
+                    },
+                    "preview": {
+                        "items": {
+                            "additionalProperties": {},
+                            "type": "object"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "total_errors": {
+                        "type": "integer"
+                    },
+                    "total_rows": {
+                        "example": 100,
+                        "type": "integer"
+                    },
+                    "valid_rows": {
+                        "example": 98,
+                        "type": "integer"
+                    },
+                    "validation_id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440000",
+                        "type": "string"
+                    },
+                    "warnings": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "type": "object"
+            },
             "handler.DailySalesTrendResponse": {
                 "description": "Daily sales trend data point",
                 "properties": {
@@ -5755,19 +6261,6 @@ const docTemplate = `{
                 },
                 "type": "object"
             },
-            "handler.ErrorResponse": {
-                "description": "Standard error response",
-                "properties": {
-                    "error": {
-                        "$ref": "#/components/schemas/dto.ErrorInfo"
-                    },
-                    "success": {
-                        "example": false,
-                        "type": "boolean"
-                    }
-                },
-                "type": "object"
-            },
             "handler.EvaluateFlagHTTPRequest": {
                 "description": "Request body for evaluating a feature flag",
                 "properties": {
@@ -5805,8 +6298,16 @@ const docTemplate = `{
                         "example": "2026年1月办公室租金",
                         "type": "string"
                     },
+                    "direction": {
+                        "example": "OUTFLOW",
+                        "type": "string"
+                    },
                     "id": {
                         "example": "550e8400-e29b-41d4-a716-446655440000",
+                        "type": "string"
+                    },
+                    "number": {
+                        "example": "EXP-2026-00001",
                         "type": "string"
                     },
                     "type": {
@@ -6074,6 +6575,49 @@ const docTemplate = `{
                     "source_type",
                     "unit_cost",
                     "warehouse_id"
+                ],
+                "type": "object"
+            },
+            "handler.InitiateUploadRequest": {
+                "description": "Request body for initiating a file upload",
+                "properties": {
+                    "content_type": {
+                        "example": "image/jpeg",
+                        "type": "string"
+                    },
+                    "file_name": {
+                        "example": "product-photo.jpg",
+                        "maxLength": 255,
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "file_size": {
+                        "description": "max 100MB",
+                        "example": 1048576,
+                        "maximum": 104857600,
+                        "type": "integer"
+                    },
+                    "product_id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440000",
+                        "type": "string"
+                    },
+                    "type": {
+                        "enum": [
+                            "main_image",
+                            "gallery_image",
+                            "document",
+                            "other"
+                        ],
+                        "example": "gallery_image",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "content_type",
+                    "file_name",
+                    "file_size",
+                    "product_id",
+                    "type"
                 ],
                 "type": "object"
             },
@@ -7050,6 +7594,67 @@ const docTemplate = `{
                 },
                 "type": "object"
             },
+            "handler.ProductImportRequest": {
+                "properties": {
+                    "conflict_mode": {
+                        "enum": [
+                            "skip",
+                            "update",
+                            "fail"
+                        ],
+                        "type": "string"
+                    },
+                    "validation_id": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "conflict_mode",
+                    "validation_id"
+                ],
+                "type": "object"
+            },
+            "handler.ProductImportResponse": {
+                "description": "Response from product bulk import operation",
+                "properties": {
+                    "error_rows": {
+                        "example": 0,
+                        "type": "integer"
+                    },
+                    "errors": {
+                        "items": {
+                            "$ref": "#/components/schemas/csvimport.RowError"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "imported_rows": {
+                        "example": 95,
+                        "type": "integer"
+                    },
+                    "is_truncated": {
+                        "example": false,
+                        "type": "boolean"
+                    },
+                    "skipped_rows": {
+                        "example": 2,
+                        "type": "integer"
+                    },
+                    "total_errors": {
+                        "example": 0,
+                        "type": "integer"
+                    },
+                    "total_rows": {
+                        "example": 100,
+                        "type": "integer"
+                    },
+                    "updated_rows": {
+                        "example": 3,
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
             "handler.ProductListResponse": {
                 "description": "Product list item with basic information",
                 "properties": {
@@ -7280,6 +7885,56 @@ const docTemplate = `{
                     "updated_at": {
                         "example": "2026-01-24T12:00:00Z",
                         "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.ProductValidationResponse": {
+                "description": "Response from product CSV validation",
+                "properties": {
+                    "error_rows": {
+                        "example": 2,
+                        "type": "integer"
+                    },
+                    "errors": {
+                        "items": {
+                            "$ref": "#/components/schemas/csvimport.RowError"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "is_truncated": {
+                        "type": "boolean"
+                    },
+                    "preview": {
+                        "items": {
+                            "additionalProperties": {},
+                            "type": "object"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "total_errors": {
+                        "type": "integer"
+                    },
+                    "total_rows": {
+                        "example": 100,
+                        "type": "integer"
+                    },
+                    "valid_rows": {
+                        "example": 98,
+                        "type": "integer"
+                    },
+                    "validation_id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440000",
+                        "type": "string"
+                    },
+                    "warnings": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
                     }
                 },
                 "type": "object"
@@ -8522,6 +9177,27 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "type": "object"
+            },
+            "handler.ReorderAttachmentsRequest": {
+                "description": "Request body for reordering attachments",
+                "properties": {
+                    "attachment_ids": {
+                        "example": [
+                            "550e8400-e29b-41d4-a716-446655440001",
+                            "550e8400-e29b-41d4-a716-446655440002"
+                        ],
+                        "items": {
+                            "type": "string"
+                        },
+                        "minItems": 1,
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "required": [
+                    "attachment_ids"
+                ],
                 "type": "object"
             },
             "handler.ResetPasswordRequest": {
@@ -11279,6 +11955,49 @@ const docTemplate = `{
                 },
                 "type": "object"
             },
+            "handler.ValidationResponse": {
+                "description": "Response from CSV import validation",
+                "properties": {
+                    "error_rows": {
+                        "example": 2,
+                        "type": "integer"
+                    },
+                    "errors": {
+                        "items": {
+                            "$ref": "#/components/schemas/csvimport.RowError"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "is_truncated": {
+                        "type": "boolean"
+                    },
+                    "preview": {
+                        "items": {
+                            "additionalProperties": {},
+                            "type": "object"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "total_errors": {
+                        "type": "integer"
+                    },
+                    "total_rows": {
+                        "example": 100,
+                        "type": "integer"
+                    },
+                    "valid_rows": {
+                        "example": 98,
+                        "type": "integer"
+                    },
+                    "validation_id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440000",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "handler.WarehouseCountByStatusResponse": {
                 "properties": {
                     "active": {
@@ -11938,6 +12657,490 @@ const docTemplate = `{
                 ]
             }
         },
+        "/catalog/attachments/upload": {
+            "post": {
+                "description": "Creates a pending attachment record and returns a presigned upload URL",
+                "operationId": "initiateProductAttachmentUpload",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.InitiateUploadRequest",
+                                        "summary": "request",
+                                        "description": "Upload initiation request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Upload initiation request",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-catalog_InitiateUploadResponse"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Product not found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Attachment limit exceeded or disallowed content type"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Initiate a file upload",
+                "tags": [
+                    "product-attachments"
+                ]
+            }
+        },
+        "/catalog/attachments/{id}": {
+            "delete": {
+                "description": "Soft delete an attachment (marks as deleted)",
+                "operationId": "deleteProductAttachment",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Attachment ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Delete an attachment",
+                "tags": [
+                    "product-attachments"
+                ]
+            },
+            "get": {
+                "description": "Retrieve an attachment by its ID",
+                "operationId": "getProductAttachmentById",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Attachment ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-catalog_AttachmentResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Get attachment by ID",
+                "tags": [
+                    "product-attachments"
+                ]
+            }
+        },
+        "/catalog/attachments/{id}/confirm": {
+            "post": {
+                "description": "Verifies the upload completed and activates the attachment",
+                "operationId": "confirmProductAttachmentUpload",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Attachment ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-catalog_AttachmentResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Attachment not found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Upload not found in storage"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Confirm a file upload",
+                "tags": [
+                    "product-attachments"
+                ]
+            }
+        },
+        "/catalog/attachments/{id}/main": {
+            "post": {
+                "description": "Promote an image attachment to be the product's main image",
+                "operationId": "setProductAttachmentAsMainImage",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Attachment ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-catalog_AttachmentResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Attachment not found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Attachment is not an image"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Set attachment as main image",
+                "tags": [
+                    "product-attachments"
+                ]
+            }
+        },
         "/catalog/categories": {
             "get": {
                 "description": "Retrieve a paginated list of categories",
@@ -12389,7 +13592,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12399,7 +13602,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12409,7 +13612,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -12419,7 +13622,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13235,7 +14438,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13245,7 +14448,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13255,7 +14458,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13320,7 +14523,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13330,7 +14533,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13340,7 +14543,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13350,7 +14553,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13406,7 +14609,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13416,7 +14619,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13426,7 +14629,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13436,7 +14639,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13483,7 +14686,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13493,7 +14696,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13503,7 +14706,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13553,7 +14756,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13563,7 +14766,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13573,7 +14776,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13583,7 +14786,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13638,7 +14841,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13648,7 +14851,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13658,7 +14861,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13668,7 +14871,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13743,7 +14946,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13753,7 +14956,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13763,7 +14966,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13773,7 +14976,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13783,7 +14986,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13849,7 +15052,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13859,7 +15062,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13869,7 +15072,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13879,7 +15082,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13889,7 +15092,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13904,6 +15107,373 @@ const docTemplate = `{
                 "summary": "Activate a product",
                 "tags": [
                     "products"
+                ]
+            }
+        },
+        "/catalog/products/{id}/attachments": {
+            "get": {
+                "description": "Retrieve a paginated list of attachments for a specific product",
+                "operationId": "listProductAttachments",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Product ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Search term (file name)",
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Attachment status",
+                        "in": "query",
+                        "name": "status",
+                        "schema": {
+                            "enum": [
+                                "pending",
+                                "active",
+                                "deleted"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Attachment type",
+                        "in": "query",
+                        "name": "type",
+                        "schema": {
+                            "enum": [
+                                "main_image",
+                                "gallery_image",
+                                "document",
+                                "other"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Page number",
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "default": 1,
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Page size",
+                        "in": "query",
+                        "name": "page_size",
+                        "schema": {
+                            "default": 20,
+                            "maximum": 100,
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Order by field",
+                        "in": "query",
+                        "name": "order_by",
+                        "schema": {
+                            "default": "sort_order",
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Order direction",
+                        "in": "query",
+                        "name": "order_dir",
+                        "schema": {
+                            "default": "asc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-array_catalog_AttachmentListResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Product not found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "List attachments by product",
+                "tags": [
+                    "product-attachments"
+                ]
+            }
+        },
+        "/catalog/products/{id}/attachments/main": {
+            "get": {
+                "description": "Retrieve the main image for a specific product",
+                "operationId": "getProductMainImage",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Product ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-catalog_AttachmentResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Product or main image not found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Get product main image",
+                "tags": [
+                    "product-attachments"
+                ]
+            }
+        },
+        "/catalog/products/{id}/attachments/reorder": {
+            "post": {
+                "description": "Update the sort order of attachments for a product",
+                "operationId": "reorderProductAttachments",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Product ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.ReorderAttachmentsRequest",
+                                        "summary": "request",
+                                        "description": "Reorder request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Reorder request",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-array_catalog_AttachmentListResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Product or attachments not found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Invalid attachment belongs to another product"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Reorder attachments",
+                "tags": [
+                    "product-attachments"
                 ]
             }
         },
@@ -13966,7 +15536,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13976,7 +15546,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13986,7 +15556,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -13996,7 +15566,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14006,7 +15576,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14072,7 +15642,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14082,7 +15652,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14092,7 +15662,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14102,7 +15672,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14112,7 +15682,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14178,7 +15748,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14188,7 +15758,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14198,7 +15768,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14208,7 +15778,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -14218,7 +15788,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15029,7 +16599,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15039,7 +16609,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15049,7 +16619,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15059,7 +16629,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15114,7 +16684,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15124,7 +16694,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15134,7 +16704,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15144,7 +16714,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15154,7 +16724,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15211,7 +16781,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15221,7 +16791,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15231,7 +16801,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15288,7 +16858,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15298,7 +16868,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15308,7 +16878,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15345,7 +16915,7 @@ const docTemplate = `{
                         "content": {
                             "text/event-stream": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15355,7 +16925,7 @@ const docTemplate = `{
                         "content": {
                             "text/event-stream": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15396,7 +16966,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15406,7 +16976,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15416,7 +16986,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15426,7 +16996,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15436,7 +17006,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15482,7 +17052,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15492,7 +17062,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15502,7 +17072,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15512,7 +17082,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15522,7 +17092,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15588,7 +17158,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15598,7 +17168,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15608,7 +17178,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15618,7 +17188,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15628,7 +17198,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15703,7 +17273,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15713,7 +17283,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15723,7 +17293,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15733,7 +17303,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15743,7 +17313,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15800,7 +17370,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15810,7 +17380,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15820,7 +17390,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15830,7 +17400,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15840,7 +17410,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15850,7 +17420,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15907,7 +17477,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15917,7 +17487,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15927,7 +17497,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15937,7 +17507,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15947,7 +17517,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -15957,7 +17527,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16025,7 +17595,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16035,7 +17605,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16045,7 +17615,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16055,7 +17625,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16122,7 +17692,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16132,7 +17702,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16142,7 +17712,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16152,7 +17722,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16162,7 +17732,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16228,7 +17798,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16238,7 +17808,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16248,7 +17818,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16258,7 +17828,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16268,7 +17838,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16278,7 +17848,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16329,7 +17899,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16339,7 +17909,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16349,7 +17919,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16359,7 +17929,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16369,7 +17939,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16432,7 +18002,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16442,7 +18012,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16452,7 +18022,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16581,7 +18151,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16591,7 +18161,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16601,7 +18171,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16656,7 +18226,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16666,7 +18236,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16676,7 +18246,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16731,7 +18301,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16741,7 +18311,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16751,7 +18321,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16799,7 +18369,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16809,7 +18379,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16819,7 +18389,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16829,7 +18399,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16875,7 +18445,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16885,7 +18455,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16895,7 +18465,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16905,7 +18475,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16971,7 +18541,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16981,7 +18551,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -16991,7 +18561,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17001,7 +18571,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17068,7 +18638,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17078,7 +18648,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17088,7 +18658,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17098,7 +18668,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17166,7 +18736,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17176,7 +18746,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17186,7 +18756,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17196,7 +18766,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17264,7 +18834,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17274,7 +18844,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17284,7 +18854,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17294,7 +18864,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17362,7 +18932,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17372,7 +18942,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17382,7 +18952,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17392,7 +18962,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17449,7 +19019,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17459,7 +19029,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17469,7 +19039,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17479,7 +19049,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17603,7 +19173,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17613,7 +19183,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17623,7 +19193,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17678,7 +19248,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17688,7 +19258,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17698,7 +19268,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17753,7 +19323,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17763,7 +19333,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17773,7 +19343,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17821,7 +19391,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17831,7 +19401,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17841,7 +19411,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17851,7 +19421,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17897,7 +19467,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17907,7 +19477,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17917,7 +19487,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17927,7 +19497,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -17993,7 +19563,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18003,7 +19573,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18013,7 +19583,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18023,7 +19593,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18091,7 +19661,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18101,7 +19671,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18111,7 +19681,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18121,7 +19691,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18178,7 +19748,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18188,7 +19758,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18198,7 +19768,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18208,7 +19778,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18276,7 +19846,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18286,7 +19856,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18296,7 +19866,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -18306,7 +19876,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -23698,6 +25268,662 @@ const docTemplate = `{
                 "summary": "Unlock a user",
                 "tags": [
                     "users"
+                ]
+            }
+        },
+        "/import/customers": {
+            "post": {
+                "description": "Imports customers from a previously validated CSV file",
+                "operationId": "importCustomers",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.CustomerImportRequest",
+                                        "summary": "request",
+                                        "description": "Import request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Import request",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_CustomerImportResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Import customers from validated CSV",
+                "tags": [
+                    "import"
+                ]
+            }
+        },
+        "/import/customers/validate": {
+            "post": {
+                "description": "Validates a customer CSV file for import without actually importing the data",
+                "operationId": "validateCustomerImport",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "title": "file",
+                                "type": "file"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "CSV file to validate",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_CustomerValidationResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "413": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Request Entity Too Large"
+                    },
+                    "415": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unsupported Media Type"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Validate customer CSV file for import",
+                "tags": [
+                    "import"
+                ]
+            }
+        },
+        "/import/products": {
+            "post": {
+                "description": "Imports products from a previously validated CSV file",
+                "operationId": "importProducts",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.ProductImportRequest",
+                                        "summary": "request",
+                                        "description": "Import request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Import request",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_ProductImportResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Import products from validated CSV",
+                "tags": [
+                    "import"
+                ]
+            }
+        },
+        "/import/products/validate": {
+            "post": {
+                "description": "Validates a product CSV file for import without actually importing the data",
+                "operationId": "validateProductImport",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "title": "file",
+                                "type": "file"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "CSV file to validate",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_ProductValidationResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "413": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Request Entity Too Large"
+                    },
+                    "415": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unsupported Media Type"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Validate product CSV file for import",
+                "tags": [
+                    "import"
+                ]
+            }
+        },
+        "/import/sessions/{id}": {
+            "get": {
+                "description": "Retrieves the status and details of an import session",
+                "operationId": "getImportSession",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Session ID (UUID)",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-csvimport_ImportSession"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Get import session",
+                "tags": [
+                    "import"
+                ]
+            }
+        },
+        "/import/validate": {
+            "post": {
+                "description": "Validates a CSV file for import without actually importing the data",
+                "operationId": "validateImport",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (optional for dev)",
+                        "in": "header",
+                        "name": "X-Tenant-ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "title": "file",
+                                        "type": "file"
+                                    },
+                                    {
+                                        "enum": [
+                                            "products",
+                                            "customers",
+                                            "suppliers",
+                                            "inventory"
+                                        ],
+                                        "title": "entity_type",
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "CSV file to validate | Entity type",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_ValidationResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "413": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Request Entity Too Large"
+                    },
+                    "415": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unsupported Media Type"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Validate CSV file for import",
+                "tags": [
+                    "import"
                 ]
             }
         },
@@ -32391,7 +34617,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32401,7 +34627,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32411,7 +34637,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32476,7 +34702,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32486,7 +34712,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32496,7 +34722,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32506,7 +34732,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32562,7 +34788,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32572,7 +34798,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32582,7 +34808,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32592,7 +34818,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32639,7 +34865,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32649,7 +34875,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32659,7 +34885,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32669,7 +34895,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32716,7 +34942,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32726,7 +34952,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32736,7 +34962,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32794,7 +35020,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32804,7 +35030,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32814,7 +35040,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32824,7 +35050,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32834,7 +35060,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32844,7 +35070,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32899,7 +35125,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32909,7 +35135,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32919,7 +35145,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -32929,7 +35155,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33004,7 +35230,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33014,7 +35240,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33024,7 +35250,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33034,7 +35260,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33044,7 +35270,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33121,7 +35347,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33131,7 +35357,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33141,7 +35367,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33151,7 +35377,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33161,7 +35387,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33227,7 +35453,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33237,7 +35463,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33247,7 +35473,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33257,7 +35483,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33267,7 +35493,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33333,7 +35559,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33343,7 +35569,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33353,7 +35579,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33363,7 +35589,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33373,7 +35599,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33439,7 +35665,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33449,7 +35675,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33459,7 +35685,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33469,7 +35695,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33479,7 +35705,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33815,7 +36041,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33825,7 +36051,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33835,7 +36061,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33845,7 +36071,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33855,7 +36081,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33950,7 +36176,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33960,7 +36186,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -33970,7 +36196,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34028,7 +36254,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34038,7 +36264,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34048,7 +36274,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34097,7 +36323,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34107,7 +36333,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34117,7 +36343,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34127,7 +36353,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34176,7 +36402,7 @@ const docTemplate = `{
                         "content": {
                             "application/pdf": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34186,7 +36412,7 @@ const docTemplate = `{
                         "content": {
                             "application/pdf": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34196,7 +36422,7 @@ const docTemplate = `{
                         "content": {
                             "application/pdf": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34206,7 +36432,7 @@ const docTemplate = `{
                         "content": {
                             "application/pdf": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34290,7 +36516,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34300,7 +36526,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34310,7 +36536,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34320,7 +36546,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34330,7 +36556,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34378,7 +36604,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34388,7 +36614,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34398,7 +36624,7 @@ const docTemplate = `{
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34473,7 +36699,7 @@ const docTemplate = `{
                         "content": {
                             "application/pdf": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34483,7 +36709,7 @@ const docTemplate = `{
                         "content": {
                             "application/pdf": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },
@@ -34493,7 +36719,7 @@ const docTemplate = `{
                         "content": {
                             "application/pdf": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                    "$ref": "#/components/schemas/dto.ErrorResponse"
                                 }
                             }
                         },

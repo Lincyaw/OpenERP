@@ -4,4 +4,4 @@
  *
  */
 
-export type SetDefaultTemplatePrintTemplateBody = { [key: string]: unknown }
+export type ValidateImportBodyTwo = { [key: string]: unknown }

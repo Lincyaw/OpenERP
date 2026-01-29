@@ -20,10 +20,10 @@ import type {
 } from '@tanstack/react-query'
 
 import type {
+  DtoErrorResponse,
   GeneratePDFPrintJobBody,
   HandlerAPIResponseArrayHandlerPrintJobResponse,
   HandlerAPIResponseHandlerPrintJobResponse,
-  HandlerErrorResponse,
   ListPrintJobJobsParams,
 } from '.././models'
 
@@ -41,27 +41,27 @@ export type generatePDFPrintJobResponse201 = {
 }
 
 export type generatePDFPrintJobResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type generatePDFPrintJobResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type generatePDFPrintJobResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type generatePDFPrintJobResponse422 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 422
 }
 
 export type generatePDFPrintJobResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -99,7 +99,7 @@ export const generatePDFPrintJob = async (
 }
 
 export const getGeneratePDFPrintJobMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -138,12 +138,12 @@ export type GeneratePDFPrintJobMutationResult = NonNullable<
   Awaited<ReturnType<typeof generatePDFPrintJob>>
 >
 export type GeneratePDFPrintJobMutationBody = GeneratePDFPrintJobBody
-export type GeneratePDFPrintJobMutationError = HandlerErrorResponse
+export type GeneratePDFPrintJobMutationError = DtoErrorResponse
 
 /**
  * @summary Generate PDF
  */
-export const useGeneratePDFPrintJob = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useGeneratePDFPrintJob = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof generatePDFPrintJob>>,
@@ -172,17 +172,17 @@ export type listPrintJobJobsResponse200 = {
 }
 
 export type listPrintJobJobsResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type listPrintJobJobsResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type listPrintJobJobsResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -231,7 +231,7 @@ export const getListPrintJobJobsQueryKey = (params?: ListPrintJobJobsParams) => 
 
 export const getListPrintJobJobsQueryOptions = <
   TData = Awaited<ReturnType<typeof listPrintJobJobs>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListPrintJobJobsParams,
   options?: {
@@ -254,11 +254,11 @@ export const getListPrintJobJobsQueryOptions = <
 }
 
 export type ListPrintJobJobsQueryResult = NonNullable<Awaited<ReturnType<typeof listPrintJobJobs>>>
-export type ListPrintJobJobsQueryError = HandlerErrorResponse
+export type ListPrintJobJobsQueryError = DtoErrorResponse
 
 export function useListPrintJobJobs<
   TData = Awaited<ReturnType<typeof listPrintJobJobs>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params: undefined | ListPrintJobJobsParams,
   options: {
@@ -277,7 +277,7 @@ export function useListPrintJobJobs<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListPrintJobJobs<
   TData = Awaited<ReturnType<typeof listPrintJobJobs>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListPrintJobJobsParams,
   options?: {
@@ -296,7 +296,7 @@ export function useListPrintJobJobs<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListPrintJobJobs<
   TData = Awaited<ReturnType<typeof listPrintJobJobs>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListPrintJobJobsParams,
   options?: {
@@ -311,7 +311,7 @@ export function useListPrintJobJobs<
 
 export function useListPrintJobJobs<
   TData = Awaited<ReturnType<typeof listPrintJobJobs>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListPrintJobJobsParams,
   options?: {
@@ -339,22 +339,22 @@ export type getPrintJobJobResponse200 = {
 }
 
 export type getPrintJobJobResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getPrintJobJobResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getPrintJobJobResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type getPrintJobJobResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -392,7 +392,7 @@ export const getGetPrintJobJobQueryKey = (id: string) => {
 
 export const getGetPrintJobJobQueryOptions = <
   TData = Awaited<ReturnType<typeof getPrintJobJob>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -415,11 +415,11 @@ export const getGetPrintJobJobQueryOptions = <
 }
 
 export type GetPrintJobJobQueryResult = NonNullable<Awaited<ReturnType<typeof getPrintJobJob>>>
-export type GetPrintJobJobQueryError = HandlerErrorResponse
+export type GetPrintJobJobQueryError = DtoErrorResponse
 
 export function useGetPrintJobJob<
   TData = Awaited<ReturnType<typeof getPrintJobJob>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options: {
@@ -438,7 +438,7 @@ export function useGetPrintJobJob<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPrintJobJob<
   TData = Awaited<ReturnType<typeof getPrintJobJob>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -457,7 +457,7 @@ export function useGetPrintJobJob<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPrintJobJob<
   TData = Awaited<ReturnType<typeof getPrintJobJob>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -472,7 +472,7 @@ export function useGetPrintJobJob<
 
 export function useGetPrintJobJob<
   TData = Awaited<ReturnType<typeof getPrintJobJob>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -669,17 +669,17 @@ export type getPrintJobJobsByDocumentResponse200 = {
 }
 
 export type getPrintJobJobsByDocumentResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getPrintJobJobsByDocumentResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getPrintJobJobsByDocumentResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -722,7 +722,7 @@ export const getGetPrintJobJobsByDocumentQueryKey = (docType: string, documentId
 
 export const getGetPrintJobJobsByDocumentQueryOptions = <
   TData = Awaited<ReturnType<typeof getPrintJobJobsByDocument>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   docType: string,
   documentId: string,
@@ -755,11 +755,11 @@ export const getGetPrintJobJobsByDocumentQueryOptions = <
 export type GetPrintJobJobsByDocumentQueryResult = NonNullable<
   Awaited<ReturnType<typeof getPrintJobJobsByDocument>>
 >
-export type GetPrintJobJobsByDocumentQueryError = HandlerErrorResponse
+export type GetPrintJobJobsByDocumentQueryError = DtoErrorResponse
 
 export function useGetPrintJobJobsByDocument<
   TData = Awaited<ReturnType<typeof getPrintJobJobsByDocument>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   docType: string,
   documentId: string,
@@ -781,7 +781,7 @@ export function useGetPrintJobJobsByDocument<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPrintJobJobsByDocument<
   TData = Awaited<ReturnType<typeof getPrintJobJobsByDocument>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   docType: string,
   documentId: string,
@@ -803,7 +803,7 @@ export function useGetPrintJobJobsByDocument<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPrintJobJobsByDocument<
   TData = Awaited<ReturnType<typeof getPrintJobJobsByDocument>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   docType: string,
   documentId: string,
@@ -821,7 +821,7 @@ export function useGetPrintJobJobsByDocument<
 
 export function useGetPrintJobJobsByDocument<
   TData = Awaited<ReturnType<typeof getPrintJobJobsByDocument>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   docType: string,
   documentId: string,

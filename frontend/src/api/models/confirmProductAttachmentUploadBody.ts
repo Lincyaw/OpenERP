@@ -4,4 +4,4 @@
  *
  */
 
-export type DeactivateTemplatePrintTemplateBody = { [key: string]: unknown }
+export type ConfirmProductAttachmentUploadBody = { [key: string]: unknown }

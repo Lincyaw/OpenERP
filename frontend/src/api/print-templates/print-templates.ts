@@ -16,10 +16,7 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query'
 
-import type {
-  HandlerAPIResponseArrayHandlerTemplateResponse,
-  HandlerErrorResponse,
-} from '.././models'
+import type { DtoErrorResponse, HandlerAPIResponseArrayHandlerTemplateResponse } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
 
@@ -35,17 +32,17 @@ export type getPrintTemplateTemplatesByDocTypeResponse200 = {
 }
 
 export type getPrintTemplateTemplatesByDocTypeResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getPrintTemplateTemplatesByDocTypeResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getPrintTemplateTemplatesByDocTypeResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -88,7 +85,7 @@ export const getGetPrintTemplateTemplatesByDocTypeQueryKey = (docType: string) =
 
 export const getGetPrintTemplateTemplatesByDocTypeQueryOptions = <
   TData = Awaited<ReturnType<typeof getPrintTemplateTemplatesByDocType>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   docType: string,
   options?: {
@@ -116,11 +113,11 @@ export const getGetPrintTemplateTemplatesByDocTypeQueryOptions = <
 export type GetPrintTemplateTemplatesByDocTypeQueryResult = NonNullable<
   Awaited<ReturnType<typeof getPrintTemplateTemplatesByDocType>>
 >
-export type GetPrintTemplateTemplatesByDocTypeQueryError = HandlerErrorResponse
+export type GetPrintTemplateTemplatesByDocTypeQueryError = DtoErrorResponse
 
 export function useGetPrintTemplateTemplatesByDocType<
   TData = Awaited<ReturnType<typeof getPrintTemplateTemplatesByDocType>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   docType: string,
   options: {
@@ -141,7 +138,7 @@ export function useGetPrintTemplateTemplatesByDocType<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPrintTemplateTemplatesByDocType<
   TData = Awaited<ReturnType<typeof getPrintTemplateTemplatesByDocType>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   docType: string,
   options?: {
@@ -162,7 +159,7 @@ export function useGetPrintTemplateTemplatesByDocType<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPrintTemplateTemplatesByDocType<
   TData = Awaited<ReturnType<typeof getPrintTemplateTemplatesByDocType>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   docType: string,
   options?: {
@@ -179,7 +176,7 @@ export function useGetPrintTemplateTemplatesByDocType<
 
 export function useGetPrintTemplateTemplatesByDocType<
   TData = Awaited<ReturnType<typeof getPrintTemplateTemplatesByDocType>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   docType: string,
   options?: {

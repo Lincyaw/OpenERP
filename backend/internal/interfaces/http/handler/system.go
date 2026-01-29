@@ -10,7 +10,8 @@ import (
 )
 
 // SystemHandler handles system-related API endpoints
-// @Name HandlerSystemInfoResponse
+//
+//	@Name	HandlerSystemInfoResponse
 type SystemHandler struct {
 	BaseHandler
 	startTime time.Time
@@ -24,7 +25,8 @@ func NewSystemHandler() *SystemHandler {
 }
 
 // SystemInfoResponse represents the system information response
-// @Name HandlerSystemInfoResponse
+//
+//	@Name	HandlerSystemInfoResponse
 type SystemInfoResponse struct {
 	Name      string `json:"name" example:"ERP Backend API"`
 	Version   string `json:"version" example:"1.0.0"`
@@ -33,14 +35,15 @@ type SystemInfoResponse struct {
 }
 
 // GetSystemInfo godoc
-// @ID           getSystemSystemInfo
-// @Summary      Get system information
-// @Description  Returns basic system information including version and uptime
-// @Tags         system
-// @Produce      json
-// @Success      200 {object} APIResponse[SystemInfoResponse]
-// @Failure      500 {object} dto.ErrorResponse
-// @Router       /system/info [get]
+//
+//	@ID				getSystemSystemInfo
+//	@Summary		Get system information
+//	@Description	Returns basic system information including version and uptime
+//	@Tags			system
+//	@Produce		json
+//	@Success		200	{object}	APIResponse[SystemInfoResponse]
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Router			/system/info [get]
 func (h *SystemHandler) GetSystemInfo(c *gin.Context) {
 	info := SystemInfoResponse{
 		Name:      "ERP Backend API",
@@ -53,20 +56,22 @@ func (h *SystemHandler) GetSystemInfo(c *gin.Context) {
 }
 
 // PingResponse represents the ping response
-// @Name HandlerPingResponse
+//
+//	@Name	HandlerPingResponse
 type PingResponse struct {
 	Message   string `json:"message" example:"pong"`
 	Timestamp string `json:"timestamp" example:"2026-01-23T12:00:00Z"`
 }
 
 // Ping godoc
-// @ID           pingSystem
-// @Summary      Ping the API
-// @Description  Simple ping endpoint to check if the API is responsive
-// @Tags         system
-// @Produce      json
-// @Success      200 {object} APIResponse[PingResponse]
-// @Router       /system/ping [get]
+//
+//	@ID				pingSystem
+//	@Summary		Ping the API
+//	@Description	Simple ping endpoint to check if the API is responsive
+//	@Tags			system
+//	@Produce		json
+//	@Success		200	{object}	APIResponse[PingResponse]
+//	@Router			/system/ping [get]
 func (h *SystemHandler) Ping(c *gin.Context) {
 	response := PingResponse{
 		Message:   "pong",

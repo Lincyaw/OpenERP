@@ -275,9 +275,8 @@ export default function FeatureFlagListPage() {
         setCreateModalVisible(false)
         fetchFlags()
       } else {
-        Toast.error(
-          response.data.error?.message || t('featureFlags.messages.createError', '创建功能开关失败')
-        )
+        const error = response.data.error as { message?: string } | undefined
+        Toast.error(error?.message || t('featureFlags.messages.createError', '创建功能开关失败'))
       }
     } catch {
       // Validation failed or API error
@@ -302,8 +301,9 @@ export default function FeatureFlagListPage() {
           )
           fetchFlags()
         } else {
+          const error = response.data.error as { message?: string } | undefined
           Toast.error(
-            response.data.error?.message ||
+            error?.message ||
               (checked
                 ? t('featureFlags.messages.enableError', '启用功能开关失败')
                 : t('featureFlags.messages.disableError', '禁用功能开关失败'))

@@ -23,11 +23,11 @@ import type {
   CreateWarehouseBody,
   DeleteWarehouseParams,
   DisableWarehouseBody,
+  DtoErrorResponse,
   EnableWarehouseBody,
   HandlerAPIResponseArrayHandlerWarehouseListResponse,
   HandlerAPIResponseHandlerWarehouseCountByStatusResponse,
   HandlerAPIResponseHandlerWarehouseResponse,
-  HandlerErrorResponse,
   ListWarehousesParams,
   SetDefaultWarehouseBody,
   UpdateWarehouseBody,
@@ -48,17 +48,17 @@ export type listWarehousesResponse200 = {
 }
 
 export type listWarehousesResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type listWarehousesResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type listWarehousesResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -107,7 +107,7 @@ export const getListWarehousesQueryKey = (params?: ListWarehousesParams) => {
 
 export const getListWarehousesQueryOptions = <
   TData = Awaited<ReturnType<typeof listWarehouses>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListWarehousesParams,
   options?: {
@@ -130,11 +130,11 @@ export const getListWarehousesQueryOptions = <
 }
 
 export type ListWarehousesQueryResult = NonNullable<Awaited<ReturnType<typeof listWarehouses>>>
-export type ListWarehousesQueryError = HandlerErrorResponse
+export type ListWarehousesQueryError = DtoErrorResponse
 
 export function useListWarehouses<
   TData = Awaited<ReturnType<typeof listWarehouses>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params: undefined | ListWarehousesParams,
   options: {
@@ -153,7 +153,7 @@ export function useListWarehouses<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListWarehouses<
   TData = Awaited<ReturnType<typeof listWarehouses>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListWarehousesParams,
   options?: {
@@ -172,7 +172,7 @@ export function useListWarehouses<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListWarehouses<
   TData = Awaited<ReturnType<typeof listWarehouses>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListWarehousesParams,
   options?: {
@@ -187,7 +187,7 @@ export function useListWarehouses<
 
 export function useListWarehouses<
   TData = Awaited<ReturnType<typeof listWarehouses>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListWarehousesParams,
   options?: {
@@ -215,22 +215,22 @@ export type createWarehouseResponse201 = {
 }
 
 export type createWarehouseResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type createWarehouseResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type createWarehouseResponse409 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 409
 }
 
 export type createWarehouseResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -265,7 +265,7 @@ export const createWarehouse = async (
 }
 
 export const getCreateWarehouseMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -302,12 +302,12 @@ export const getCreateWarehouseMutationOptions = <
 
 export type CreateWarehouseMutationResult = NonNullable<Awaited<ReturnType<typeof createWarehouse>>>
 export type CreateWarehouseMutationBody = CreateWarehouseBody
-export type CreateWarehouseMutationError = HandlerErrorResponse
+export type CreateWarehouseMutationError = DtoErrorResponse
 
 /**
  * @summary Create a new warehouse
  */
-export const useCreateWarehouse = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useCreateWarehouse = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof createWarehouse>>,
@@ -336,32 +336,32 @@ export type deleteWarehouseResponse204 = {
 }
 
 export type deleteWarehouseResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type deleteWarehouseResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type deleteWarehouseResponse403 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 403
 }
 
 export type deleteWarehouseResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type deleteWarehouseResponse422 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 422
 }
 
 export type deleteWarehouseResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -409,7 +409,7 @@ export const deleteWarehouse = async (
 }
 
 export const getDeleteWarehouseMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -446,12 +446,12 @@ export const getDeleteWarehouseMutationOptions = <
 
 export type DeleteWarehouseMutationResult = NonNullable<Awaited<ReturnType<typeof deleteWarehouse>>>
 
-export type DeleteWarehouseMutationError = HandlerErrorResponse
+export type DeleteWarehouseMutationError = DtoErrorResponse
 
 /**
  * @summary Delete a warehouse
  */
-export const useDeleteWarehouse = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useDeleteWarehouse = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof deleteWarehouse>>,
@@ -480,22 +480,22 @@ export type getWarehouseByIdResponse200 = {
 }
 
 export type getWarehouseByIdResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getWarehouseByIdResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getWarehouseByIdResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type getWarehouseByIdResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -535,7 +535,7 @@ export const getGetWarehouseByIdQueryKey = (id: string) => {
 
 export const getGetWarehouseByIdQueryOptions = <
   TData = Awaited<ReturnType<typeof getWarehouseById>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -558,11 +558,11 @@ export const getGetWarehouseByIdQueryOptions = <
 }
 
 export type GetWarehouseByIdQueryResult = NonNullable<Awaited<ReturnType<typeof getWarehouseById>>>
-export type GetWarehouseByIdQueryError = HandlerErrorResponse
+export type GetWarehouseByIdQueryError = DtoErrorResponse
 
 export function useGetWarehouseById<
   TData = Awaited<ReturnType<typeof getWarehouseById>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options: {
@@ -581,7 +581,7 @@ export function useGetWarehouseById<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetWarehouseById<
   TData = Awaited<ReturnType<typeof getWarehouseById>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -600,7 +600,7 @@ export function useGetWarehouseById<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetWarehouseById<
   TData = Awaited<ReturnType<typeof getWarehouseById>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -615,7 +615,7 @@ export function useGetWarehouseById<
 
 export function useGetWarehouseById<
   TData = Awaited<ReturnType<typeof getWarehouseById>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -643,27 +643,27 @@ export type updateWarehouseResponse200 = {
 }
 
 export type updateWarehouseResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type updateWarehouseResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type updateWarehouseResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type updateWarehouseResponse409 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 409
 }
 
 export type updateWarehouseResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -700,7 +700,7 @@ export const updateWarehouse = async (
 }
 
 export const getUpdateWarehouseMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -737,12 +737,12 @@ export const getUpdateWarehouseMutationOptions = <
 
 export type UpdateWarehouseMutationResult = NonNullable<Awaited<ReturnType<typeof updateWarehouse>>>
 export type UpdateWarehouseMutationBody = UpdateWarehouseBody
-export type UpdateWarehouseMutationError = HandlerErrorResponse
+export type UpdateWarehouseMutationError = DtoErrorResponse
 
 /**
  * @summary Update a warehouse
  */
-export const useUpdateWarehouse = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useUpdateWarehouse = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateWarehouse>>,
@@ -771,27 +771,27 @@ export type updateWarehouseCodeResponse200 = {
 }
 
 export type updateWarehouseCodeResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type updateWarehouseCodeResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type updateWarehouseCodeResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type updateWarehouseCodeResponse409 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 409
 }
 
 export type updateWarehouseCodeResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -830,7 +830,7 @@ export const updateWarehouseCode = async (
 }
 
 export const getUpdateWarehouseCodeMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -869,12 +869,12 @@ export type UpdateWarehouseCodeMutationResult = NonNullable<
   Awaited<ReturnType<typeof updateWarehouseCode>>
 >
 export type UpdateWarehouseCodeMutationBody = UpdateWarehouseCodeBody
-export type UpdateWarehouseCodeMutationError = HandlerErrorResponse
+export type UpdateWarehouseCodeMutationError = DtoErrorResponse
 
 /**
  * @summary Update warehouse code
  */
-export const useUpdateWarehouseCode = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useUpdateWarehouseCode = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateWarehouseCode>>,
@@ -903,27 +903,27 @@ export type disableWarehouseResponse200 = {
 }
 
 export type disableWarehouseResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type disableWarehouseResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type disableWarehouseResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type disableWarehouseResponse422 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 422
 }
 
 export type disableWarehouseResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -962,7 +962,7 @@ export const disableWarehouse = async (
 }
 
 export const getDisableWarehouseMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1001,12 +1001,12 @@ export type DisableWarehouseMutationResult = NonNullable<
   Awaited<ReturnType<typeof disableWarehouse>>
 >
 export type DisableWarehouseMutationBody = DisableWarehouseBody
-export type DisableWarehouseMutationError = HandlerErrorResponse
+export type DisableWarehouseMutationError = DtoErrorResponse
 
 /**
  * @summary Disable a warehouse
  */
-export const useDisableWarehouse = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useDisableWarehouse = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof disableWarehouse>>,
@@ -1035,27 +1035,27 @@ export type enableWarehouseResponse200 = {
 }
 
 export type enableWarehouseResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type enableWarehouseResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type enableWarehouseResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type enableWarehouseResponse422 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 422
 }
 
 export type enableWarehouseResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1092,7 +1092,7 @@ export const enableWarehouse = async (
 }
 
 export const getEnableWarehouseMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1129,12 +1129,12 @@ export const getEnableWarehouseMutationOptions = <
 
 export type EnableWarehouseMutationResult = NonNullable<Awaited<ReturnType<typeof enableWarehouse>>>
 export type EnableWarehouseMutationBody = EnableWarehouseBody
-export type EnableWarehouseMutationError = HandlerErrorResponse
+export type EnableWarehouseMutationError = DtoErrorResponse
 
 /**
  * @summary Enable a warehouse
  */
-export const useEnableWarehouse = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useEnableWarehouse = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof enableWarehouse>>,
@@ -1163,27 +1163,27 @@ export type setDefaultWarehouseResponse200 = {
 }
 
 export type setDefaultWarehouseResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type setDefaultWarehouseResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type setDefaultWarehouseResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type setDefaultWarehouseResponse422 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 422
 }
 
 export type setDefaultWarehouseResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1222,7 +1222,7 @@ export const setDefaultWarehouse = async (
 }
 
 export const getSetDefaultWarehouseMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1261,12 +1261,12 @@ export type SetDefaultWarehouseMutationResult = NonNullable<
   Awaited<ReturnType<typeof setDefaultWarehouse>>
 >
 export type SetDefaultWarehouseMutationBody = SetDefaultWarehouseBody
-export type SetDefaultWarehouseMutationError = HandlerErrorResponse
+export type SetDefaultWarehouseMutationError = DtoErrorResponse
 
 /**
  * @summary Set default warehouse
  */
-export const useSetDefaultWarehouse = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useSetDefaultWarehouse = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof setDefaultWarehouse>>,
@@ -1295,22 +1295,22 @@ export type getWarehouseByCodeResponse200 = {
 }
 
 export type getWarehouseByCodeResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getWarehouseByCodeResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getWarehouseByCodeResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type getWarehouseByCodeResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1350,7 +1350,7 @@ export const getGetWarehouseByCodeQueryKey = (code: string) => {
 
 export const getGetWarehouseByCodeQueryOptions = <
   TData = Awaited<ReturnType<typeof getWarehouseByCode>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   code: string,
   options?: {
@@ -1375,11 +1375,11 @@ export const getGetWarehouseByCodeQueryOptions = <
 export type GetWarehouseByCodeQueryResult = NonNullable<
   Awaited<ReturnType<typeof getWarehouseByCode>>
 >
-export type GetWarehouseByCodeQueryError = HandlerErrorResponse
+export type GetWarehouseByCodeQueryError = DtoErrorResponse
 
 export function useGetWarehouseByCode<
   TData = Awaited<ReturnType<typeof getWarehouseByCode>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   code: string,
   options: {
@@ -1398,7 +1398,7 @@ export function useGetWarehouseByCode<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetWarehouseByCode<
   TData = Awaited<ReturnType<typeof getWarehouseByCode>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   code: string,
   options?: {
@@ -1419,7 +1419,7 @@ export function useGetWarehouseByCode<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetWarehouseByCode<
   TData = Awaited<ReturnType<typeof getWarehouseByCode>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   code: string,
   options?: {
@@ -1434,7 +1434,7 @@ export function useGetWarehouseByCode<
 
 export function useGetWarehouseByCode<
   TData = Awaited<ReturnType<typeof getWarehouseByCode>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   code: string,
   options?: {
@@ -1462,22 +1462,22 @@ export type getWarehouseDefaultResponse200 = {
 }
 
 export type getWarehouseDefaultResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getWarehouseDefaultResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getWarehouseDefaultResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type getWarehouseDefaultResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1516,7 +1516,7 @@ export const getGetWarehouseDefaultQueryKey = () => {
 
 export const getGetWarehouseDefaultQueryOptions = <
   TData = Awaited<ReturnType<typeof getWarehouseDefault>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(options?: {
   query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getWarehouseDefault>>, TError, TData>>
   request?: SecondParameter<typeof customInstance>
@@ -1538,11 +1538,11 @@ export const getGetWarehouseDefaultQueryOptions = <
 export type GetWarehouseDefaultQueryResult = NonNullable<
   Awaited<ReturnType<typeof getWarehouseDefault>>
 >
-export type GetWarehouseDefaultQueryError = HandlerErrorResponse
+export type GetWarehouseDefaultQueryError = DtoErrorResponse
 
 export function useGetWarehouseDefault<
   TData = Awaited<ReturnType<typeof getWarehouseDefault>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options: {
     query: Partial<
@@ -1562,7 +1562,7 @@ export function useGetWarehouseDefault<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetWarehouseDefault<
   TData = Awaited<ReturnType<typeof getWarehouseDefault>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options?: {
     query?: Partial<
@@ -1582,7 +1582,7 @@ export function useGetWarehouseDefault<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetWarehouseDefault<
   TData = Awaited<ReturnType<typeof getWarehouseDefault>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getWarehouseDefault>>, TError, TData>>
@@ -1596,7 +1596,7 @@ export function useGetWarehouseDefault<
 
 export function useGetWarehouseDefault<
   TData = Awaited<ReturnType<typeof getWarehouseDefault>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getWarehouseDefault>>, TError, TData>>
@@ -1623,17 +1623,17 @@ export type countWarehouseByStatusResponse200 = {
 }
 
 export type countWarehouseByStatusResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type countWarehouseByStatusResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type countWarehouseByStatusResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1671,7 +1671,7 @@ export const getCountWarehouseByStatusQueryKey = () => {
 
 export const getCountWarehouseByStatusQueryOptions = <
   TData = Awaited<ReturnType<typeof countWarehouseByStatus>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(options?: {
   query?: Partial<
     UseQueryOptions<Awaited<ReturnType<typeof countWarehouseByStatus>>, TError, TData>
@@ -1695,11 +1695,11 @@ export const getCountWarehouseByStatusQueryOptions = <
 export type CountWarehouseByStatusQueryResult = NonNullable<
   Awaited<ReturnType<typeof countWarehouseByStatus>>
 >
-export type CountWarehouseByStatusQueryError = HandlerErrorResponse
+export type CountWarehouseByStatusQueryError = DtoErrorResponse
 
 export function useCountWarehouseByStatus<
   TData = Awaited<ReturnType<typeof countWarehouseByStatus>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options: {
     query: Partial<
@@ -1719,7 +1719,7 @@ export function useCountWarehouseByStatus<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useCountWarehouseByStatus<
   TData = Awaited<ReturnType<typeof countWarehouseByStatus>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options?: {
     query?: Partial<
@@ -1739,7 +1739,7 @@ export function useCountWarehouseByStatus<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useCountWarehouseByStatus<
   TData = Awaited<ReturnType<typeof countWarehouseByStatus>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options?: {
     query?: Partial<
@@ -1755,7 +1755,7 @@ export function useCountWarehouseByStatus<
 
 export function useCountWarehouseByStatus<
   TData = Awaited<ReturnType<typeof countWarehouseByStatus>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options?: {
     query?: Partial<

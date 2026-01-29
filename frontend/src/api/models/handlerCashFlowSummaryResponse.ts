@@ -11,6 +11,7 @@ import type { HandlerExpenseIncomeCashFlowItem } from './handlerExpenseIncomeCas
 export interface HandlerCashFlowSummaryResponse {
   expense_items?: HandlerExpenseIncomeCashFlowItem[]
   income_items?: HandlerExpenseIncomeCashFlowItem[]
+  items?: HandlerExpenseIncomeCashFlowItem[]
   net_cash_flow?: number
   period_end?: string
   period_start?: string

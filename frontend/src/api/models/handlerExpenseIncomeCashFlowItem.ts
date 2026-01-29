@@ -12,6 +12,8 @@ export interface HandlerExpenseIncomeCashFlowItem {
   category?: string
   date?: string
   description?: string
+  direction?: string
   id?: string
+  number?: string
   type?: string
 }

@@ -23,11 +23,11 @@ import type {
   CancelIncomeIncomeBody,
   ConfirmIncomeIncomeBody,
   CreateIncomeIncomeBody,
+  DtoErrorResponse,
   GetIncomeIncomesSummaryParams,
   HandlerAPIResponseArrayHandlerOtherIncomeRecordResponse,
   HandlerAPIResponseHandlerIncomeSummaryResponse,
   HandlerAPIResponseHandlerOtherIncomeRecordResponse,
-  HandlerErrorResponse,
   HandlerSuccessResponse,
   ListIncomeIncomesParams,
   MarkIncomeReceivedIncomeBody,
@@ -48,17 +48,17 @@ export type listIncomeIncomesResponse200 = {
 }
 
 export type listIncomeIncomesResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type listIncomeIncomesResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type listIncomeIncomesResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -107,7 +107,7 @@ export const getListIncomeIncomesQueryKey = (params?: ListIncomeIncomesParams) =
 
 export const getListIncomeIncomesQueryOptions = <
   TData = Awaited<ReturnType<typeof listIncomeIncomes>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListIncomeIncomesParams,
   options?: {
@@ -132,11 +132,11 @@ export const getListIncomeIncomesQueryOptions = <
 export type ListIncomeIncomesQueryResult = NonNullable<
   Awaited<ReturnType<typeof listIncomeIncomes>>
 >
-export type ListIncomeIncomesQueryError = HandlerErrorResponse
+export type ListIncomeIncomesQueryError = DtoErrorResponse
 
 export function useListIncomeIncomes<
   TData = Awaited<ReturnType<typeof listIncomeIncomes>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params: undefined | ListIncomeIncomesParams,
   options: {
@@ -155,7 +155,7 @@ export function useListIncomeIncomes<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListIncomeIncomes<
   TData = Awaited<ReturnType<typeof listIncomeIncomes>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListIncomeIncomesParams,
   options?: {
@@ -174,7 +174,7 @@ export function useListIncomeIncomes<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListIncomeIncomes<
   TData = Awaited<ReturnType<typeof listIncomeIncomes>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListIncomeIncomesParams,
   options?: {
@@ -189,7 +189,7 @@ export function useListIncomeIncomes<
 
 export function useListIncomeIncomes<
   TData = Awaited<ReturnType<typeof listIncomeIncomes>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListIncomeIncomesParams,
   options?: {
@@ -217,17 +217,17 @@ export type createIncomeIncomeResponse201 = {
 }
 
 export type createIncomeIncomeResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type createIncomeIncomeResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type createIncomeIncomeResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -263,7 +263,7 @@ export const createIncomeIncome = async (
 }
 
 export const getCreateIncomeIncomeMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -302,12 +302,12 @@ export type CreateIncomeIncomeMutationResult = NonNullable<
   Awaited<ReturnType<typeof createIncomeIncome>>
 >
 export type CreateIncomeIncomeMutationBody = CreateIncomeIncomeBody
-export type CreateIncomeIncomeMutationError = HandlerErrorResponse
+export type CreateIncomeIncomeMutationError = DtoErrorResponse
 
 /**
  * @summary Create other income record
  */
-export const useCreateIncomeIncome = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useCreateIncomeIncome = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof createIncomeIncome>>,
@@ -336,22 +336,22 @@ export type deleteIncomeIncomeResponse200 = {
 }
 
 export type deleteIncomeIncomeResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type deleteIncomeIncomeResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type deleteIncomeIncomeResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type deleteIncomeIncomeResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -386,7 +386,7 @@ export const deleteIncomeIncome = async (
 }
 
 export const getDeleteIncomeIncomeMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -425,12 +425,12 @@ export type DeleteIncomeIncomeMutationResult = NonNullable<
   Awaited<ReturnType<typeof deleteIncomeIncome>>
 >
 
-export type DeleteIncomeIncomeMutationError = HandlerErrorResponse
+export type DeleteIncomeIncomeMutationError = DtoErrorResponse
 
 /**
  * @summary Delete other income record
  */
-export const useDeleteIncomeIncome = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useDeleteIncomeIncome = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof deleteIncomeIncome>>,
@@ -459,22 +459,22 @@ export type getIncomeIncomeResponse200 = {
 }
 
 export type getIncomeIncomeResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getIncomeIncomeResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getIncomeIncomeResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type getIncomeIncomeResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -512,7 +512,7 @@ export const getGetIncomeIncomeQueryKey = (id: string) => {
 
 export const getGetIncomeIncomeQueryOptions = <
   TData = Awaited<ReturnType<typeof getIncomeIncome>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -535,11 +535,11 @@ export const getGetIncomeIncomeQueryOptions = <
 }
 
 export type GetIncomeIncomeQueryResult = NonNullable<Awaited<ReturnType<typeof getIncomeIncome>>>
-export type GetIncomeIncomeQueryError = HandlerErrorResponse
+export type GetIncomeIncomeQueryError = DtoErrorResponse
 
 export function useGetIncomeIncome<
   TData = Awaited<ReturnType<typeof getIncomeIncome>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options: {
@@ -558,7 +558,7 @@ export function useGetIncomeIncome<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetIncomeIncome<
   TData = Awaited<ReturnType<typeof getIncomeIncome>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -577,7 +577,7 @@ export function useGetIncomeIncome<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetIncomeIncome<
   TData = Awaited<ReturnType<typeof getIncomeIncome>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -592,7 +592,7 @@ export function useGetIncomeIncome<
 
 export function useGetIncomeIncome<
   TData = Awaited<ReturnType<typeof getIncomeIncome>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   id: string,
   options?: {
@@ -620,22 +620,22 @@ export type updateIncomeIncomeResponse200 = {
 }
 
 export type updateIncomeIncomeResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type updateIncomeIncomeResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type updateIncomeIncomeResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type updateIncomeIncomeResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -673,7 +673,7 @@ export const updateIncomeIncome = async (
 }
 
 export const getUpdateIncomeIncomeMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -712,12 +712,12 @@ export type UpdateIncomeIncomeMutationResult = NonNullable<
   Awaited<ReturnType<typeof updateIncomeIncome>>
 >
 export type UpdateIncomeIncomeMutationBody = UpdateIncomeIncomeBody
-export type UpdateIncomeIncomeMutationError = HandlerErrorResponse
+export type UpdateIncomeIncomeMutationError = DtoErrorResponse
 
 /**
  * @summary Update other income record
  */
-export const useUpdateIncomeIncome = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useUpdateIncomeIncome = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateIncomeIncome>>,
@@ -746,22 +746,22 @@ export type cancelIncomeIncomeResponse200 = {
 }
 
 export type cancelIncomeIncomeResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type cancelIncomeIncomeResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type cancelIncomeIncomeResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type cancelIncomeIncomeResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -799,7 +799,7 @@ export const cancelIncomeIncome = async (
 }
 
 export const getCancelIncomeIncomeMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -838,12 +838,12 @@ export type CancelIncomeIncomeMutationResult = NonNullable<
   Awaited<ReturnType<typeof cancelIncomeIncome>>
 >
 export type CancelIncomeIncomeMutationBody = CancelIncomeIncomeBody
-export type CancelIncomeIncomeMutationError = HandlerErrorResponse
+export type CancelIncomeIncomeMutationError = DtoErrorResponse
 
 /**
  * @summary Cancel income record
  */
-export const useCancelIncomeIncome = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useCancelIncomeIncome = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof cancelIncomeIncome>>,
@@ -872,22 +872,22 @@ export type confirmIncomeIncomeResponse200 = {
 }
 
 export type confirmIncomeIncomeResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type confirmIncomeIncomeResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type confirmIncomeIncomeResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type confirmIncomeIncomeResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -925,7 +925,7 @@ export const confirmIncomeIncome = async (
 }
 
 export const getConfirmIncomeIncomeMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -964,12 +964,12 @@ export type ConfirmIncomeIncomeMutationResult = NonNullable<
   Awaited<ReturnType<typeof confirmIncomeIncome>>
 >
 export type ConfirmIncomeIncomeMutationBody = ConfirmIncomeIncomeBody
-export type ConfirmIncomeIncomeMutationError = HandlerErrorResponse
+export type ConfirmIncomeIncomeMutationError = DtoErrorResponse
 
 /**
  * @summary Confirm income record
  */
-export const useConfirmIncomeIncome = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useConfirmIncomeIncome = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof confirmIncomeIncome>>,
@@ -998,22 +998,22 @@ export type markIncomeReceivedIncomeResponse200 = {
 }
 
 export type markIncomeReceivedIncomeResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type markIncomeReceivedIncomeResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type markIncomeReceivedIncomeResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type markIncomeReceivedIncomeResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1051,7 +1051,7 @@ export const markIncomeReceivedIncome = async (
 }
 
 export const getMarkIncomeReceivedIncomeMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1090,12 +1090,12 @@ export type MarkIncomeReceivedIncomeMutationResult = NonNullable<
   Awaited<ReturnType<typeof markIncomeReceivedIncome>>
 >
 export type MarkIncomeReceivedIncomeMutationBody = MarkIncomeReceivedIncomeBody
-export type MarkIncomeReceivedIncomeMutationError = HandlerErrorResponse
+export type MarkIncomeReceivedIncomeMutationError = DtoErrorResponse
 
 /**
  * @summary Mark income as received
  */
-export const useMarkIncomeReceivedIncome = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useMarkIncomeReceivedIncome = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof markIncomeReceivedIncome>>,
@@ -1124,17 +1124,17 @@ export type getIncomeIncomesSummaryResponse200 = {
 }
 
 export type getIncomeIncomesSummaryResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getIncomeIncomesSummaryResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getIncomeIncomesSummaryResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1185,7 +1185,7 @@ export const getGetIncomeIncomesSummaryQueryKey = (params?: GetIncomeIncomesSumm
 
 export const getGetIncomeIncomesSummaryQueryOptions = <
   TData = Awaited<ReturnType<typeof getIncomeIncomesSummary>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: GetIncomeIncomesSummaryParams,
   options?: {
@@ -1213,11 +1213,11 @@ export const getGetIncomeIncomesSummaryQueryOptions = <
 export type GetIncomeIncomesSummaryQueryResult = NonNullable<
   Awaited<ReturnType<typeof getIncomeIncomesSummary>>
 >
-export type GetIncomeIncomesSummaryQueryError = HandlerErrorResponse
+export type GetIncomeIncomesSummaryQueryError = DtoErrorResponse
 
 export function useGetIncomeIncomesSummary<
   TData = Awaited<ReturnType<typeof getIncomeIncomesSummary>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params: undefined | GetIncomeIncomesSummaryParams,
   options: {
@@ -1238,7 +1238,7 @@ export function useGetIncomeIncomesSummary<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetIncomeIncomesSummary<
   TData = Awaited<ReturnType<typeof getIncomeIncomesSummary>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: GetIncomeIncomesSummaryParams,
   options?: {
@@ -1259,7 +1259,7 @@ export function useGetIncomeIncomesSummary<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetIncomeIncomesSummary<
   TData = Awaited<ReturnType<typeof getIncomeIncomesSummary>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: GetIncomeIncomesSummaryParams,
   options?: {
@@ -1276,7 +1276,7 @@ export function useGetIncomeIncomesSummary<
 
 export function useGetIncomeIncomesSummary<
   TData = Awaited<ReturnType<typeof getIncomeIncomesSummary>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: GetIncomeIncomesSummaryParams,
   options?: {

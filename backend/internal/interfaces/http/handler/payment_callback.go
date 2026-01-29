@@ -26,7 +26,8 @@ func NewPaymentCallbackHandler(callbackService *financeapp.PaymentCallbackServic
 }
 
 // PaymentCallbackResponse represents the response for payment callback status
-// @Description Payment callback status response
+//
+//	@Description	Payment callback status response
 type PaymentCallbackResponse struct {
 	Success          bool   `json:"success" example:"true"`
 	AlreadyProcessed bool   `json:"already_processed,omitempty" example:"false"`
@@ -34,65 +35,69 @@ type PaymentCallbackResponse struct {
 }
 
 // HandleWechatPaymentCallback godoc
-// @ID           handleWechatPaymentCallbackPaymentCallback
-// @Summary      Handle WeChat Pay payment callback
-// @Description  Receive and process payment notification from WeChat Pay
-// @Tags         payment-callbacks
-// @Accept       json
-// @Produce      json
-// @Param        Wechatpay-Signature header string true "WeChat Pay signature"
-// @Param        Wechatpay-Timestamp header string true "Timestamp"
-// @Param        Wechatpay-Nonce header string true "Nonce"
-// @Param        Wechatpay-Serial header string true "Certificate serial number"
-// @Success      200 {object} map[string]string "code=SUCCESS"
-// @Failure      500 {object} map[string]string "code=FAIL"
-// @Router       /payment/callback/wechat [post]
+//
+//	@ID				handleWechatPaymentCallbackPaymentCallback
+//	@Summary		Handle WeChat Pay payment callback
+//	@Description	Receive and process payment notification from WeChat Pay
+//	@Tags			payment-callbacks
+//	@Accept			json
+//	@Produce		json
+//	@Param			Wechatpay-Signature	header		string				true	"WeChat Pay signature"
+//	@Param			Wechatpay-Timestamp	header		string				true	"Timestamp"
+//	@Param			Wechatpay-Nonce		header		string				true	"Nonce"
+//	@Param			Wechatpay-Serial	header		string				true	"Certificate serial number"
+//	@Success		200					{object}	map[string]string	"code=SUCCESS"
+//	@Failure		500					{object}	map[string]string	"code=FAIL"
+//	@Router			/payment/callback/wechat [post]
 func (h *PaymentCallbackHandler) HandleWechatPaymentCallback(c *gin.Context) {
 	h.handlePaymentCallback(c, finance.PaymentGatewayTypeWechat)
 }
 
 // HandleAlipayPaymentCallback godoc
-// @ID           handleAlipayPaymentCallbackPaymentCallback
-// @Summary      Handle Alipay payment callback
-// @Description  Receive and process payment notification from Alipay
-// @Tags         payment-callbacks
-// @Accept       application/x-www-form-urlencoded
-// @Produce      text/plain
-// @Success      200 {string} string "success"
-// @Failure      500 {string} string "fail"
-// @Router       /payment/callback/alipay [post]
+//
+//	@ID				handleAlipayPaymentCallbackPaymentCallback
+//	@Summary		Handle Alipay payment callback
+//	@Description	Receive and process payment notification from Alipay
+//	@Tags			payment-callbacks
+//	@Accept			application/x-www-form-urlencoded
+//	@Produce		text/plain
+//	@Success		200	{string}	string	"success"
+//	@Failure		500	{string}	string	"fail"
+//	@Router			/payment/callback/alipay [post]
 func (h *PaymentCallbackHandler) HandleAlipayPaymentCallback(c *gin.Context) {
 	h.handlePaymentCallback(c, finance.PaymentGatewayTypeAlipay)
 }
 
 // HandleWechatRefundCallback godoc
-// @ID           handleWechatRefundCallbackPaymentCallback
-// @Summary      Handle WeChat Pay refund callback
-// @Description  Receive and process refund notification from WeChat Pay
-// @Tags         payment-callbacks
-// @Accept       json
-// @Produce      json
-// @Param        Wechatpay-Signature header string true "WeChat Pay signature"
-// @Param        Wechatpay-Timestamp header string true "Timestamp"
-// @Param        Wechatpay-Nonce header string true "Nonce"
-// @Param        Wechatpay-Serial header string true "Certificate serial number"
-// @Success      200 {object} map[string]string "code=SUCCESS"
-// @Failure      500 {object} map[string]string "code=FAIL"
-// @Router       /payment/callback/wechat/refund [post]
+//
+//	@ID				handleWechatRefundCallbackPaymentCallback
+//	@Summary		Handle WeChat Pay refund callback
+//	@Description	Receive and process refund notification from WeChat Pay
+//	@Tags			payment-callbacks
+//	@Accept			json
+//	@Produce		json
+//	@Param			Wechatpay-Signature	header		string				true	"WeChat Pay signature"
+//	@Param			Wechatpay-Timestamp	header		string				true	"Timestamp"
+//	@Param			Wechatpay-Nonce		header		string				true	"Nonce"
+//	@Param			Wechatpay-Serial	header		string				true	"Certificate serial number"
+//	@Success		200					{object}	map[string]string	"code=SUCCESS"
+//	@Failure		500					{object}	map[string]string	"code=FAIL"
+//	@Router			/payment/callback/wechat/refund [post]
 func (h *PaymentCallbackHandler) HandleWechatRefundCallback(c *gin.Context) {
 	h.handleRefundCallback(c, finance.PaymentGatewayTypeWechat)
 }
 
 // HandleAlipayRefundCallback godoc
-// @ID           handleAlipayRefundCallbackPaymentCallback
-// @Summary      Handle Alipay refund callback
-// @Description  Receive and process refund notification from Alipay
-// @Tags         payment-callbacks
-// @Accept       application/x-www-form-urlencoded
-// @Produce      text/plain
-// @Success      200 {string} string "success"
-// @Failure      500 {string} string "fail"
-// @Router       /payment/callback/alipay/refund [post]
+//
+//	@ID				handleAlipayRefundCallbackPaymentCallback
+//	@Summary		Handle Alipay refund callback
+//	@Description	Receive and process refund notification from Alipay
+//	@Tags			payment-callbacks
+//	@Accept			application/x-www-form-urlencoded
+//	@Produce		text/plain
+//	@Success		200	{string}	string	"success"
+//	@Failure		500	{string}	string	"fail"
+//	@Router			/payment/callback/alipay/refund [post]
 func (h *PaymentCallbackHandler) HandleAlipayRefundCallback(c *gin.Context) {
 	h.handleRefundCallback(c, finance.PaymentGatewayTypeAlipay)
 }

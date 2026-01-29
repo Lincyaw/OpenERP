@@ -4,4 +4,4 @@
  *
  */
 
-export type CompleteSalesOrderBody = { [key: string]: unknown }
+export type ValidateCustomerImportBodyTwo = { [key: string]: unknown }

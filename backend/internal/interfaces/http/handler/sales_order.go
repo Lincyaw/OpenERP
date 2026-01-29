@@ -25,7 +25,8 @@ func NewSalesOrderHandler(orderService *tradeapp.SalesOrderService) *SalesOrderH
 }
 
 // CreateSalesOrderRequest represents a request to create a new sales order
-// @Description Request body for creating a new sales order
+//
+//	@Description	Request body for creating a new sales order
 type CreateSalesOrderRequest struct {
 	CustomerID   string                      `json:"customer_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
 	CustomerName string                      `json:"customer_name" binding:"required,min=1,max=200" example:"张三"`
@@ -36,7 +37,8 @@ type CreateSalesOrderRequest struct {
 }
 
 // CreateSalesOrderItemInput represents an item in the create order request
-// @Description Order item for creation
+//
+//	@Description	Order item for creation
 type CreateSalesOrderItemInput struct {
 	ProductID   string  `json:"product_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440002"`
 	ProductName string  `json:"product_name" binding:"required,min=1,max=200" example:"测试商品"`
@@ -48,7 +50,8 @@ type CreateSalesOrderItemInput struct {
 }
 
 // UpdateSalesOrderRequest represents a request to update a sales order
-// @Description Request body for updating a sales order (draft only)
+//
+//	@Description	Request body for updating a sales order (draft only)
 type UpdateSalesOrderRequest struct {
 	WarehouseID *string  `json:"warehouse_id" example:"550e8400-e29b-41d4-a716-446655440001"`
 	Discount    *float64 `json:"discount" example:"50.00"`
@@ -56,7 +59,8 @@ type UpdateSalesOrderRequest struct {
 }
 
 // AddOrderItemRequest represents a request to add an item to an order
-// @Description Request body for adding an item to an order
+//
+//	@Description	Request body for adding an item to an order
 type AddOrderItemRequest struct {
 	ProductID   string  `json:"product_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440002"`
 	ProductName string  `json:"product_name" binding:"required,min=1,max=200" example:"测试商品"`
@@ -68,7 +72,8 @@ type AddOrderItemRequest struct {
 }
 
 // UpdateOrderItemRequest represents a request to update an order item
-// @Description Request body for updating an order item
+//
+//	@Description	Request body for updating an order item
 type UpdateOrderItemRequest struct {
 	Quantity  *float64 `json:"quantity" example:"8"`
 	UnitPrice *float64 `json:"unit_price" example:"89.99"`
@@ -76,25 +81,29 @@ type UpdateOrderItemRequest struct {
 }
 
 // ConfirmOrderRequest represents a request to confirm an order
-// @Description Request body for confirming an order
+//
+//	@Description	Request body for confirming an order
 type ConfirmOrderRequest struct {
 	WarehouseID *string `json:"warehouse_id" example:"550e8400-e29b-41d4-a716-446655440001"`
 }
 
 // ShipOrderRequest represents a request to ship an order
-// @Description Request body for shipping an order
+//
+//	@Description	Request body for shipping an order
 type ShipOrderRequest struct {
 	WarehouseID *string `json:"warehouse_id" example:"550e8400-e29b-41d4-a716-446655440001"`
 }
 
 // CancelOrderRequest represents a request to cancel an order
-// @Description Request body for cancelling an order
+//
+//	@Description	Request body for cancelling an order
 type CancelOrderRequest struct {
 	Reason string `json:"reason" binding:"required,min=1,max=500" example:"客户取消订单"`
 }
 
 // SalesOrderResponse represents a sales order in API responses
-// @Description Sales order response
+//
+//	@Description	Sales order response
 type SalesOrderResponse struct {
 	ID             string                   `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
 	TenantID       string                   `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440000"`
@@ -121,7 +130,8 @@ type SalesOrderResponse struct {
 }
 
 // SalesOrderListResponse represents a sales order in list responses
-// @Description Sales order list item response
+//
+//	@Description	Sales order list item response
 type SalesOrderListResponse struct {
 	ID            string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
 	OrderNumber   string     `json:"order_number" example:"SO-2026-00001"`
@@ -139,7 +149,8 @@ type SalesOrderListResponse struct {
 }
 
 // SalesOrderItemResponse represents an order item in API responses
-// @Description Sales order item response
+//
+//	@Description	Sales order item response
 type SalesOrderItemResponse struct {
 	ID          string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440020"`
 	ProductID   string    `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440002"`
@@ -155,7 +166,8 @@ type SalesOrderItemResponse struct {
 }
 
 // OrderStatusSummaryResponse represents order count summary by status
-// @Description Order status summary response
+//
+//	@Description	Order status summary response
 type OrderStatusSummaryResponse struct {
 	Draft     int64 `json:"draft" example:"5"`
 	Confirmed int64 `json:"confirmed" example:"10"`
@@ -166,20 +178,21 @@ type OrderStatusSummaryResponse struct {
 }
 
 // Create godoc
-// @ID           createSalesOrder
-// @Summary      Create a new sales order
-// @Description  Create a new sales order with optional items
-// @Tags         sales-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body CreateSalesOrderRequest true "Sales order creation request"
-// @Success      201 {object} APIResponse[SalesOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders [post]
+//
+//	@ID				createSalesOrder
+//	@Summary		Create a new sales order
+//	@Description	Create a new sales order with optional items
+//	@Tags			sales-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			request		body		CreateSalesOrderRequest	true	"Sales order creation request"
+//	@Success		201			{object}	APIResponse[SalesOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders [post]
 func (h *SalesOrderHandler) Create(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -264,20 +277,21 @@ func (h *SalesOrderHandler) Create(c *gin.Context) {
 }
 
 // GetByID godoc
-// @ID           getSalesOrderById
-// @Summary      Get sales order by ID
-// @Description  Retrieve a sales order by its ID
-// @Tags         sales-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Sales Order ID" format(uuid)
-// @Success      200 {object} APIResponse[SalesOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders/{id} [get]
+//
+//	@ID				getSalesOrderById
+//	@Summary		Get sales order by ID
+//	@Description	Retrieve a sales order by its ID
+//	@Tags			sales-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Sales Order ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[SalesOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders/{id} [get]
 func (h *SalesOrderHandler) GetByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -301,20 +315,21 @@ func (h *SalesOrderHandler) GetByID(c *gin.Context) {
 }
 
 // GetByOrderNumber godoc
-// @ID           getSalesOrderByOrderNumber
-// @Summary      Get sales order by order number
-// @Description  Retrieve a sales order by its order number
-// @Tags         sales-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        order_number path string true "Order Number" example:"SO-2026-00001"
-// @Success      200 {object} APIResponse[SalesOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders/number/{order_number} [get]
+//
+//	@ID				getSalesOrderByOrderNumber
+//	@Summary		Get sales order by order number
+//	@Description	Retrieve a sales order by its order number
+//	@Tags			sales-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string	false	"Tenant ID (optional for dev)"
+//	@Param			order_number	path		string	true	"Order Number"	example:"SO-2026-00001"
+//	@Success		200				{object}	APIResponse[SalesOrderResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		401				{object}	dto.ErrorResponse
+//	@Failure		404				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders/number/{order_number} [get]
 func (h *SalesOrderHandler) GetByOrderNumber(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -338,31 +353,32 @@ func (h *SalesOrderHandler) GetByOrderNumber(c *gin.Context) {
 }
 
 // List godoc
-// @ID           listSalesOrders
-// @Summary      List sales orders
-// @Description  Retrieve a paginated list of sales orders with optional filtering
-// @Tags         sales-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        search query string false "Search term (order number, customer name)"
-// @Param        customer_id query string false "Customer ID" format(uuid)
-// @Param        warehouse_id query string false "Warehouse ID" format(uuid)
-// @Param        status query string false "Order status" Enums(draft, confirmed, shipped, completed, cancelled)
-// @Param        statuses query []string false "Multiple order statuses"
-// @Param        start_date query string false "Start date (ISO 8601)" format(date-time)
-// @Param        end_date query string false "End date (ISO 8601)" format(date-time)
-// @Param        min_amount query number false "Minimum payable amount"
-// @Param        max_amount query number false "Maximum payable amount"
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Param        order_by query string false "Order by field" default(created_at)
-// @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
-// @Success      200 {object} APIResponse[[]SalesOrderListResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders [get]
+//
+//	@ID				listSalesOrders
+//	@Summary		List sales orders
+//	@Description	Retrieve a paginated list of sales orders with optional filtering
+//	@Tags			sales-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string		false	"Tenant ID (optional for dev)"
+//	@Param			search			query		string		false	"Search term (order number, customer name)"
+//	@Param			customer_id		query		string		false	"Customer ID"	format(uuid)
+//	@Param			warehouse_id	query		string		false	"Warehouse ID"	format(uuid)
+//	@Param			status			query		string		false	"Order status"	Enums(draft, confirmed, shipped, completed, cancelled)
+//	@Param			statuses		query		[]string	false	"Multiple order statuses"
+//	@Param			start_date		query		string		false	"Start date (ISO 8601)"	format(date-time)
+//	@Param			end_date		query		string		false	"End date (ISO 8601)"	format(date-time)
+//	@Param			min_amount		query		number		false	"Minimum payable amount"
+//	@Param			max_amount		query		number		false	"Maximum payable amount"
+//	@Param			page			query		int			false	"Page number"		default(1)
+//	@Param			page_size		query		int			false	"Page size"			default(20)	maximum(100)
+//	@Param			order_by		query		string		false	"Order by field"	default(created_at)
+//	@Param			order_dir		query		string		false	"Order direction"	Enums(asc, desc)	default(desc)
+//	@Success		200				{object}	APIResponse[[]SalesOrderListResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		401				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders [get]
 func (h *SalesOrderHandler) List(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -394,23 +410,24 @@ func (h *SalesOrderHandler) List(c *gin.Context) {
 }
 
 // Update godoc
-// @ID           updateSalesOrder
-// @Summary      Update a sales order
-// @Description  Update a sales order (only allowed in DRAFT status)
-// @Tags         sales-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Sales Order ID" format(uuid)
-// @Param        request body UpdateSalesOrderRequest true "Sales order update request"
-// @Success      200 {object} APIResponse[SalesOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders/{id} [put]
+//
+//	@ID				updateSalesOrder
+//	@Summary		Update a sales order
+//	@Description	Update a sales order (only allowed in DRAFT status)
+//	@Tags			sales-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string					true	"Sales Order ID"	format(uuid)
+//	@Param			request		body		UpdateSalesOrderRequest	true	"Sales order update request"
+//	@Success		200			{object}	APIResponse[SalesOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders/{id} [put]
 func (h *SalesOrderHandler) Update(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -467,21 +484,22 @@ func (h *SalesOrderHandler) Update(c *gin.Context) {
 }
 
 // Delete godoc
-// @ID           deleteSalesOrder
-// @Summary      Delete a sales order
-// @Description  Delete a sales order (only allowed in DRAFT status)
-// @Tags         sales-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Sales Order ID" format(uuid)
-// @Success      204
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders/{id} [delete]
+//
+//	@ID				deleteSalesOrder
+//	@Summary		Delete a sales order
+//	@Description	Delete a sales order (only allowed in DRAFT status)
+//	@Tags			sales-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID	header	string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path	string	true	"Sales Order ID"	format(uuid)
+//	@Success		204
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		422	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders/{id} [delete]
 func (h *SalesOrderHandler) Delete(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -505,23 +523,24 @@ func (h *SalesOrderHandler) Delete(c *gin.Context) {
 }
 
 // AddItem godoc
-// @ID           addSalesOrderItem
-// @Summary      Add item to sales order
-// @Description  Add a new item to a sales order (only allowed in DRAFT status)
-// @Tags         sales-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Sales Order ID" format(uuid)
-// @Param        request body AddOrderItemRequest true "Order item to add"
-// @Success      200 {object} APIResponse[SalesOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders/{id}/items [post]
+//
+//	@ID				addSalesOrderItem
+//	@Summary		Add item to sales order
+//	@Description	Add a new item to a sales order (only allowed in DRAFT status)
+//	@Tags			sales-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string				false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string				true	"Sales Order ID"	format(uuid)
+//	@Param			request		body		AddOrderItemRequest	true	"Order item to add"
+//	@Success		200			{object}	APIResponse[SalesOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders/{id}/items [post]
 func (h *SalesOrderHandler) AddItem(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -569,24 +588,25 @@ func (h *SalesOrderHandler) AddItem(c *gin.Context) {
 }
 
 // UpdateItem godoc
-// @ID           updateSalesOrderItem
-// @Summary      Update order item
-// @Description  Update an item in a sales order (only allowed in DRAFT status)
-// @Tags         sales-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Sales Order ID" format(uuid)
-// @Param        item_id path string true "Order Item ID" format(uuid)
-// @Param        request body UpdateOrderItemRequest true "Order item update request"
-// @Success      200 {object} APIResponse[SalesOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders/{id}/items/{item_id} [put]
+//
+//	@ID				updateSalesOrderItem
+//	@Summary		Update order item
+//	@Description	Update an item in a sales order (only allowed in DRAFT status)
+//	@Tags			sales-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string					true	"Sales Order ID"	format(uuid)
+//	@Param			item_id		path		string					true	"Order Item ID"		format(uuid)
+//	@Param			request		body		UpdateOrderItemRequest	true	"Order item update request"
+//	@Success		200			{object}	APIResponse[SalesOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders/{id}/items/{item_id} [put]
 func (h *SalesOrderHandler) UpdateItem(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -636,22 +656,23 @@ func (h *SalesOrderHandler) UpdateItem(c *gin.Context) {
 }
 
 // RemoveItem godoc
-// @ID           removeSalesOrderItem
-// @Summary      Remove item from sales order
-// @Description  Remove an item from a sales order (only allowed in DRAFT status)
-// @Tags         sales-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Sales Order ID" format(uuid)
-// @Param        item_id path string true "Order Item ID" format(uuid)
-// @Success      200 {object} APIResponse[SalesOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders/{id}/items/{item_id} [delete]
+//
+//	@ID				removeSalesOrderItem
+//	@Summary		Remove item from sales order
+//	@Description	Remove an item from a sales order (only allowed in DRAFT status)
+//	@Tags			sales-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Sales Order ID"	format(uuid)
+//	@Param			item_id		path		string	true	"Order Item ID"		format(uuid)
+//	@Success		200			{object}	APIResponse[SalesOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders/{id}/items/{item_id} [delete]
 func (h *SalesOrderHandler) RemoveItem(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -681,23 +702,24 @@ func (h *SalesOrderHandler) RemoveItem(c *gin.Context) {
 }
 
 // Confirm godoc
-// @ID           confirmSalesOrder
-// @Summary      Confirm a sales order
-// @Description  Confirm a sales order (transitions from DRAFT to CONFIRMED)
-// @Tags         sales-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Sales Order ID" format(uuid)
-// @Param        request body ConfirmOrderRequest false "Confirm order request"
-// @Success      200 {object} APIResponse[SalesOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders/{id}/confirm [post]
+//
+//	@ID				confirmSalesOrder
+//	@Summary		Confirm a sales order
+//	@Description	Confirm a sales order (transitions from DRAFT to CONFIRMED)
+//	@Tags			sales-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string				false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string				true	"Sales Order ID"	format(uuid)
+//	@Param			request		body		ConfirmOrderRequest	false	"Confirm order request"
+//	@Success		200			{object}	APIResponse[SalesOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders/{id}/confirm [post]
 func (h *SalesOrderHandler) Confirm(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -736,23 +758,24 @@ func (h *SalesOrderHandler) Confirm(c *gin.Context) {
 }
 
 // Ship godoc
-// @ID           shipSalesOrder
-// @Summary      Ship a sales order
-// @Description  Mark a sales order as shipped (transitions from CONFIRMED to SHIPPED)
-// @Tags         sales-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Sales Order ID" format(uuid)
-// @Param        request body ShipOrderRequest false "Ship order request"
-// @Success      200 {object} APIResponse[SalesOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders/{id}/ship [post]
+//
+//	@ID				shipSalesOrder
+//	@Summary		Ship a sales order
+//	@Description	Mark a sales order as shipped (transitions from CONFIRMED to SHIPPED)
+//	@Tags			sales-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string				false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string				true	"Sales Order ID"	format(uuid)
+//	@Param			request		body		ShipOrderRequest	false	"Ship order request"
+//	@Success		200			{object}	APIResponse[SalesOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders/{id}/ship [post]
 func (h *SalesOrderHandler) Ship(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -791,21 +814,22 @@ func (h *SalesOrderHandler) Ship(c *gin.Context) {
 }
 
 // Complete godoc
-// @ID           completeSalesOrder
-// @Summary      Complete a sales order
-// @Description  Mark a sales order as completed (transitions from SHIPPED to COMPLETED)
-// @Tags         sales-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Sales Order ID" format(uuid)
-// @Success      200 {object} APIResponse[SalesOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders/{id}/complete [post]
+//
+//	@ID				completeSalesOrder
+//	@Summary		Complete a sales order
+//	@Description	Mark a sales order as completed (transitions from SHIPPED to COMPLETED)
+//	@Tags			sales-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Sales Order ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[SalesOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders/{id}/complete [post]
 func (h *SalesOrderHandler) Complete(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -829,23 +853,24 @@ func (h *SalesOrderHandler) Complete(c *gin.Context) {
 }
 
 // Cancel godoc
-// @ID           cancelSalesOrder
-// @Summary      Cancel a sales order
-// @Description  Cancel a sales order (from DRAFT or CONFIRMED status)
-// @Tags         sales-orders
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Sales Order ID" format(uuid)
-// @Param        request body CancelOrderRequest true "Cancel order request"
-// @Success      200 {object} APIResponse[SalesOrderResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders/{id}/cancel [post]
+//
+//	@ID				cancelSalesOrder
+//	@Summary		Cancel a sales order
+//	@Description	Cancel a sales order (from DRAFT or CONFIRMED status)
+//	@Tags			sales-orders
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string				false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string				true	"Sales Order ID"	format(uuid)
+//	@Param			request		body		CancelOrderRequest	true	"Cancel order request"
+//	@Success		200			{object}	APIResponse[SalesOrderResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders/{id}/cancel [post]
 func (h *SalesOrderHandler) Cancel(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -879,18 +904,19 @@ func (h *SalesOrderHandler) Cancel(c *gin.Context) {
 }
 
 // GetStatusSummary godoc
-// @ID           getSalesOrderStatusSummary
-// @Summary      Get order status summary
-// @Description  Get count of orders by status for dashboard
-// @Tags         sales-orders
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} APIResponse[OrderStatusSummaryResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /trade/sales-orders/stats/summary [get]
+//
+//	@ID				getSalesOrderStatusSummary
+//	@Summary		Get order status summary
+//	@Description	Get count of orders by status for dashboard
+//	@Tags			sales-orders
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Success		200			{object}	APIResponse[OrderStatusSummaryResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/trade/sales-orders/stats/summary [get]
 func (h *SalesOrderHandler) GetStatusSummary(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {

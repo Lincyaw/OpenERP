@@ -44,7 +44,8 @@ func NewInventoryHandler(inventoryService *inventoryapp.InventoryService) *Inven
 // ===================== Request/Response Types for Swagger =====================
 
 // InventoryItemResponse represents an inventory item in API responses
-// @Description Inventory item response with stock quantities and cost information
+//
+//	@Description	Inventory item response with stock quantities and cost information
 type InventoryItemResponse struct {
 	ID                string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TenantID          string  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -65,7 +66,8 @@ type InventoryItemResponse struct {
 }
 
 // IncreaseStockRequest represents a request to increase stock
-// @Description Request body for increasing stock
+//
+//	@Description	Request body for increasing stock
 type IncreaseStockRequest struct {
 	WarehouseID string  `json:"warehouse_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	ProductID   string  `json:"product_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -81,7 +83,8 @@ type IncreaseStockRequest struct {
 }
 
 // LockStockRequest represents a request to lock stock
-// @Description Request body for locking stock for a pending order
+//
+//	@Description	Request body for locking stock for a pending order
 type LockStockRequest struct {
 	WarehouseID string  `json:"warehouse_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	ProductID   string  `json:"product_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -92,7 +95,8 @@ type LockStockRequest struct {
 }
 
 // LockStockResponse represents the response after locking stock
-// @Description Response after successfully locking stock
+//
+//	@Description	Response after successfully locking stock
 type LockStockResponse struct {
 	LockID          string  `json:"lock_id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	InventoryItemID string  `json:"inventory_item_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -105,13 +109,15 @@ type LockStockResponse struct {
 }
 
 // UnlockStockRequest represents a request to unlock stock
-// @Description Request body for releasing locked stock
+//
+//	@Description	Request body for releasing locked stock
 type UnlockStockRequest struct {
 	LockID string `json:"lock_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 }
 
 // DeductStockRequest represents a request to deduct locked stock
-// @Description Request body for consuming locked stock (shipment/fulfillment)
+//
+//	@Description	Request body for consuming locked stock (shipment/fulfillment)
 type DeductStockRequest struct {
 	LockID     string `json:"lock_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	SourceType string `json:"source_type" binding:"required" example:"SALES_ORDER"`
@@ -121,7 +127,8 @@ type DeductStockRequest struct {
 }
 
 // AdjustStockRequest represents a request to adjust stock
-// @Description Request body for stock count adjustment
+//
+//	@Description	Request body for stock count adjustment
 type AdjustStockRequest struct {
 	WarehouseID    string  `json:"warehouse_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	ProductID      string  `json:"product_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -133,7 +140,8 @@ type AdjustStockRequest struct {
 }
 
 // SetThresholdsRequest represents a request to set min/max thresholds
-// @Description Request body for setting inventory alert thresholds
+//
+//	@Description	Request body for setting inventory alert thresholds
 type SetThresholdsRequest struct {
 	WarehouseID string   `json:"warehouse_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	ProductID   string   `json:"product_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -142,7 +150,8 @@ type SetThresholdsRequest struct {
 }
 
 // CheckAvailabilityRequest represents a request to check stock availability
-// @Description Request body for checking if a quantity is available
+//
+//	@Description	Request body for checking if a quantity is available
 type CheckAvailabilityRequest struct {
 	WarehouseID string  `json:"warehouse_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	ProductID   string  `json:"product_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -150,7 +159,8 @@ type CheckAvailabilityRequest struct {
 }
 
 // CheckAvailabilityResponse represents the availability check result
-// @Description Response indicating if requested quantity is available
+//
+//	@Description	Response indicating if requested quantity is available
 type CheckAvailabilityResponse struct {
 	Available         bool    `json:"available" example:"true"`
 	AvailableQuantity float64 `json:"available_quantity" example:"100.0"`
@@ -158,7 +168,8 @@ type CheckAvailabilityResponse struct {
 }
 
 // StockLockResponse represents a stock lock in API responses
-// @Description Stock lock details
+//
+//	@Description	Stock lock details
 type StockLockResponse struct {
 	ID              string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	InventoryItemID string  `json:"inventory_item_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -174,7 +185,8 @@ type StockLockResponse struct {
 }
 
 // TransactionResponse represents an inventory transaction in API responses
-// @Description Inventory transaction record for audit trail
+//
+//	@Description	Inventory transaction record for audit trail
 type TransactionResponse struct {
 	ID              string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TenantID        string  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -201,20 +213,21 @@ type TransactionResponse struct {
 // ===================== Query Handlers =====================
 
 // GetByID godoc
-// @ID           getInventoryById
-// @Summary      Get inventory item by ID
-// @Description  Retrieve an inventory item by its ID
-// @Tags         inventory
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Inventory Item ID" format(uuid)
-// @Success      200 {object} APIResponse[InventoryItemResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/items/{id} [get]
+//
+//	@ID				getInventoryById
+//	@Summary		Get inventory item by ID
+//	@Description	Retrieve an inventory item by its ID
+//	@Tags			inventory
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Inventory Item ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[InventoryItemResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/items/{id} [get]
 func (h *InventoryHandler) GetByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -238,21 +251,22 @@ func (h *InventoryHandler) GetByID(c *gin.Context) {
 }
 
 // GetByWarehouseAndProduct godoc
-// @ID           getInventoryByWarehouseAndProduct
-// @Summary      Get inventory by warehouse and product
-// @Description  Retrieve inventory for a specific warehouse-product combination
-// @Tags         inventory
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        warehouse_id query string true "Warehouse ID" format(uuid)
-// @Param        product_id query string true "Product ID" format(uuid)
-// @Success      200 {object} APIResponse[InventoryItemResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/items/lookup [get]
+//
+//	@ID				getInventoryByWarehouseAndProduct
+//	@Summary		Get inventory by warehouse and product
+//	@Description	Retrieve inventory for a specific warehouse-product combination
+//	@Tags			inventory
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string	false	"Tenant ID (optional for dev)"
+//	@Param			warehouse_id	query		string	true	"Warehouse ID"	format(uuid)
+//	@Param			product_id		query		string	true	"Product ID"	format(uuid)
+//	@Success		200				{object}	APIResponse[InventoryItemResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		401				{object}	dto.ErrorResponse
+//	@Failure		404				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/items/lookup [get]
 func (h *InventoryHandler) GetByWarehouseAndProduct(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -290,29 +304,30 @@ func (h *InventoryHandler) GetByWarehouseAndProduct(c *gin.Context) {
 }
 
 // List godoc
-// @ID           listInventories
-// @Summary      List inventory items
-// @Description  Retrieve a paginated list of inventory items with optional filtering
-// @Tags         inventory
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        search query string false "Search term"
-// @Param        warehouse_id query string false "Filter by warehouse ID" format(uuid)
-// @Param        product_id query string false "Filter by product ID" format(uuid)
-// @Param        below_minimum query boolean false "Filter items below minimum threshold"
-// @Param        has_stock query boolean false "Filter by stock availability"
-// @Param        min_quantity query number false "Minimum quantity filter"
-// @Param        max_quantity query number false "Maximum quantity filter"
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Param        order_by query string false "Order by field" default(updated_at)
-// @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
-// @Success      200 {object} APIResponse[[]InventoryItemResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/items [get]
+//
+//	@ID				listInventories
+//	@Summary		List inventory items
+//	@Description	Retrieve a paginated list of inventory items with optional filtering
+//	@Tags			inventory
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string	false	"Tenant ID (optional for dev)"
+//	@Param			search			query		string	false	"Search term"
+//	@Param			warehouse_id	query		string	false	"Filter by warehouse ID"	format(uuid)
+//	@Param			product_id		query		string	false	"Filter by product ID"		format(uuid)
+//	@Param			below_minimum	query		boolean	false	"Filter items below minimum threshold"
+//	@Param			has_stock		query		boolean	false	"Filter by stock availability"
+//	@Param			min_quantity	query		number	false	"Minimum quantity filter"
+//	@Param			max_quantity	query		number	false	"Maximum quantity filter"
+//	@Param			page			query		int		false	"Page number"		default(1)
+//	@Param			page_size		query		int		false	"Page size"			default(20)	maximum(100)
+//	@Param			order_by		query		string	false	"Order by field"	default(updated_at)
+//	@Param			order_dir		query		string	false	"Order direction"	Enums(asc, desc)	default(desc)
+//	@Success		200				{object}	APIResponse[[]InventoryItemResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		401				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/items [get]
 func (h *InventoryHandler) List(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -344,26 +359,27 @@ func (h *InventoryHandler) List(c *gin.Context) {
 }
 
 // ListByWarehouse godoc
-// @ID           listInventoryByWarehouse
-// @Summary      List inventory by warehouse
-// @Description  Retrieve inventory items for a specific warehouse
-// @Tags         inventory
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        warehouse_id path string true "Warehouse ID" format(uuid)
-// @Param        search query string false "Search term"
-// @Param        below_minimum query boolean false "Filter items below minimum threshold"
-// @Param        has_stock query boolean false "Filter by stock availability"
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Param        order_by query string false "Order by field" default(updated_at)
-// @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
-// @Success      200 {object} APIResponse[[]InventoryItemResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/warehouses/{warehouse_id}/items [get]
+//
+//	@ID				listInventoryByWarehouse
+//	@Summary		List inventory by warehouse
+//	@Description	Retrieve inventory items for a specific warehouse
+//	@Tags			inventory
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string	false	"Tenant ID (optional for dev)"
+//	@Param			warehouse_id	path		string	true	"Warehouse ID"	format(uuid)
+//	@Param			search			query		string	false	"Search term"
+//	@Param			below_minimum	query		boolean	false	"Filter items below minimum threshold"
+//	@Param			has_stock		query		boolean	false	"Filter by stock availability"
+//	@Param			page			query		int		false	"Page number"		default(1)
+//	@Param			page_size		query		int		false	"Page size"			default(20)	maximum(100)
+//	@Param			order_by		query		string	false	"Order by field"	default(updated_at)
+//	@Param			order_dir		query		string	false	"Order direction"	Enums(asc, desc)	default(desc)
+//	@Success		200				{object}	APIResponse[[]InventoryItemResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		401				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/warehouses/{warehouse_id}/items [get]
 func (h *InventoryHandler) ListByWarehouse(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -401,26 +417,27 @@ func (h *InventoryHandler) ListByWarehouse(c *gin.Context) {
 }
 
 // ListByProduct godoc
-// @ID           listInventoryByProduct
-// @Summary      List inventory by product
-// @Description  Retrieve inventory items for a specific product across all warehouses
-// @Tags         inventory
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        product_id path string true "Product ID" format(uuid)
-// @Param        search query string false "Search term"
-// @Param        below_minimum query boolean false "Filter items below minimum threshold"
-// @Param        has_stock query boolean false "Filter by stock availability"
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Param        order_by query string false "Order by field" default(updated_at)
-// @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
-// @Success      200 {object} APIResponse[[]InventoryItemResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/products/{product_id}/items [get]
+//
+//	@ID				listInventoryByProduct
+//	@Summary		List inventory by product
+//	@Description	Retrieve inventory items for a specific product across all warehouses
+//	@Tags			inventory
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string	false	"Tenant ID (optional for dev)"
+//	@Param			product_id		path		string	true	"Product ID"	format(uuid)
+//	@Param			search			query		string	false	"Search term"
+//	@Param			below_minimum	query		boolean	false	"Filter items below minimum threshold"
+//	@Param			has_stock		query		boolean	false	"Filter by stock availability"
+//	@Param			page			query		int		false	"Page number"		default(1)
+//	@Param			page_size		query		int		false	"Page size"			default(20)	maximum(100)
+//	@Param			order_by		query		string	false	"Order by field"	default(updated_at)
+//	@Param			order_dir		query		string	false	"Order direction"	Enums(asc, desc)	default(desc)
+//	@Success		200				{object}	APIResponse[[]InventoryItemResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		401				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/products/{product_id}/items [get]
 func (h *InventoryHandler) ListByProduct(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -458,23 +475,24 @@ func (h *InventoryHandler) ListByProduct(c *gin.Context) {
 }
 
 // ListBelowMinimum godoc
-// @ID           listInventoryBelowMinimum
-// @Summary      List inventory below minimum threshold
-// @Description  Retrieve inventory items that are below their minimum threshold (low stock alerts)
-// @Tags         inventory
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        warehouse_id query string false "Filter by warehouse ID" format(uuid)
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Param        order_by query string false "Order by field" default(updated_at)
-// @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
-// @Success      200 {object} APIResponse[[]InventoryItemResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/items/alerts/low-stock [get]
+//
+//	@ID				listInventoryBelowMinimum
+//	@Summary		List inventory below minimum threshold
+//	@Description	Retrieve inventory items that are below their minimum threshold (low stock alerts)
+//	@Tags			inventory
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string	false	"Tenant ID (optional for dev)"
+//	@Param			warehouse_id	query		string	false	"Filter by warehouse ID"	format(uuid)
+//	@Param			page			query		int		false	"Page number"				default(1)
+//	@Param			page_size		query		int		false	"Page size"					default(20)	maximum(100)
+//	@Param			order_by		query		string	false	"Order by field"			default(updated_at)
+//	@Param			order_dir		query		string	false	"Order direction"			Enums(asc, desc)	default(desc)
+//	@Success		200				{object}	APIResponse[[]InventoryItemResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		401				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/items/alerts/low-stock [get]
 func (h *InventoryHandler) ListBelowMinimum(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -506,20 +524,21 @@ func (h *InventoryHandler) ListBelowMinimum(c *gin.Context) {
 }
 
 // CheckAvailability godoc
-// @ID           checkAvailabilityInventory
-// @Summary      Check stock availability
-// @Description  Check if a specific quantity is available for a product in a warehouse
-// @Tags         inventory
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body CheckAvailabilityRequest true "Availability check request"
-// @Success      200 {object} APIResponse[CheckAvailabilityResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/availability/check [post]
+//
+//	@ID				checkAvailabilityInventory
+//	@Summary		Check stock availability
+//	@Description	Check if a specific quantity is available for a product in a warehouse
+//	@Tags			inventory
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			request		body		CheckAvailabilityRequest	true	"Availability check request"
+//	@Success		200			{object}	APIResponse[CheckAvailabilityResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/availability/check [post]
 func (h *InventoryHandler) CheckAvailability(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -565,20 +584,21 @@ func (h *InventoryHandler) CheckAvailability(c *gin.Context) {
 // ===================== Stock Operation Handlers =====================
 
 // IncreaseStock godoc
-// @ID           increaseStockInventory
-// @Summary      Increase stock
-// @Description  Increase stock for a product in a warehouse (e.g., purchase receiving, returns)
-// @Tags         inventory
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body IncreaseStockRequest true "Stock increase request"
-// @Success      200 {object} APIResponse[InventoryItemResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock/increase [post]
+//
+//	@ID				increaseStockInventory
+//	@Summary		Increase stock
+//	@Description	Increase stock for a product in a warehouse (e.g., purchase receiving, returns)
+//	@Tags			inventory
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			request		body		IncreaseStockRequest	true	"Stock increase request"
+//	@Success		200			{object}	APIResponse[InventoryItemResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock/increase [post]
 func (h *InventoryHandler) IncreaseStock(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -647,22 +667,23 @@ func (h *InventoryHandler) IncreaseStock(c *gin.Context) {
 }
 
 // LockStock godoc
-// @ID           lockStockInventory
-// @Summary      Lock stock
-// @Description  Lock stock for a pending order (reserve inventory)
-// @Tags         inventory
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body LockStockRequest true "Stock lock request"
-// @Success      200 {object} APIResponse[LockStockResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock/lock [post]
+//
+//	@ID				lockStockInventory
+//	@Summary		Lock stock
+//	@Description	Lock stock for a pending order (reserve inventory)
+//	@Tags			inventory
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string				false	"Tenant ID (optional for dev)"
+//	@Param			request		body		LockStockRequest	true	"Stock lock request"
+//	@Success		200			{object}	APIResponse[LockStockResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock/lock [post]
 func (h *InventoryHandler) LockStock(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -717,22 +738,23 @@ func (h *InventoryHandler) LockStock(c *gin.Context) {
 }
 
 // UnlockStock godoc
-// @ID           unlockStockInventory
-// @Summary      Unlock stock
-// @Description  Release previously locked stock back to available (e.g., order cancelled)
-// @Tags         inventory
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body UnlockStockRequest true "Stock unlock request"
-// @Success      204
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock/unlock [post]
+//
+//	@ID				unlockStockInventory
+//	@Summary		Unlock stock
+//	@Description	Release previously locked stock back to available (e.g., order cancelled)
+//	@Tags			inventory
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header	string				false	"Tenant ID (optional for dev)"
+//	@Param			request		body	UnlockStockRequest	true	"Stock unlock request"
+//	@Success		204
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		422	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock/unlock [post]
 func (h *InventoryHandler) UnlockStock(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -766,22 +788,23 @@ func (h *InventoryHandler) UnlockStock(c *gin.Context) {
 }
 
 // DeductStock godoc
-// @ID           deductStockInventory
-// @Summary      Deduct stock
-// @Description  Deduct locked stock (actual shipment/consumption)
-// @Tags         inventory
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body DeductStockRequest true "Stock deduction request"
-// @Success      204
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock/deduct [post]
+//
+//	@ID				deductStockInventory
+//	@Summary		Deduct stock
+//	@Description	Deduct locked stock (actual shipment/consumption)
+//	@Tags			inventory
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header	string				false	"Tenant ID (optional for dev)"
+//	@Param			request		body	DeductStockRequest	true	"Stock deduction request"
+//	@Success		204
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		422	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock/deduct [post]
 func (h *InventoryHandler) DeductStock(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -828,21 +851,22 @@ func (h *InventoryHandler) DeductStock(c *gin.Context) {
 }
 
 // AdjustStock godoc
-// @ID           adjustStockInventory
-// @Summary      Adjust stock
-// @Description  Adjust stock to match actual quantity (stock count/adjustment)
-// @Tags         inventory
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body AdjustStockRequest true "Stock adjustment request"
-// @Success      200 {object} APIResponse[InventoryItemResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/stock/adjust [post]
+//
+//	@ID				adjustStockInventory
+//	@Summary		Adjust stock
+//	@Description	Adjust stock to match actual quantity (stock count/adjustment)
+//	@Tags			inventory
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string				false	"Tenant ID (optional for dev)"
+//	@Param			request		body		AdjustStockRequest	true	"Stock adjustment request"
+//	@Success		200			{object}	APIResponse[InventoryItemResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/stock/adjust [post]
 func (h *InventoryHandler) AdjustStock(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -897,21 +921,22 @@ func (h *InventoryHandler) AdjustStock(c *gin.Context) {
 }
 
 // SetThresholds godoc
-// @ID           setThresholdsInventory
-// @Summary      Set inventory thresholds
-// @Description  Set min/max quantity thresholds for inventory alerts
-// @Tags         inventory
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body SetThresholdsRequest true "Threshold settings request"
-// @Success      200 {object} APIResponse[InventoryItemResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/thresholds [put]
+//
+//	@ID				setThresholdsInventory
+//	@Summary		Set inventory thresholds
+//	@Description	Set min/max quantity thresholds for inventory alerts
+//	@Tags			inventory
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			request		body		SetThresholdsRequest	true	"Threshold settings request"
+//	@Success		200			{object}	APIResponse[InventoryItemResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/thresholds [put]
 func (h *InventoryHandler) SetThresholds(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -965,21 +990,22 @@ func (h *InventoryHandler) SetThresholds(c *gin.Context) {
 // ===================== Lock Management Handlers =====================
 
 // GetActiveLocks godoc
-// @ID           getInventoryActiveLocks
-// @Summary      Get active locks
-// @Description  Retrieve all active (unexpired, unreleased) locks for an inventory item
-// @Tags         inventory
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        warehouse_id query string true "Warehouse ID" format(uuid)
-// @Param        product_id query string true "Product ID" format(uuid)
-// @Success      200 {object} APIResponse[[]StockLockResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/locks [get]
+//
+//	@ID				getInventoryActiveLocks
+//	@Summary		Get active locks
+//	@Description	Retrieve all active (unexpired, unreleased) locks for an inventory item
+//	@Tags			inventory
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string	false	"Tenant ID (optional for dev)"
+//	@Param			warehouse_id	query		string	true	"Warehouse ID"	format(uuid)
+//	@Param			product_id		query		string	true	"Product ID"	format(uuid)
+//	@Success		200				{object}	APIResponse[[]StockLockResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		401				{object}	dto.ErrorResponse
+//	@Failure		404				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/locks [get]
 func (h *InventoryHandler) GetActiveLocks(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -1017,21 +1043,22 @@ func (h *InventoryHandler) GetActiveLocks(c *gin.Context) {
 }
 
 // GetLockByID godoc
-// @ID           getInventoryLockByID
-// @Summary      Get lock by ID
-// @Description  Retrieve a specific stock lock by ID
-// @Tags         inventory
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Lock ID" format(uuid)
-// @Success      200 {object} APIResponse[StockLockResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      403 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/locks/{id} [get]
+//
+//	@ID				getInventoryLockByID
+//	@Summary		Get lock by ID
+//	@Description	Retrieve a specific stock lock by ID
+//	@Tags			inventory
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Lock ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[StockLockResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		403			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/locks/{id} [get]
 func (h *InventoryHandler) GetLockByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -1059,29 +1086,30 @@ func (h *InventoryHandler) GetLockByID(c *gin.Context) {
 // ===================== Transaction Handlers =====================
 
 // ListTransactions godoc
-// @ID           listInventoryTransactions
-// @Summary      List inventory transactions
-// @Description  Retrieve a paginated list of inventory transactions with optional filtering
-// @Tags         inventory
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        warehouse_id query string false "Filter by warehouse ID" format(uuid)
-// @Param        product_id query string false "Filter by product ID" format(uuid)
-// @Param        transaction_type query string false "Filter by transaction type" Enums(INBOUND, OUTBOUND, LOCK, UNLOCK, ADJUSTMENT)
-// @Param        source_type query string false "Filter by source type" Enums(PURCHASE_ORDER, SALES_ORDER, SALES_RETURN, PURCHASE_RETURN, MANUAL_ADJUSTMENT, STOCK_TAKE)
-// @Param        source_id query string false "Filter by source ID"
-// @Param        start_date query string false "Filter by start date" format(date-time)
-// @Param        end_date query string false "Filter by end date" format(date-time)
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Param        order_by query string false "Order by field" default(transaction_date)
-// @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
-// @Success      200 {object} APIResponse[[]TransactionResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/transactions [get]
+//
+//	@ID				listInventoryTransactions
+//	@Summary		List inventory transactions
+//	@Description	Retrieve a paginated list of inventory transactions with optional filtering
+//	@Tags			inventory
+//	@Produce		json
+//	@Param			X-Tenant-ID			header		string	false	"Tenant ID (optional for dev)"
+//	@Param			warehouse_id		query		string	false	"Filter by warehouse ID"		format(uuid)
+//	@Param			product_id			query		string	false	"Filter by product ID"			format(uuid)
+//	@Param			transaction_type	query		string	false	"Filter by transaction type"	Enums(INBOUND, OUTBOUND, LOCK, UNLOCK, ADJUSTMENT)
+//	@Param			source_type			query		string	false	"Filter by source type"			Enums(PURCHASE_ORDER, SALES_ORDER, SALES_RETURN, PURCHASE_RETURN, MANUAL_ADJUSTMENT, STOCK_TAKE)
+//	@Param			source_id			query		string	false	"Filter by source ID"
+//	@Param			start_date			query		string	false	"Filter by start date"	format(date-time)
+//	@Param			end_date			query		string	false	"Filter by end date"	format(date-time)
+//	@Param			page				query		int		false	"Page number"			default(1)
+//	@Param			page_size			query		int		false	"Page size"				default(20)	maximum(100)
+//	@Param			order_by			query		string	false	"Order by field"		default(transaction_date)
+//	@Param			order_dir			query		string	false	"Order direction"		Enums(asc, desc)	default(desc)
+//	@Success		200					{object}	APIResponse[[]TransactionResponse]
+//	@Failure		400					{object}	dto.ErrorResponse
+//	@Failure		401					{object}	dto.ErrorResponse
+//	@Failure		500					{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/transactions [get]
 func (h *InventoryHandler) ListTransactions(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -1113,27 +1141,28 @@ func (h *InventoryHandler) ListTransactions(c *gin.Context) {
 }
 
 // ListTransactionsByItem godoc
-// @ID           listInventoryTransactionsByItem
-// @Summary      List transactions by inventory item
-// @Description  Retrieve transactions for a specific inventory item
-// @Tags         inventory
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Inventory Item ID" format(uuid)
-// @Param        transaction_type query string false "Filter by transaction type" Enums(INBOUND, OUTBOUND, LOCK, UNLOCK, ADJUSTMENT)
-// @Param        start_date query string false "Filter by start date" format(date-time)
-// @Param        end_date query string false "Filter by end date" format(date-time)
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Param        order_by query string false "Order by field" default(transaction_date)
-// @Param        order_dir query string false "Order direction" Enums(asc, desc) default(desc)
-// @Success      200 {object} APIResponse[[]TransactionResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/items/{id}/transactions [get]
+//
+//	@ID				listInventoryTransactionsByItem
+//	@Summary		List transactions by inventory item
+//	@Description	Retrieve transactions for a specific inventory item
+//	@Tags			inventory
+//	@Produce		json
+//	@Param			X-Tenant-ID			header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id					path		string	true	"Inventory Item ID"				format(uuid)
+//	@Param			transaction_type	query		string	false	"Filter by transaction type"	Enums(INBOUND, OUTBOUND, LOCK, UNLOCK, ADJUSTMENT)
+//	@Param			start_date			query		string	false	"Filter by start date"			format(date-time)
+//	@Param			end_date			query		string	false	"Filter by end date"			format(date-time)
+//	@Param			page				query		int		false	"Page number"					default(1)
+//	@Param			page_size			query		int		false	"Page size"						default(20)	maximum(100)
+//	@Param			order_by			query		string	false	"Order by field"				default(transaction_date)
+//	@Param			order_dir			query		string	false	"Order direction"				Enums(asc, desc)	default(desc)
+//	@Success		200					{object}	APIResponse[[]TransactionResponse]
+//	@Failure		400					{object}	dto.ErrorResponse
+//	@Failure		401					{object}	dto.ErrorResponse
+//	@Failure		404					{object}	dto.ErrorResponse
+//	@Failure		500					{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/items/{id}/transactions [get]
 func (h *InventoryHandler) ListTransactionsByItem(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -1171,21 +1200,22 @@ func (h *InventoryHandler) ListTransactionsByItem(c *gin.Context) {
 }
 
 // GetTransactionByID godoc
-// @ID           getInventoryTransactionByID
-// @Summary      Get transaction by ID
-// @Description  Retrieve a specific inventory transaction by ID
-// @Tags         inventory
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Transaction ID" format(uuid)
-// @Success      200 {object} APIResponse[TransactionResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      403 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /inventory/transactions/{id} [get]
+//
+//	@ID				getInventoryTransactionByID
+//	@Summary		Get transaction by ID
+//	@Description	Retrieve a specific inventory transaction by ID
+//	@Tags			inventory
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Transaction ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[TransactionResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		403			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/inventory/transactions/{id} [get]
 func (h *InventoryHandler) GetTransactionByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {

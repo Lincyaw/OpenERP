@@ -73,7 +73,9 @@ func (r *GormReceiptVoucherRepository) FindAllForTenant(ctx context.Context, ten
 	if filter.CustomerID != nil {
 		query = query.Where("customer_id = ?", *filter.CustomerID)
 	}
-	if filter.Status != nil {
+	if len(filter.Statuses) > 0 {
+		query = query.Where("status IN ?", filter.Statuses)
+	} else if filter.Status != nil {
 		query = query.Where("status = ?", *filter.Status)
 	}
 	if filter.PaymentMethod != nil {

@@ -15,7 +15,7 @@ import { IconRefresh } from '@douyinfe/semi-icons'
 import { DataTable, TableToolbar, useTableState, type DataTableColumn } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { getExpensCashFlow } from '@/api/expenses/expenses'
-import type { HandlerCashFlowItemResponse, HandlerCashFlowSummaryResponse } from '@/api/models'
+import type { HandlerExpenseIncomeCashFlowItem, HandlerCashFlowSummaryResponse } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
 import './CashFlow.css'
 
@@ -28,7 +28,7 @@ type CashFlowDirection = 'INFLOW' | 'OUTFLOW'
 type CashFlowItemType = 'EXPENSE' | 'INCOME' | 'RECEIPT' | 'PAYMENT'
 
 // CashFlow item type with index signature for DataTable compatibility
-type CashFlowRow = HandlerCashFlowItemResponse & Record<string, unknown>
+type CashFlowRow = HandlerExpenseIncomeCashFlowItem & Record<string, unknown>
 
 // Direction tag colors
 const DIRECTION_TAG_COLORS: Record<CashFlowDirection, 'green' | 'red'> = {

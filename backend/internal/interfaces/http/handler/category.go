@@ -8,7 +8,8 @@ import (
 )
 
 // CategoryHandler handles category-related API endpoints
-// @Name HandlerCreateWarehouseRequest
+//
+//	@Name	HandlerCreateWarehouseRequest
 type CategoryHandler struct {
 	BaseHandler
 	categoryService *catalogapp.CategoryService
@@ -22,8 +23,9 @@ func NewCategoryHandler(categoryService *catalogapp.CategoryService) *CategoryHa
 }
 
 // CreateCategoryRequest represents a request to create a new category
-// @Description Request body for creating a new category
-// @Name HandlerCreateWarehouseRequest
+//
+//	@Description	Request body for creating a new category
+//	@Name			HandlerCreateWarehouseRequest
 type CreateCategoryRequest struct {
 	Code        string  `json:"code" binding:"required,min=1,max=50" example:"ELECTRONICS"`
 	Name        string  `json:"name" binding:"required,min=1,max=100" example:"Electronics"`
@@ -33,8 +35,9 @@ type CreateCategoryRequest struct {
 }
 
 // UpdateCategoryRequest represents a request to update a category
-// @Description Request body for updating a category
-// @Name HandlerUpdateCategoryRequest
+//
+//	@Description	Request body for updating a category
+//	@Name			HandlerUpdateCategoryRequest
 type UpdateCategoryRequest struct {
 	Name        string `json:"name" binding:"omitempty,min=1,max=100" example:"Updated Name"`
 	Description string `json:"description" binding:"omitempty,max=2000" example:"Updated description"`
@@ -42,15 +45,17 @@ type UpdateCategoryRequest struct {
 }
 
 // MoveCategoryRequest represents a request to move a category
-// @Description Request body for moving a category to a new parent
-// @Name HandlerUpdateCategoryRequest
+//
+//	@Description	Request body for moving a category to a new parent
+//	@Name			HandlerUpdateCategoryRequest
 type MoveCategoryRequest struct {
 	ParentID *string `json:"parent_id" example:"550e8400-e29b-41d4-a716-446655440000"`
 }
 
 // CategoryResponse represents a category in the response
-// @Description Category response object
-// @Name HandlerCategoryResponse
+//
+//	@Description	Category response object
+//	@Name			HandlerCategoryResponse
 type CategoryResponse struct {
 	ID          string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TenantID    string  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -68,8 +73,9 @@ type CategoryResponse struct {
 }
 
 // CategoryListResponse represents a category list item
-// @Description Category list item
-// @Name HandlerCategoryListResponse
+//
+//	@Description	Category list item
+//	@Name			HandlerCategoryListResponse
 type CategoryListResponse struct {
 	ID          string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Code        string  `json:"code" example:"ELECTRONICS"`
@@ -83,8 +89,9 @@ type CategoryListResponse struct {
 }
 
 // CategoryTreeNode represents a category node in tree structure
-// @Description Category tree node with children
-// @Name HandlerCategoryTreeNode
+//
+//	@Description	Category tree node with children
+//	@Name			HandlerCategoryTreeNode
 type CategoryTreeNode struct {
 	ID          string             `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Code        string             `json:"code" example:"ELECTRONICS"`
@@ -98,21 +105,22 @@ type CategoryTreeNode struct {
 }
 
 // Create godoc
-// @ID           createCategory
-// @Summary      Create a new category
-// @Description  Create a new product category. Can be a root category or a child of an existing category.
-// @Tags         categories
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body CreateCategoryRequest true "Category creation request"
-// @Success      201 {object} APIResponse[CategoryResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      409 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /catalog/categories [post]
+//
+//	@ID				createCategory
+//	@Summary		Create a new category
+//	@Description	Create a new product category. Can be a root category or a child of an existing category.
+//	@Tags			categories
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			request		body		CreateCategoryRequest	true	"Category creation request"
+//	@Success		201			{object}	APIResponse[CategoryResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		409			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/catalog/categories [post]
 func (h *CategoryHandler) Create(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -165,20 +173,21 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 }
 
 // GetByID godoc
-// @ID           getCategoryById
-// @Summary      Get category by ID
-// @Description  Retrieve a category by its ID
-// @Tags         categories
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Category ID" format(uuid)
-// @Success      200 {object} APIResponse[CategoryResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /catalog/categories/{id} [get]
+//
+//	@ID				getCategoryById
+//	@Summary		Get category by ID
+//	@Description	Retrieve a category by its ID
+//	@Tags			categories
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Category ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[CategoryResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/catalog/categories/{id} [get]
 func (h *CategoryHandler) GetByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -202,24 +211,25 @@ func (h *CategoryHandler) GetByID(c *gin.Context) {
 }
 
 // List godoc
-// @ID           listCategories
-// @Summary      List categories
-// @Description  Retrieve a paginated list of categories
-// @Tags         categories
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        search query string false "Search keyword"
-// @Param        status query string false "Status filter (active, inactive)" Enums(active, inactive)
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Items per page" default(20)
-// @Param        sort_by query string false "Sort by field"
-// @Param        sort_desc query bool false "Sort descending"
-// @Success      200 {object} APIResponse[[]CategoryListResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /catalog/categories [get]
+//
+//	@ID				listCategories
+//	@Summary		List categories
+//	@Description	Retrieve a paginated list of categories
+//	@Tags			categories
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			search		query		string	false	"Search keyword"
+//	@Param			status		query		string	false	"Status filter (active, inactive)"	Enums(active, inactive)
+//	@Param			page		query		int		false	"Page number"						default(1)
+//	@Param			page_size	query		int		false	"Items per page"					default(20)
+//	@Param			sort_by		query		string	false	"Sort by field"
+//	@Param			sort_desc	query		bool	false	"Sort descending"
+//	@Success		200			{object}	APIResponse[[]CategoryListResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/catalog/categories [get]
 func (h *CategoryHandler) List(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -251,18 +261,19 @@ func (h *CategoryHandler) List(c *gin.Context) {
 }
 
 // GetTree godoc
-// @ID           getCategoryTree
-// @Summary      Get category tree
-// @Description  Retrieve all categories as a hierarchical tree structure
-// @Tags         categories
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} APIResponse[[]CategoryTreeNode]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /catalog/categories/tree [get]
+//
+//	@ID				getCategoryTree
+//	@Summary		Get category tree
+//	@Description	Retrieve all categories as a hierarchical tree structure
+//	@Tags			categories
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Success		200			{object}	APIResponse[[]CategoryTreeNode]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/catalog/categories/tree [get]
 func (h *CategoryHandler) GetTree(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -280,20 +291,21 @@ func (h *CategoryHandler) GetTree(c *gin.Context) {
 }
 
 // GetChildren godoc
-// @ID           getCategoryChildren
-// @Summary      Get children of a category
-// @Description  Retrieve direct children of a specific category
-// @Tags         categories
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Parent Category ID" format(uuid)
-// @Success      200 {object} APIResponse[[]CategoryListResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /catalog/categories/{id}/children [get]
+//
+//	@ID				getCategoryChildren
+//	@Summary		Get children of a category
+//	@Description	Retrieve direct children of a specific category
+//	@Tags			categories
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Parent Category ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[[]CategoryListResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/catalog/categories/{id}/children [get]
 func (h *CategoryHandler) GetChildren(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -317,18 +329,19 @@ func (h *CategoryHandler) GetChildren(c *gin.Context) {
 }
 
 // GetRoots godoc
-// @ID           getCategoryRoots
-// @Summary      Get root categories
-// @Description  Retrieve all root (top-level) categories
-// @Tags         categories
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} APIResponse[[]CategoryListResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /catalog/categories/roots [get]
+//
+//	@ID				getCategoryRoots
+//	@Summary		Get root categories
+//	@Description	Retrieve all root (top-level) categories
+//	@Tags			categories
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Success		200			{object}	APIResponse[[]CategoryListResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/catalog/categories/roots [get]
 func (h *CategoryHandler) GetRoots(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -346,22 +359,23 @@ func (h *CategoryHandler) GetRoots(c *gin.Context) {
 }
 
 // Update godoc
-// @ID           updateCategory
-// @Summary      Update a category
-// @Description  Update an existing category's information
-// @Tags         categories
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Category ID" format(uuid)
-// @Param        request body UpdateCategoryRequest true "Category update request"
-// @Success      200 {object} APIResponse[CategoryResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /catalog/categories/{id} [put]
+//
+//	@ID				updateCategory
+//	@Summary		Update a category
+//	@Description	Update an existing category's information
+//	@Tags			categories
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string					true	"Category ID"	format(uuid)
+//	@Param			request		body		UpdateCategoryRequest	true	"Category update request"
+//	@Success		200			{object}	APIResponse[CategoryResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/catalog/categories/{id} [put]
 func (h *CategoryHandler) Update(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -397,22 +411,23 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 }
 
 // Move godoc
-// @ID           moveCategory
-// @Summary      Move a category
-// @Description  Move a category to a new parent (or make it a root category)
-// @Tags         categories
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Category ID" format(uuid)
-// @Param        request body MoveCategoryRequest true "Move category request"
-// @Success      200 {object} APIResponse[CategoryResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /catalog/categories/{id}/move [post]
+//
+//	@ID				moveCategory
+//	@Summary		Move a category
+//	@Description	Move a category to a new parent (or make it a root category)
+//	@Tags			categories
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string				false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string				true	"Category ID"	format(uuid)
+//	@Param			request		body		MoveCategoryRequest	true	"Move category request"
+//	@Success		200			{object}	APIResponse[CategoryResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/catalog/categories/{id}/move [post]
 func (h *CategoryHandler) Move(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -452,21 +467,22 @@ func (h *CategoryHandler) Move(c *gin.Context) {
 }
 
 // Activate godoc
-// @ID           activateCategory
-// @Summary      Activate a category
-// @Description  Activate an inactive category
-// @Tags         categories
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Category ID" format(uuid)
-// @Success      200 {object} APIResponse[CategoryResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /catalog/categories/{id}/activate [post]
+//
+//	@ID				activateCategory
+//	@Summary		Activate a category
+//	@Description	Activate an inactive category
+//	@Tags			categories
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Category ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[CategoryResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/catalog/categories/{id}/activate [post]
 func (h *CategoryHandler) Activate(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -490,21 +506,22 @@ func (h *CategoryHandler) Activate(c *gin.Context) {
 }
 
 // Deactivate godoc
-// @ID           deactivateCategory
-// @Summary      Deactivate a category
-// @Description  Deactivate an active category
-// @Tags         categories
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Category ID" format(uuid)
-// @Success      200 {object} APIResponse[CategoryResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /catalog/categories/{id}/deactivate [post]
+//
+//	@ID				deactivateCategory
+//	@Summary		Deactivate a category
+//	@Description	Deactivate an active category
+//	@Tags			categories
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Category ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[CategoryResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/catalog/categories/{id}/deactivate [post]
 func (h *CategoryHandler) Deactivate(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -528,21 +545,22 @@ func (h *CategoryHandler) Deactivate(c *gin.Context) {
 }
 
 // Delete godoc
-// @ID           deleteCategory
-// @Summary      Delete a category
-// @Description  Delete a category. Category must have no children and no associated products.
-// @Tags         categories
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Category ID" format(uuid)
-// @Success      204 "No Content"
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      401 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      409 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /catalog/categories/{id} [delete]
+//
+//	@ID				deleteCategory
+//	@Summary		Delete a category
+//	@Description	Delete a category. Category must have no children and no associated products.
+//	@Tags			categories
+//	@Produce		json
+//	@Param			X-Tenant-ID	header	string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path	string	true	"Category ID"	format(uuid)
+//	@Success		204			"No Content"
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		409			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/catalog/categories/{id} [delete]
 func (h *CategoryHandler) Delete(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {

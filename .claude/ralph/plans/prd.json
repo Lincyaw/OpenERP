@@ -12561,7 +12561,7 @@
       "编辑模式下加载现有附件",
       "添加国际化文案 (zh-CN/en catalog.json)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ATTACH-TEST-001",

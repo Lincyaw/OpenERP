@@ -26,7 +26,8 @@ func NewFinanceHandler(financeService *financeapp.FinanceService) *FinanceHandle
 // ===================== Request/Response DTOs =====================
 
 // AccountReceivableResponse represents an account receivable in API responses
-// @Description Account receivable response
+//
+//	@Description	Account receivable response
 type AccountReceivableResponse struct {
 	ID                string                  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TenantID          string                  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -50,7 +51,8 @@ type AccountReceivableResponse struct {
 }
 
 // PaymentRecordResponse represents a payment record in API responses
-// @Description Payment record response
+//
+//	@Description	Payment record response
 type PaymentRecordResponse struct {
 	ID               string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	ReceiptVoucherID string    `json:"receipt_voucher_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -60,7 +62,8 @@ type PaymentRecordResponse struct {
 }
 
 // AccountPayableResponse represents an account payable in API responses
-// @Description Account payable response
+//
+//	@Description	Account payable response
 type AccountPayableResponse struct {
 	ID                string                         `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TenantID          string                         `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -84,7 +87,8 @@ type AccountPayableResponse struct {
 }
 
 // PayablePaymentRecordResponse represents a payment record for payable in API responses
-// @Description Payable payment record response
+//
+//	@Description	Payable payment record response
 type PayablePaymentRecordResponse struct {
 	ID               string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	PaymentVoucherID string    `json:"payment_voucher_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -94,7 +98,8 @@ type PayablePaymentRecordResponse struct {
 }
 
 // ReceiptVoucherResponse represents a receipt voucher in API responses
-// @Description Receipt voucher response
+//
+//	@Description	Receipt voucher response
 type ReceiptVoucherResponse struct {
 	ID                string                         `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TenantID          string                         `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -117,7 +122,8 @@ type ReceiptVoucherResponse struct {
 }
 
 // ReceivableAllocationResponse represents a receivable allocation in API responses
-// @Description Receivable allocation response
+//
+//	@Description	Receivable allocation response
 type ReceivableAllocationResponse struct {
 	ID               string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	ReceivableID     string    `json:"receivable_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -128,7 +134,8 @@ type ReceivableAllocationResponse struct {
 }
 
 // PaymentVoucherResponse represents a payment voucher in API responses
-// @Description Payment voucher response
+//
+//	@Description	Payment voucher response
 type PaymentVoucherResponse struct {
 	ID                string                      `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	TenantID          string                      `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -151,7 +158,8 @@ type PaymentVoucherResponse struct {
 }
 
 // PayableAllocationResponse represents a payable allocation in API responses
-// @Description Payable allocation response
+//
+//	@Description	Payable allocation response
 type PayableAllocationResponse struct {
 	ID            string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	PayableID     string    `json:"payable_id" example:"550e8400-e29b-41d4-a716-446655440001"`
@@ -162,7 +170,8 @@ type PayableAllocationResponse struct {
 }
 
 // CreateReceiptVoucherRequest represents a request to create a receipt voucher
-// @Description Request body for creating a receipt voucher
+//
+//	@Description	Request body for creating a receipt voucher
 type CreateReceiptVoucherRequest struct {
 	CustomerID       string  `json:"customer_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
 	CustomerName     string  `json:"customer_name" binding:"required,min=1,max=200" example:"张三"`
@@ -174,7 +183,8 @@ type CreateReceiptVoucherRequest struct {
 }
 
 // CreatePaymentVoucherRequest represents a request to create a payment voucher
-// @Description Request body for creating a payment voucher
+//
+//	@Description	Request body for creating a payment voucher
 type CreatePaymentVoucherRequest struct {
 	SupplierID       string  `json:"supplier_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
 	SupplierName     string  `json:"supplier_name" binding:"required,min=1,max=200" example:"供应商A"`
@@ -186,27 +196,31 @@ type CreatePaymentVoucherRequest struct {
 }
 
 // CancelVoucherRequest represents a request to cancel a voucher
-// @Description Request body for cancelling a voucher
+//
+//	@Description	Request body for cancelling a voucher
 type CancelVoucherRequest struct {
 	Reason string `json:"reason" binding:"required,min=1,max=500" example:"客户取消"`
 }
 
 // ReconcileRequest represents a request to reconcile a voucher
-// @Description Request body for reconciling a voucher
+//
+//	@Description	Request body for reconciling a voucher
 type ReconcileRequest struct {
 	StrategyType      string                         `json:"strategy_type" binding:"required" example:"FIFO"`
 	ManualAllocations []ManualAllocationInputRequest `json:"manual_allocations,omitempty"`
 }
 
 // ManualAllocationInputRequest represents a manual allocation input
-// @Description Manual allocation input for reconciliation
+//
+//	@Description	Manual allocation input for reconciliation
 type ManualAllocationInputRequest struct {
 	TargetID string  `json:"target_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Amount   float64 `json:"amount" binding:"required,gt=0" example:"500.00"`
 }
 
 // ReceivableSummaryResponse represents a summary of receivables
-// @Description Receivable summary response
+//
+//	@Description	Receivable summary response
 type ReceivableSummaryResponse struct {
 	TotalOutstanding float64 `json:"total_outstanding" example:"50000.00"`
 	TotalOverdue     float64 `json:"total_overdue" example:"10000.00"`
@@ -216,7 +230,8 @@ type ReceivableSummaryResponse struct {
 }
 
 // PayableSummaryResponse represents a summary of payables
-// @Description Payable summary response
+//
+//	@Description	Payable summary response
 type PayableSummaryResponse struct {
 	TotalOutstanding float64 `json:"total_outstanding" example:"80000.00"`
 	TotalOverdue     float64 `json:"total_overdue" example:"20000.00"`
@@ -226,7 +241,8 @@ type PayableSummaryResponse struct {
 }
 
 // ReconcileReceiptResultResponse represents the result of reconciling a receipt voucher
-// @Description Reconcile receipt result response
+//
+//	@Description	Reconcile receipt result response
 type ReconcileReceiptResultResponse struct {
 	Voucher              ReceiptVoucherResponse      `json:"voucher"`
 	UpdatedReceivables   []AccountReceivableResponse `json:"updated_receivables"`
@@ -236,7 +252,8 @@ type ReconcileReceiptResultResponse struct {
 }
 
 // ReconcilePaymentResultResponse represents the result of reconciling a payment voucher
-// @Description Reconcile payment result response
+//
+//	@Description	Reconcile payment result response
 type ReconcilePaymentResultResponse struct {
 	Voucher              PaymentVoucherResponse   `json:"voucher"`
 	UpdatedPayables      []AccountPayableResponse `json:"updated_payables"`
@@ -250,26 +267,27 @@ type ReconcilePaymentResultResponse struct {
 // ===================== Account Receivable Handlers =====================
 
 // ListReceivables godoc
-// @ID           listFinanceReceivableReceivables
-// @Summary      List account receivables
-// @Description  Retrieve a paginated list of account receivables with filtering
-// @Tags         finance-receivables
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        search query string false "Search term (receivable number, customer name)"
-// @Param        customer_id query string false "Customer ID" format(uuid)
-// @Param        status query string false "Status" Enums(PENDING, PARTIAL, PAID, REVERSED, CANCELLED)
-// @Param        source_type query string false "Source type" Enums(SALES_ORDER, SALES_RETURN, MANUAL)
-// @Param        from_date query string false "From date (ISO 8601)" format(date)
-// @Param        to_date query string false "To date (ISO 8601)" format(date)
-// @Param        overdue query boolean false "Filter overdue only"
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Success      200 {object} APIResponse[[]AccountReceivableResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/receivables [get]
+//
+//	@ID				listFinanceReceivableReceivables
+//	@Summary		List account receivables
+//	@Description	Retrieve a paginated list of account receivables with filtering
+//	@Tags			finance-receivables
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			search		query		string	false	"Search term (receivable number, customer name)"
+//	@Param			customer_id	query		string	false	"Customer ID"			format(uuid)
+//	@Param			status		query		string	false	"Status"				Enums(PENDING, PARTIAL, PAID, REVERSED, CANCELLED)
+//	@Param			source_type	query		string	false	"Source type"			Enums(SALES_ORDER, SALES_RETURN, MANUAL)
+//	@Param			from_date	query		string	false	"From date (ISO 8601)"	format(date)
+//	@Param			to_date		query		string	false	"To date (ISO 8601)"	format(date)
+//	@Param			overdue		query		boolean	false	"Filter overdue only"
+//	@Param			page		query		int		false	"Page number"	default(1)
+//	@Param			page_size	query		int		false	"Page size"		default(20)	maximum(100)
+//	@Success		200			{object}	APIResponse[[]AccountReceivableResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/receivables [get]
 func (h *FinanceHandler) ListReceivables(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -300,19 +318,20 @@ func (h *FinanceHandler) ListReceivables(c *gin.Context) {
 }
 
 // GetReceivableByID godoc
-// @ID           getFinanceReceivableReceivableByID
-// @Summary      Get account receivable by ID
-// @Description  Retrieve an account receivable by its ID
-// @Tags         finance-receivables
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Receivable ID" format(uuid)
-// @Success      200 {object} APIResponse[AccountReceivableResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/receivables/{id} [get]
+//
+//	@ID				getFinanceReceivableReceivableByID
+//	@Summary		Get account receivable by ID
+//	@Description	Retrieve an account receivable by its ID
+//	@Tags			finance-receivables
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Receivable ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[AccountReceivableResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/receivables/{id} [get]
 func (h *FinanceHandler) GetReceivableByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -336,17 +355,18 @@ func (h *FinanceHandler) GetReceivableByID(c *gin.Context) {
 }
 
 // GetReceivableSummary godoc
-// @ID           getFinanceReceivableReceivableSummary
-// @Summary      Get receivables summary
-// @Description  Get summary statistics for account receivables
-// @Tags         finance-receivables
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} APIResponse[ReceivableSummaryResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/receivables/summary [get]
+//
+//	@ID				getFinanceReceivableReceivableSummary
+//	@Summary		Get receivables summary
+//	@Description	Get summary statistics for account receivables
+//	@Tags			finance-receivables
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Success		200			{object}	APIResponse[ReceivableSummaryResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/receivables/summary [get]
 func (h *FinanceHandler) GetReceivableSummary(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -374,26 +394,27 @@ func (h *FinanceHandler) GetReceivableSummary(c *gin.Context) {
 // ===================== Account Payable Handlers =====================
 
 // ListPayables godoc
-// @ID           listFinancePayablePayables
-// @Summary      List account payables
-// @Description  Retrieve a paginated list of account payables with filtering
-// @Tags         finance-payables
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        search query string false "Search term (payable number, supplier name)"
-// @Param        supplier_id query string false "Supplier ID" format(uuid)
-// @Param        status query string false "Status" Enums(PENDING, PARTIAL, PAID, REVERSED, CANCELLED)
-// @Param        source_type query string false "Source type" Enums(PURCHASE_ORDER, PURCHASE_RETURN, MANUAL)
-// @Param        from_date query string false "From date (ISO 8601)" format(date)
-// @Param        to_date query string false "To date (ISO 8601)" format(date)
-// @Param        overdue query boolean false "Filter overdue only"
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Success      200 {object} APIResponse[[]AccountPayableResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/payables [get]
+//
+//	@ID				listFinancePayablePayables
+//	@Summary		List account payables
+//	@Description	Retrieve a paginated list of account payables with filtering
+//	@Tags			finance-payables
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			search		query		string	false	"Search term (payable number, supplier name)"
+//	@Param			supplier_id	query		string	false	"Supplier ID"			format(uuid)
+//	@Param			status		query		string	false	"Status"				Enums(PENDING, PARTIAL, PAID, REVERSED, CANCELLED)
+//	@Param			source_type	query		string	false	"Source type"			Enums(PURCHASE_ORDER, PURCHASE_RETURN, MANUAL)
+//	@Param			from_date	query		string	false	"From date (ISO 8601)"	format(date)
+//	@Param			to_date		query		string	false	"To date (ISO 8601)"	format(date)
+//	@Param			overdue		query		boolean	false	"Filter overdue only"
+//	@Param			page		query		int		false	"Page number"	default(1)
+//	@Param			page_size	query		int		false	"Page size"		default(20)	maximum(100)
+//	@Success		200			{object}	APIResponse[[]AccountPayableResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/payables [get]
 func (h *FinanceHandler) ListPayables(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -424,19 +445,20 @@ func (h *FinanceHandler) ListPayables(c *gin.Context) {
 }
 
 // GetPayableByID godoc
-// @ID           getFinancePayablePayableByID
-// @Summary      Get account payable by ID
-// @Description  Retrieve an account payable by its ID
-// @Tags         finance-payables
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Payable ID" format(uuid)
-// @Success      200 {object} APIResponse[AccountPayableResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/payables/{id} [get]
+//
+//	@ID				getFinancePayablePayableByID
+//	@Summary		Get account payable by ID
+//	@Description	Retrieve an account payable by its ID
+//	@Tags			finance-payables
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Payable ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[AccountPayableResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/payables/{id} [get]
 func (h *FinanceHandler) GetPayableByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -460,17 +482,18 @@ func (h *FinanceHandler) GetPayableByID(c *gin.Context) {
 }
 
 // GetPayableSummary godoc
-// @ID           getFinancePayablePayableSummary
-// @Summary      Get payables summary
-// @Description  Get summary statistics for account payables
-// @Tags         finance-payables
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Success      200 {object} APIResponse[PayableSummaryResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/payables/summary [get]
+//
+//	@ID				getFinancePayablePayableSummary
+//	@Summary		Get payables summary
+//	@Description	Get summary statistics for account payables
+//	@Tags			finance-payables
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Success		200			{object}	APIResponse[PayableSummaryResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/payables/summary [get]
 func (h *FinanceHandler) GetPayableSummary(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -498,19 +521,20 @@ func (h *FinanceHandler) GetPayableSummary(c *gin.Context) {
 // ===================== Receipt Voucher Handlers =====================
 
 // CreateReceiptVoucher godoc
-// @ID           createFinanceReceiptReceiptVoucher
-// @Summary      Create a receipt voucher
-// @Description  Create a new receipt voucher for customer payment
-// @Tags         finance-receipts
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body CreateReceiptVoucherRequest true "Receipt voucher creation request"
-// @Success      201 {object} APIResponse[ReceiptVoucherResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/receipts [post]
+//
+//	@ID				createFinanceReceiptReceiptVoucher
+//	@Summary		Create a receipt voucher
+//	@Description	Create a new receipt voucher for customer payment
+//	@Tags			finance-receipts
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			request		body		CreateReceiptVoucherRequest	true	"Receipt voucher creation request"
+//	@Success		201			{object}	APIResponse[ReceiptVoucherResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/receipts [post]
 func (h *FinanceHandler) CreateReceiptVoucher(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -564,25 +588,26 @@ func (h *FinanceHandler) CreateReceiptVoucher(c *gin.Context) {
 }
 
 // ListReceiptVouchers godoc
-// @ID           listFinanceReceiptReceiptVouchers
-// @Summary      List receipt vouchers
-// @Description  Retrieve a paginated list of receipt vouchers with filtering
-// @Tags         finance-receipts
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        search query string false "Search term (voucher number, customer name)"
-// @Param        customer_id query string false "Customer ID" format(uuid)
-// @Param        status query string false "Status" Enums(DRAFT, CONFIRMED, ALLOCATED, CANCELLED)
-// @Param        payment_method query string false "Payment method" Enums(CASH, BANK_TRANSFER, WECHAT, ALIPAY, CHECK, BALANCE, OTHER)
-// @Param        from_date query string false "From date (ISO 8601)" format(date)
-// @Param        to_date query string false "To date (ISO 8601)" format(date)
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Success      200 {object} APIResponse[[]ReceiptVoucherResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/receipts [get]
+//
+//	@ID				listFinanceReceiptReceiptVouchers
+//	@Summary		List receipt vouchers
+//	@Description	Retrieve a paginated list of receipt vouchers with filtering
+//	@Tags			finance-receipts
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string	false	"Tenant ID (optional for dev)"
+//	@Param			search			query		string	false	"Search term (voucher number, customer name)"
+//	@Param			customer_id		query		string	false	"Customer ID"			format(uuid)
+//	@Param			status			query		string	false	"Status"				Enums(DRAFT, CONFIRMED, ALLOCATED, CANCELLED)
+//	@Param			payment_method	query		string	false	"Payment method"		Enums(CASH, BANK_TRANSFER, WECHAT, ALIPAY, CHECK, BALANCE, OTHER)
+//	@Param			from_date		query		string	false	"From date (ISO 8601)"	format(date)
+//	@Param			to_date			query		string	false	"To date (ISO 8601)"	format(date)
+//	@Param			page			query		int		false	"Page number"			default(1)
+//	@Param			page_size		query		int		false	"Page size"				default(20)	maximum(100)
+//	@Success		200				{object}	APIResponse[[]ReceiptVoucherResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/receipts [get]
 func (h *FinanceHandler) ListReceiptVouchers(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -613,19 +638,20 @@ func (h *FinanceHandler) ListReceiptVouchers(c *gin.Context) {
 }
 
 // GetReceiptVoucherByID godoc
-// @ID           getFinanceReceiptReceiptVoucherByID
-// @Summary      Get receipt voucher by ID
-// @Description  Retrieve a receipt voucher by its ID
-// @Tags         finance-receipts
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Receipt Voucher ID" format(uuid)
-// @Success      200 {object} APIResponse[ReceiptVoucherResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/receipts/{id} [get]
+//
+//	@ID				getFinanceReceiptReceiptVoucherByID
+//	@Summary		Get receipt voucher by ID
+//	@Description	Retrieve a receipt voucher by its ID
+//	@Tags			finance-receipts
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Receipt Voucher ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[ReceiptVoucherResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/receipts/{id} [get]
 func (h *FinanceHandler) GetReceiptVoucherByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -649,21 +675,22 @@ func (h *FinanceHandler) GetReceiptVoucherByID(c *gin.Context) {
 }
 
 // ConfirmReceiptVoucher godoc
-// @ID           confirmReceiptVoucherFinanceReceipt
-// @Summary      Confirm a receipt voucher
-// @Description  Confirm a receipt voucher to allow reconciliation
-// @Tags         finance-receipts
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Receipt Voucher ID" format(uuid)
-// @Success      200 {object} APIResponse[ReceiptVoucherResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/receipts/{id}/confirm [post]
+//
+//	@ID				confirmReceiptVoucherFinanceReceipt
+//	@Summary		Confirm a receipt voucher
+//	@Description	Confirm a receipt voucher to allow reconciliation
+//	@Tags			finance-receipts
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Receipt Voucher ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[ReceiptVoucherResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/receipts/{id}/confirm [post]
 func (h *FinanceHandler) ConfirmReceiptVoucher(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -694,22 +721,23 @@ func (h *FinanceHandler) ConfirmReceiptVoucher(c *gin.Context) {
 }
 
 // CancelReceiptVoucher godoc
-// @ID           cancelReceiptVoucherFinanceReceipt
-// @Summary      Cancel a receipt voucher
-// @Description  Cancel a receipt voucher (only if not yet allocated)
-// @Tags         finance-receipts
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Receipt Voucher ID" format(uuid)
-// @Param        request body CancelVoucherRequest true "Cancel request"
-// @Success      200 {object} APIResponse[ReceiptVoucherResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/receipts/{id}/cancel [post]
+//
+//	@ID				cancelReceiptVoucherFinanceReceipt
+//	@Summary		Cancel a receipt voucher
+//	@Description	Cancel a receipt voucher (only if not yet allocated)
+//	@Tags			finance-receipts
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string					true	"Receipt Voucher ID"	format(uuid)
+//	@Param			request		body		CancelVoucherRequest	true	"Cancel request"
+//	@Success		200			{object}	APIResponse[ReceiptVoucherResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/receipts/{id}/cancel [post]
 func (h *FinanceHandler) CancelReceiptVoucher(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -746,22 +774,23 @@ func (h *FinanceHandler) CancelReceiptVoucher(c *gin.Context) {
 }
 
 // ReconcileReceiptVoucher godoc
-// @ID           reconcileReceiptVoucherFinanceReceipt
-// @Summary      Reconcile a receipt voucher
-// @Description  Reconcile a receipt voucher to outstanding receivables
-// @Tags         finance-receipts
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Receipt Voucher ID" format(uuid)
-// @Param        request body ReconcileRequest true "Reconcile request"
-// @Success      200 {object} APIResponse[ReconcileReceiptResultResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/receipts/{id}/reconcile [post]
+//
+//	@ID				reconcileReceiptVoucherFinanceReceipt
+//	@Summary		Reconcile a receipt voucher
+//	@Description	Reconcile a receipt voucher to outstanding receivables
+//	@Tags			finance-receipts
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string				false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string				true	"Receipt Voucher ID"	format(uuid)
+//	@Param			request		body		ReconcileRequest	true	"Reconcile request"
+//	@Success		200			{object}	APIResponse[ReconcileReceiptResultResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/receipts/{id}/reconcile [post]
 func (h *FinanceHandler) ReconcileReceiptVoucher(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -814,19 +843,20 @@ func (h *FinanceHandler) ReconcileReceiptVoucher(c *gin.Context) {
 // ===================== Payment Voucher Handlers =====================
 
 // CreatePaymentVoucher godoc
-// @ID           createFinancePaymentPaymentVoucher
-// @Summary      Create a payment voucher
-// @Description  Create a new payment voucher for supplier payment
-// @Tags         finance-payments
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        request body CreatePaymentVoucherRequest true "Payment voucher creation request"
-// @Success      201 {object} APIResponse[PaymentVoucherResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/payments [post]
+//
+//	@ID				createFinancePaymentPaymentVoucher
+//	@Summary		Create a payment voucher
+//	@Description	Create a new payment voucher for supplier payment
+//	@Tags			finance-payments
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
+//	@Param			request		body		CreatePaymentVoucherRequest	true	"Payment voucher creation request"
+//	@Success		201			{object}	APIResponse[PaymentVoucherResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/payments [post]
 func (h *FinanceHandler) CreatePaymentVoucher(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -880,25 +910,26 @@ func (h *FinanceHandler) CreatePaymentVoucher(c *gin.Context) {
 }
 
 // ListPaymentVouchers godoc
-// @ID           listFinancePaymentPaymentVouchers
-// @Summary      List payment vouchers
-// @Description  Retrieve a paginated list of payment vouchers with filtering
-// @Tags         finance-payments
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        search query string false "Search term (voucher number, supplier name)"
-// @Param        supplier_id query string false "Supplier ID" format(uuid)
-// @Param        status query string false "Status" Enums(DRAFT, CONFIRMED, ALLOCATED, CANCELLED)
-// @Param        payment_method query string false "Payment method" Enums(CASH, BANK_TRANSFER, WECHAT, ALIPAY, CHECK, BALANCE, OTHER)
-// @Param        from_date query string false "From date (ISO 8601)" format(date)
-// @Param        to_date query string false "To date (ISO 8601)" format(date)
-// @Param        page query int false "Page number" default(1)
-// @Param        page_size query int false "Page size" default(20) maximum(100)
-// @Success      200 {object} APIResponse[[]PaymentVoucherResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/payments [get]
+//
+//	@ID				listFinancePaymentPaymentVouchers
+//	@Summary		List payment vouchers
+//	@Description	Retrieve a paginated list of payment vouchers with filtering
+//	@Tags			finance-payments
+//	@Produce		json
+//	@Param			X-Tenant-ID		header		string	false	"Tenant ID (optional for dev)"
+//	@Param			search			query		string	false	"Search term (voucher number, supplier name)"
+//	@Param			supplier_id		query		string	false	"Supplier ID"			format(uuid)
+//	@Param			status			query		string	false	"Status"				Enums(DRAFT, CONFIRMED, ALLOCATED, CANCELLED)
+//	@Param			payment_method	query		string	false	"Payment method"		Enums(CASH, BANK_TRANSFER, WECHAT, ALIPAY, CHECK, BALANCE, OTHER)
+//	@Param			from_date		query		string	false	"From date (ISO 8601)"	format(date)
+//	@Param			to_date			query		string	false	"To date (ISO 8601)"	format(date)
+//	@Param			page			query		int		false	"Page number"			default(1)
+//	@Param			page_size		query		int		false	"Page size"				default(20)	maximum(100)
+//	@Success		200				{object}	APIResponse[[]PaymentVoucherResponse]
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/payments [get]
 func (h *FinanceHandler) ListPaymentVouchers(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -929,19 +960,20 @@ func (h *FinanceHandler) ListPaymentVouchers(c *gin.Context) {
 }
 
 // GetPaymentVoucherByID godoc
-// @ID           getFinancePaymentPaymentVoucherByID
-// @Summary      Get payment voucher by ID
-// @Description  Retrieve a payment voucher by its ID
-// @Tags         finance-payments
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Payment Voucher ID" format(uuid)
-// @Success      200 {object} APIResponse[PaymentVoucherResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/payments/{id} [get]
+//
+//	@ID				getFinancePaymentPaymentVoucherByID
+//	@Summary		Get payment voucher by ID
+//	@Description	Retrieve a payment voucher by its ID
+//	@Tags			finance-payments
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Payment Voucher ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[PaymentVoucherResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/payments/{id} [get]
 func (h *FinanceHandler) GetPaymentVoucherByID(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -965,21 +997,22 @@ func (h *FinanceHandler) GetPaymentVoucherByID(c *gin.Context) {
 }
 
 // ConfirmPaymentVoucher godoc
-// @ID           confirmPaymentVoucherFinancePayment
-// @Summary      Confirm a payment voucher
-// @Description  Confirm a payment voucher to allow reconciliation
-// @Tags         finance-payments
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Payment Voucher ID" format(uuid)
-// @Success      200 {object} APIResponse[PaymentVoucherResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/payments/{id}/confirm [post]
+//
+//	@ID				confirmPaymentVoucherFinancePayment
+//	@Summary		Confirm a payment voucher
+//	@Description	Confirm a payment voucher to allow reconciliation
+//	@Tags			finance-payments
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string	true	"Payment Voucher ID"	format(uuid)
+//	@Success		200			{object}	APIResponse[PaymentVoucherResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/payments/{id}/confirm [post]
 func (h *FinanceHandler) ConfirmPaymentVoucher(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -1010,22 +1043,23 @@ func (h *FinanceHandler) ConfirmPaymentVoucher(c *gin.Context) {
 }
 
 // CancelPaymentVoucher godoc
-// @ID           cancelPaymentVoucherFinancePayment
-// @Summary      Cancel a payment voucher
-// @Description  Cancel a payment voucher (only if not yet allocated)
-// @Tags         finance-payments
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Payment Voucher ID" format(uuid)
-// @Param        request body CancelVoucherRequest true "Cancel request"
-// @Success      200 {object} APIResponse[PaymentVoucherResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/payments/{id}/cancel [post]
+//
+//	@ID				cancelPaymentVoucherFinancePayment
+//	@Summary		Cancel a payment voucher
+//	@Description	Cancel a payment voucher (only if not yet allocated)
+//	@Tags			finance-payments
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string					true	"Payment Voucher ID"	format(uuid)
+//	@Param			request		body		CancelVoucherRequest	true	"Cancel request"
+//	@Success		200			{object}	APIResponse[PaymentVoucherResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/payments/{id}/cancel [post]
 func (h *FinanceHandler) CancelPaymentVoucher(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -1062,22 +1096,23 @@ func (h *FinanceHandler) CancelPaymentVoucher(c *gin.Context) {
 }
 
 // ReconcilePaymentVoucher godoc
-// @ID           reconcilePaymentVoucherFinancePayment
-// @Summary      Reconcile a payment voucher
-// @Description  Reconcile a payment voucher to outstanding payables
-// @Tags         finance-payments
-// @Accept       json
-// @Produce      json
-// @Param        X-Tenant-ID header string false "Tenant ID (optional for dev)"
-// @Param        id path string true "Payment Voucher ID" format(uuid)
-// @Param        request body ReconcileRequest true "Reconcile request"
-// @Success      200 {object} APIResponse[ReconcilePaymentResultResponse]
-// @Failure      400 {object} dto.ErrorResponse
-// @Failure      404 {object} dto.ErrorResponse
-// @Failure      422 {object} dto.ErrorResponse
-// @Failure      500 {object} dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /finance/payments/{id}/reconcile [post]
+//
+//	@ID				reconcilePaymentVoucherFinancePayment
+//	@Summary		Reconcile a payment voucher
+//	@Description	Reconcile a payment voucher to outstanding payables
+//	@Tags			finance-payments
+//	@Accept			json
+//	@Produce		json
+//	@Param			X-Tenant-ID	header		string				false	"Tenant ID (optional for dev)"
+//	@Param			id			path		string				true	"Payment Voucher ID"	format(uuid)
+//	@Param			request		body		ReconcileRequest	true	"Reconcile request"
+//	@Success		200			{object}	APIResponse[ReconcilePaymentResultResponse]
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/finance/payments/{id}/reconcile [post]
 func (h *FinanceHandler) ReconcilePaymentVoucher(c *gin.Context) {
 	tenantID, err := getTenantID(c)
 	if err != nil {

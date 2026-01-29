@@ -133,12 +133,12 @@ type CustomerValidationResponse struct {
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
 //	@Param			file		formData	file	true	"CSV file to validate"
 //	@Success		200			{object}	APIResponse[CustomerValidationResponse]
-//	@Failure		400			{object}	ErrorResponse
-//	@Failure		401			{object}	ErrorResponse
-//	@Failure		413			{object}	ErrorResponse
-//	@Failure		415			{object}	ErrorResponse
-//	@Failure		422			{object}	ErrorResponse
-//	@Failure		500			{object}	ErrorResponse
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		413			{object}	dto.ErrorResponse
+//	@Failure		415			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/import/customers/validate [post]
 func (h *CustomerImportHandler) ValidateCustomers(c *gin.Context) {
@@ -303,11 +303,11 @@ func (h *CustomerImportHandler) ValidateCustomers(c *gin.Context) {
 //	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
 //	@Param			request		body		CustomerImportRequest	true	"Import request"
 //	@Success		200			{object}	APIResponse[CustomerImportResponse]
-//	@Failure		400			{object}	ErrorResponse
-//	@Failure		401			{object}	ErrorResponse
-//	@Failure		404			{object}	ErrorResponse
-//	@Failure		422			{object}	ErrorResponse
-//	@Failure		500			{object}	ErrorResponse
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		422			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/import/customers [post]
 func (h *CustomerImportHandler) ImportCustomers(c *gin.Context) {

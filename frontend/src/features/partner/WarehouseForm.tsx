@@ -232,7 +232,8 @@ export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) 
         notes: data.notes,
       })
       if (response.status !== 200 || !response.data.success) {
-        throw new Error(response.data.error?.message || t('warehouses.messages.updateError'))
+        const error = response.data.error as { message?: string } | undefined
+        throw new Error(error?.message || t('warehouses.messages.updateError'))
       }
     } else {
       // Create new warehouse
@@ -255,7 +256,8 @@ export function WarehouseForm({ warehouseId, initialData }: WarehouseFormProps) 
         notes: data.notes,
       })
       if (response.status !== 201 || !response.data.success) {
-        throw new Error(response.data.error?.message || t('warehouses.messages.createError'))
+        const error = response.data.error as { message?: string } | undefined
+        throw new Error(error?.message || t('warehouses.messages.createError'))
       }
     }
   }

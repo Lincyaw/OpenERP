@@ -1,7 +1,7 @@
 package handler
 
 import (
-	catalogapp "github.com/erp/backend/internal/application/catalog"
+	"github.com/erp/backend/internal/application/catalog"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -9,11 +9,11 @@ import (
 // ProductAttachmentHandler handles product attachment-related API endpoints
 type ProductAttachmentHandler struct {
 	BaseHandler
-	attachmentService *catalogapp.AttachmentService
+	attachmentService *catalog.AttachmentService
 }
 
 // NewProductAttachmentHandler creates a new ProductAttachmentHandler
-func NewProductAttachmentHandler(attachmentService *catalogapp.AttachmentService) *ProductAttachmentHandler {
+func NewProductAttachmentHandler(attachmentService *catalog.AttachmentService) *ProductAttachmentHandler {
 	return &ProductAttachmentHandler{
 		attachmentService: attachmentService,
 	}
@@ -61,7 +61,7 @@ type ReorderAttachmentsRequest struct {
 //	@Produce		json
 //	@Param			X-Tenant-ID	header		string					false	"Tenant ID (optional for dev)"
 //	@Param			request		body		InitiateUploadRequest	true	"Upload initiation request"
-//	@Success		201			{object}	APIResponse[catalogapp.InitiateUploadResponse]
+//	@Success		201			{object}	APIResponse[catalog.InitiateUploadResponse]
 //	@Failure		400			{object}	dto.ErrorResponse
 //	@Failure		401			{object}	dto.ErrorResponse
 //	@Failure		404			{object}	dto.ErrorResponse	"Product not found"
@@ -96,7 +96,7 @@ func (h *ProductAttachmentHandler) InitiateUpload(c *gin.Context) {
 	}
 
 	// Convert to application DTO
-	appReq := catalogapp.InitiateUploadRequest{
+	appReq := catalog.InitiateUploadRequest{
 		ProductID:   productID,
 		Type:        req.Type,
 		FileName:    req.FileName,
@@ -123,7 +123,7 @@ func (h *ProductAttachmentHandler) InitiateUpload(c *gin.Context) {
 //	@Produce		json
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
 //	@Param			id			path		string	true	"Attachment ID"	format(uuid)
-//	@Success		200			{object}	APIResponse[catalogapp.AttachmentResponse]
+//	@Success		200			{object}	APIResponse[catalog.AttachmentResponse]
 //	@Failure		400			{object}	dto.ErrorResponse
 //	@Failure		401			{object}	dto.ErrorResponse
 //	@Failure		404			{object}	dto.ErrorResponse	"Attachment not found"
@@ -162,7 +162,7 @@ func (h *ProductAttachmentHandler) ConfirmUpload(c *gin.Context) {
 //	@Produce		json
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
 //	@Param			id			path		string	true	"Attachment ID"	format(uuid)
-//	@Success		200			{object}	APIResponse[catalogapp.AttachmentResponse]
+//	@Success		200			{object}	APIResponse[catalog.AttachmentResponse]
 //	@Failure		400			{object}	dto.ErrorResponse
 //	@Failure		401			{object}	dto.ErrorResponse
 //	@Failure		404			{object}	dto.ErrorResponse
@@ -207,7 +207,7 @@ func (h *ProductAttachmentHandler) GetByID(c *gin.Context) {
 //	@Param			page_size	query		int		false	"Page size"			default(20)	maximum(100)
 //	@Param			order_by	query		string	false	"Order by field"	default(sort_order)
 //	@Param			order_dir	query		string	false	"Order direction"	Enums(asc, desc)	default(asc)
-//	@Success		200			{object}	APIResponse[[]catalogapp.AttachmentListResponse]
+//	@Success		200			{object}	APIResponse[[]catalog.AttachmentListResponse]
 //	@Failure		400			{object}	dto.ErrorResponse
 //	@Failure		401			{object}	dto.ErrorResponse
 //	@Failure		404			{object}	dto.ErrorResponse	"Product not found"
@@ -227,7 +227,7 @@ func (h *ProductAttachmentHandler) ListByProduct(c *gin.Context) {
 		return
 	}
 
-	var filter catalogapp.AttachmentListFilter
+	var filter catalog.AttachmentListFilter
 	if err := c.ShouldBindQuery(&filter); err != nil {
 		h.BadRequest(c, err.Error())
 		return
@@ -259,7 +259,7 @@ func (h *ProductAttachmentHandler) ListByProduct(c *gin.Context) {
 //	@Produce		json
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
 //	@Param			id			path		string	true	"Product ID"	format(uuid)
-//	@Success		200			{object}	APIResponse[catalogapp.AttachmentResponse]
+//	@Success		200			{object}	APIResponse[catalog.AttachmentResponse]
 //	@Failure		400			{object}	dto.ErrorResponse
 //	@Failure		401			{object}	dto.ErrorResponse
 //	@Failure		404			{object}	dto.ErrorResponse	"Product or main image not found"
@@ -336,7 +336,7 @@ func (h *ProductAttachmentHandler) Delete(c *gin.Context) {
 //	@Produce		json
 //	@Param			X-Tenant-ID	header		string	false	"Tenant ID (optional for dev)"
 //	@Param			id			path		string	true	"Attachment ID"	format(uuid)
-//	@Success		200			{object}	APIResponse[catalogapp.AttachmentResponse]
+//	@Success		200			{object}	APIResponse[catalog.AttachmentResponse]
 //	@Failure		400			{object}	dto.ErrorResponse
 //	@Failure		401			{object}	dto.ErrorResponse
 //	@Failure		404			{object}	dto.ErrorResponse	"Attachment not found"
@@ -377,7 +377,7 @@ func (h *ProductAttachmentHandler) SetAsMainImage(c *gin.Context) {
 //	@Param			X-Tenant-ID	header		string						false	"Tenant ID (optional for dev)"
 //	@Param			id			path		string						true	"Product ID"	format(uuid)
 //	@Param			request		body		ReorderAttachmentsRequest	true	"Reorder request"
-//	@Success		200			{object}	APIResponse[[]catalogapp.AttachmentListResponse]
+//	@Success		200			{object}	APIResponse[[]catalog.AttachmentListResponse]
 //	@Failure		400			{object}	dto.ErrorResponse
 //	@Failure		401			{object}	dto.ErrorResponse
 //	@Failure		404			{object}	dto.ErrorResponse	"Product or attachments not found"

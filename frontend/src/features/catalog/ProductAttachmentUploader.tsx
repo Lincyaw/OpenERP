@@ -422,7 +422,7 @@ export function ProductAttachmentUploader({
                     percent={item.progress}
                     size="small"
                     showInfo
-                    status={item.status === 'done' ? 'success' : undefined}
+                    stroke={item.status === 'done' ? 'var(--semi-color-success)' : undefined}
                   />
                 )}
               </div>
@@ -538,7 +538,11 @@ export function ProductAttachmentUploader({
       <Modal
         visible={!!deleteConfirmId}
         onCancel={() => setDeleteConfirmId(null)}
-        onOk={() => deleteConfirmId && handleDelete(deleteConfirmId)}
+        onOk={() => {
+          if (deleteConfirmId) {
+            handleDelete(deleteConfirmId)
+          }
+        }}
         title={t('attachments.confirmDelete.title')}
         okText={t('common:actions.delete')}
         cancelText={t('common:actions.cancel')}

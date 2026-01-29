@@ -24,6 +24,7 @@ import type {
   CreateFeatureFlagFlagBody,
   CreateFeatureFlagOverrideBody,
   DisableFlagFeatureFlagBody,
+  DtoErrorResponse,
   EnableFlagFeatureFlagBody,
   EvaluateFlagFeatureFlagBody,
   GetFeatureFlagAuditLogsParams,
@@ -37,7 +38,6 @@ import type {
   HandlerAPIResponseDtoMessageResponse,
   HandlerAPIResponseDtoOverrideListResponse,
   HandlerAPIResponseDtoOverrideResponse,
-  HandlerErrorResponse,
   ListFeatureFlagFlagsParams,
   ListFeatureFlagOverridesParams,
   UpdateFeatureFlagFlagBody,
@@ -57,22 +57,22 @@ export type listFeatureFlagFlagsResponse200 = {
 }
 
 export type listFeatureFlagFlagsResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type listFeatureFlagFlagsResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type listFeatureFlagFlagsResponse403 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 403
 }
 
 export type listFeatureFlagFlagsResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -122,7 +122,7 @@ export const getListFeatureFlagFlagsQueryKey = (params?: ListFeatureFlagFlagsPar
 
 export const getListFeatureFlagFlagsQueryOptions = <
   TData = Awaited<ReturnType<typeof listFeatureFlagFlags>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListFeatureFlagFlagsParams,
   options?: {
@@ -149,11 +149,11 @@ export const getListFeatureFlagFlagsQueryOptions = <
 export type ListFeatureFlagFlagsQueryResult = NonNullable<
   Awaited<ReturnType<typeof listFeatureFlagFlags>>
 >
-export type ListFeatureFlagFlagsQueryError = HandlerErrorResponse
+export type ListFeatureFlagFlagsQueryError = DtoErrorResponse
 
 export function useListFeatureFlagFlags<
   TData = Awaited<ReturnType<typeof listFeatureFlagFlags>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params: undefined | ListFeatureFlagFlagsParams,
   options: {
@@ -174,7 +174,7 @@ export function useListFeatureFlagFlags<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListFeatureFlagFlags<
   TData = Awaited<ReturnType<typeof listFeatureFlagFlags>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListFeatureFlagFlagsParams,
   options?: {
@@ -195,7 +195,7 @@ export function useListFeatureFlagFlags<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListFeatureFlagFlags<
   TData = Awaited<ReturnType<typeof listFeatureFlagFlags>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListFeatureFlagFlagsParams,
   options?: {
@@ -212,7 +212,7 @@ export function useListFeatureFlagFlags<
 
 export function useListFeatureFlagFlags<
   TData = Awaited<ReturnType<typeof listFeatureFlagFlags>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   params?: ListFeatureFlagFlagsParams,
   options?: {
@@ -242,27 +242,27 @@ export type createFeatureFlagFlagResponse201 = {
 }
 
 export type createFeatureFlagFlagResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type createFeatureFlagFlagResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type createFeatureFlagFlagResponse403 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 403
 }
 
 export type createFeatureFlagFlagResponse409 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 409
 }
 
 export type createFeatureFlagFlagResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -300,7 +300,7 @@ export const createFeatureFlagFlag = async (
 }
 
 export const getCreateFeatureFlagFlagMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -339,12 +339,12 @@ export type CreateFeatureFlagFlagMutationResult = NonNullable<
   Awaited<ReturnType<typeof createFeatureFlagFlag>>
 >
 export type CreateFeatureFlagFlagMutationBody = CreateFeatureFlagFlagBody
-export type CreateFeatureFlagFlagMutationError = HandlerErrorResponse
+export type CreateFeatureFlagFlagMutationError = DtoErrorResponse
 
 /**
  * @summary Create a new feature flag
  */
-export const useCreateFeatureFlagFlag = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useCreateFeatureFlagFlag = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof createFeatureFlagFlag>>,
@@ -373,27 +373,27 @@ export type archiveFlagFeatureFlagResponse204 = {
 }
 
 export type archiveFlagFeatureFlagResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type archiveFlagFeatureFlagResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type archiveFlagFeatureFlagResponse403 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 403
 }
 
 export type archiveFlagFeatureFlagResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type archiveFlagFeatureFlagResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -429,7 +429,7 @@ export const archiveFlagFeatureFlag = async (
 }
 
 export const getArchiveFlagFeatureFlagMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -468,12 +468,12 @@ export type ArchiveFlagFeatureFlagMutationResult = NonNullable<
   Awaited<ReturnType<typeof archiveFlagFeatureFlag>>
 >
 
-export type ArchiveFlagFeatureFlagMutationError = HandlerErrorResponse
+export type ArchiveFlagFeatureFlagMutationError = DtoErrorResponse
 
 /**
  * @summary Archive a feature flag
  */
-export const useArchiveFlagFeatureFlag = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useArchiveFlagFeatureFlag = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof archiveFlagFeatureFlag>>,
@@ -502,27 +502,27 @@ export type getFeatureFlagFlagResponse200 = {
 }
 
 export type getFeatureFlagFlagResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getFeatureFlagFlagResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getFeatureFlagFlagResponse403 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 403
 }
 
 export type getFeatureFlagFlagResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type getFeatureFlagFlagResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -563,7 +563,7 @@ export const getGetFeatureFlagFlagQueryKey = (key: string) => {
 
 export const getGetFeatureFlagFlagQueryOptions = <
   TData = Awaited<ReturnType<typeof getFeatureFlagFlag>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   options?: {
@@ -588,11 +588,11 @@ export const getGetFeatureFlagFlagQueryOptions = <
 export type GetFeatureFlagFlagQueryResult = NonNullable<
   Awaited<ReturnType<typeof getFeatureFlagFlag>>
 >
-export type GetFeatureFlagFlagQueryError = HandlerErrorResponse
+export type GetFeatureFlagFlagQueryError = DtoErrorResponse
 
 export function useGetFeatureFlagFlag<
   TData = Awaited<ReturnType<typeof getFeatureFlagFlag>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   options: {
@@ -611,7 +611,7 @@ export function useGetFeatureFlagFlag<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetFeatureFlagFlag<
   TData = Awaited<ReturnType<typeof getFeatureFlagFlag>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   options?: {
@@ -632,7 +632,7 @@ export function useGetFeatureFlagFlag<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetFeatureFlagFlag<
   TData = Awaited<ReturnType<typeof getFeatureFlagFlag>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   options?: {
@@ -647,7 +647,7 @@ export function useGetFeatureFlagFlag<
 
 export function useGetFeatureFlagFlag<
   TData = Awaited<ReturnType<typeof getFeatureFlagFlag>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   options?: {
@@ -675,27 +675,27 @@ export type updateFeatureFlagFlagResponse200 = {
 }
 
 export type updateFeatureFlagFlagResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type updateFeatureFlagFlagResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type updateFeatureFlagFlagResponse403 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 403
 }
 
 export type updateFeatureFlagFlagResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type updateFeatureFlagFlagResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -734,7 +734,7 @@ export const updateFeatureFlagFlag = async (
 }
 
 export const getUpdateFeatureFlagFlagMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -773,12 +773,12 @@ export type UpdateFeatureFlagFlagMutationResult = NonNullable<
   Awaited<ReturnType<typeof updateFeatureFlagFlag>>
 >
 export type UpdateFeatureFlagFlagMutationBody = UpdateFeatureFlagFlagBody
-export type UpdateFeatureFlagFlagMutationError = HandlerErrorResponse
+export type UpdateFeatureFlagFlagMutationError = DtoErrorResponse
 
 /**
  * @summary Update a feature flag
  */
-export const useUpdateFeatureFlagFlag = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useUpdateFeatureFlagFlag = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateFeatureFlagFlag>>,
@@ -807,27 +807,27 @@ export type getFeatureFlagAuditLogsResponse200 = {
 }
 
 export type getFeatureFlagAuditLogsResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getFeatureFlagAuditLogsResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getFeatureFlagAuditLogsResponse403 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 403
 }
 
 export type getFeatureFlagAuditLogsResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type getFeatureFlagAuditLogsResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -890,7 +890,7 @@ export const getGetFeatureFlagAuditLogsQueryKey = (
 
 export const getGetFeatureFlagAuditLogsQueryOptions = <
   TData = Awaited<ReturnType<typeof getFeatureFlagAuditLogs>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   params?: GetFeatureFlagAuditLogsParams,
@@ -919,11 +919,11 @@ export const getGetFeatureFlagAuditLogsQueryOptions = <
 export type GetFeatureFlagAuditLogsQueryResult = NonNullable<
   Awaited<ReturnType<typeof getFeatureFlagAuditLogs>>
 >
-export type GetFeatureFlagAuditLogsQueryError = HandlerErrorResponse
+export type GetFeatureFlagAuditLogsQueryError = DtoErrorResponse
 
 export function useGetFeatureFlagAuditLogs<
   TData = Awaited<ReturnType<typeof getFeatureFlagAuditLogs>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   params: undefined | GetFeatureFlagAuditLogsParams,
@@ -945,7 +945,7 @@ export function useGetFeatureFlagAuditLogs<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetFeatureFlagAuditLogs<
   TData = Awaited<ReturnType<typeof getFeatureFlagAuditLogs>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   params?: GetFeatureFlagAuditLogsParams,
@@ -967,7 +967,7 @@ export function useGetFeatureFlagAuditLogs<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetFeatureFlagAuditLogs<
   TData = Awaited<ReturnType<typeof getFeatureFlagAuditLogs>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   params?: GetFeatureFlagAuditLogsParams,
@@ -985,7 +985,7 @@ export function useGetFeatureFlagAuditLogs<
 
 export function useGetFeatureFlagAuditLogs<
   TData = Awaited<ReturnType<typeof getFeatureFlagAuditLogs>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   params?: GetFeatureFlagAuditLogsParams,
@@ -1016,32 +1016,32 @@ export type disableFlagFeatureFlagResponse200 = {
 }
 
 export type disableFlagFeatureFlagResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type disableFlagFeatureFlagResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type disableFlagFeatureFlagResponse403 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 403
 }
 
 export type disableFlagFeatureFlagResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type disableFlagFeatureFlagResponse422 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 422
 }
 
 export type disableFlagFeatureFlagResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1081,7 +1081,7 @@ export const disableFlagFeatureFlag = async (
 }
 
 export const getDisableFlagFeatureFlagMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1120,12 +1120,12 @@ export type DisableFlagFeatureFlagMutationResult = NonNullable<
   Awaited<ReturnType<typeof disableFlagFeatureFlag>>
 >
 export type DisableFlagFeatureFlagMutationBody = DisableFlagFeatureFlagBody
-export type DisableFlagFeatureFlagMutationError = HandlerErrorResponse
+export type DisableFlagFeatureFlagMutationError = DtoErrorResponse
 
 /**
  * @summary Disable a feature flag
  */
-export const useDisableFlagFeatureFlag = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useDisableFlagFeatureFlag = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof disableFlagFeatureFlag>>,
@@ -1154,32 +1154,32 @@ export type enableFlagFeatureFlagResponse200 = {
 }
 
 export type enableFlagFeatureFlagResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type enableFlagFeatureFlagResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type enableFlagFeatureFlagResponse403 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 403
 }
 
 export type enableFlagFeatureFlagResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type enableFlagFeatureFlagResponse422 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 422
 }
 
 export type enableFlagFeatureFlagResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1219,7 +1219,7 @@ export const enableFlagFeatureFlag = async (
 }
 
 export const getEnableFlagFeatureFlagMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1258,12 +1258,12 @@ export type EnableFlagFeatureFlagMutationResult = NonNullable<
   Awaited<ReturnType<typeof enableFlagFeatureFlag>>
 >
 export type EnableFlagFeatureFlagMutationBody = EnableFlagFeatureFlagBody
-export type EnableFlagFeatureFlagMutationError = HandlerErrorResponse
+export type EnableFlagFeatureFlagMutationError = DtoErrorResponse
 
 /**
  * @summary Enable a feature flag
  */
-export const useEnableFlagFeatureFlag = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useEnableFlagFeatureFlag = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof enableFlagFeatureFlag>>,
@@ -1292,22 +1292,22 @@ export type evaluateFlagFeatureFlagResponse200 = {
 }
 
 export type evaluateFlagFeatureFlagResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type evaluateFlagFeatureFlagResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type evaluateFlagFeatureFlagResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type evaluateFlagFeatureFlagResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1345,7 +1345,7 @@ export const evaluateFlagFeatureFlag = async (
 }
 
 export const getEvaluateFlagFeatureFlagMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1384,12 +1384,12 @@ export type EvaluateFlagFeatureFlagMutationResult = NonNullable<
   Awaited<ReturnType<typeof evaluateFlagFeatureFlag>>
 >
 export type EvaluateFlagFeatureFlagMutationBody = EvaluateFlagFeatureFlagBody
-export type EvaluateFlagFeatureFlagMutationError = HandlerErrorResponse
+export type EvaluateFlagFeatureFlagMutationError = DtoErrorResponse
 
 /**
  * @summary Evaluate a feature flag
  */
-export const useEvaluateFlagFeatureFlag = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useEvaluateFlagFeatureFlag = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof evaluateFlagFeatureFlag>>,
@@ -1418,27 +1418,27 @@ export type listFeatureFlagOverridesResponse200 = {
 }
 
 export type listFeatureFlagOverridesResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type listFeatureFlagOverridesResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type listFeatureFlagOverridesResponse403 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 403
 }
 
 export type listFeatureFlagOverridesResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type listFeatureFlagOverridesResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1501,7 +1501,7 @@ export const getListFeatureFlagOverridesQueryKey = (
 
 export const getListFeatureFlagOverridesQueryOptions = <
   TData = Awaited<ReturnType<typeof listFeatureFlagOverrides>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   params?: ListFeatureFlagOverridesParams,
@@ -1530,11 +1530,11 @@ export const getListFeatureFlagOverridesQueryOptions = <
 export type ListFeatureFlagOverridesQueryResult = NonNullable<
   Awaited<ReturnType<typeof listFeatureFlagOverrides>>
 >
-export type ListFeatureFlagOverridesQueryError = HandlerErrorResponse
+export type ListFeatureFlagOverridesQueryError = DtoErrorResponse
 
 export function useListFeatureFlagOverrides<
   TData = Awaited<ReturnType<typeof listFeatureFlagOverrides>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   params: undefined | ListFeatureFlagOverridesParams,
@@ -1556,7 +1556,7 @@ export function useListFeatureFlagOverrides<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListFeatureFlagOverrides<
   TData = Awaited<ReturnType<typeof listFeatureFlagOverrides>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   params?: ListFeatureFlagOverridesParams,
@@ -1578,7 +1578,7 @@ export function useListFeatureFlagOverrides<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListFeatureFlagOverrides<
   TData = Awaited<ReturnType<typeof listFeatureFlagOverrides>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   params?: ListFeatureFlagOverridesParams,
@@ -1596,7 +1596,7 @@ export function useListFeatureFlagOverrides<
 
 export function useListFeatureFlagOverrides<
   TData = Awaited<ReturnType<typeof listFeatureFlagOverrides>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   key: string,
   params?: ListFeatureFlagOverridesParams,
@@ -1627,32 +1627,32 @@ export type createFeatureFlagOverrideResponse201 = {
 }
 
 export type createFeatureFlagOverrideResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type createFeatureFlagOverrideResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type createFeatureFlagOverrideResponse403 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 403
 }
 
 export type createFeatureFlagOverrideResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type createFeatureFlagOverrideResponse409 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 409
 }
 
 export type createFeatureFlagOverrideResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1692,7 +1692,7 @@ export const createFeatureFlagOverride = async (
 }
 
 export const getCreateFeatureFlagOverrideMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1731,12 +1731,12 @@ export type CreateFeatureFlagOverrideMutationResult = NonNullable<
   Awaited<ReturnType<typeof createFeatureFlagOverride>>
 >
 export type CreateFeatureFlagOverrideMutationBody = CreateFeatureFlagOverrideBody
-export type CreateFeatureFlagOverrideMutationError = HandlerErrorResponse
+export type CreateFeatureFlagOverrideMutationError = DtoErrorResponse
 
 /**
  * @summary Create a flag override
  */
-export const useCreateFeatureFlagOverride = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useCreateFeatureFlagOverride = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof createFeatureFlagOverride>>,
@@ -1765,27 +1765,27 @@ export type deleteFeatureFlagOverrideResponse204 = {
 }
 
 export type deleteFeatureFlagOverrideResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type deleteFeatureFlagOverrideResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type deleteFeatureFlagOverrideResponse403 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 403
 }
 
 export type deleteFeatureFlagOverrideResponse404 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 404
 }
 
 export type deleteFeatureFlagOverrideResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1825,7 +1825,7 @@ export const deleteFeatureFlagOverride = async (
 }
 
 export const getDeleteFeatureFlagOverrideMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1864,12 +1864,12 @@ export type DeleteFeatureFlagOverrideMutationResult = NonNullable<
   Awaited<ReturnType<typeof deleteFeatureFlagOverride>>
 >
 
-export type DeleteFeatureFlagOverrideMutationError = HandlerErrorResponse
+export type DeleteFeatureFlagOverrideMutationError = DtoErrorResponse
 
 /**
  * @summary Delete a flag override
  */
-export const useDeleteFeatureFlagOverride = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useDeleteFeatureFlagOverride = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof deleteFeatureFlagOverride>>,
@@ -1898,17 +1898,17 @@ export type getFeatureFlagClientConfigResponse200 = {
 }
 
 export type getFeatureFlagClientConfigResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type getFeatureFlagClientConfigResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type getFeatureFlagClientConfigResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -1944,7 +1944,7 @@ export const getFeatureFlagClientConfig = async (
 }
 
 export const getGetFeatureFlagClientConfigMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -1983,12 +1983,12 @@ export type GetFeatureFlagClientConfigMutationResult = NonNullable<
   Awaited<ReturnType<typeof getFeatureFlagClientConfig>>
 >
 export type GetFeatureFlagClientConfigMutationBody = GetFeatureFlagClientConfigBody
-export type GetFeatureFlagClientConfigMutationError = HandlerErrorResponse
+export type GetFeatureFlagClientConfigMutationError = DtoErrorResponse
 
 /**
  * @summary Get client configuration
  */
-export const useGetFeatureFlagClientConfig = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useGetFeatureFlagClientConfig = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof getFeatureFlagClientConfig>>,
@@ -2017,17 +2017,17 @@ export type batchEvaluateFeatureFlagResponse200 = {
 }
 
 export type batchEvaluateFeatureFlagResponse400 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 400
 }
 
 export type batchEvaluateFeatureFlagResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type batchEvaluateFeatureFlagResponse500 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 500
 }
 
@@ -2063,7 +2063,7 @@ export const batchEvaluateFeatureFlag = async (
 }
 
 export const getBatchEvaluateFeatureFlagMutationOptions = <
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -2102,12 +2102,12 @@ export type BatchEvaluateFeatureFlagMutationResult = NonNullable<
   Awaited<ReturnType<typeof batchEvaluateFeatureFlag>>
 >
 export type BatchEvaluateFeatureFlagMutationBody = BatchEvaluateFeatureFlagBody
-export type BatchEvaluateFeatureFlagMutationError = HandlerErrorResponse
+export type BatchEvaluateFeatureFlagMutationError = DtoErrorResponse
 
 /**
  * @summary Batch evaluate feature flags
  */
-export const useBatchEvaluateFeatureFlag = <TError = HandlerErrorResponse, TContext = unknown>(
+export const useBatchEvaluateFeatureFlag = <TError = DtoErrorResponse, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof batchEvaluateFeatureFlag>>,
@@ -2136,12 +2136,12 @@ export type streamFeatureFlagResponse200 = {
 }
 
 export type streamFeatureFlagResponse401 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 401
 }
 
 export type streamFeatureFlagResponse503 = {
-  data: HandlerErrorResponse
+  data: DtoErrorResponse
   status: 503
 }
 
@@ -2178,7 +2178,7 @@ export const getStreamFeatureFlagQueryKey = () => {
 
 export const getStreamFeatureFlagQueryOptions = <
   TData = Awaited<ReturnType<typeof streamFeatureFlag>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(options?: {
   query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof streamFeatureFlag>>, TError, TData>>
   request?: SecondParameter<typeof customInstance>
@@ -2200,11 +2200,11 @@ export const getStreamFeatureFlagQueryOptions = <
 export type StreamFeatureFlagQueryResult = NonNullable<
   Awaited<ReturnType<typeof streamFeatureFlag>>
 >
-export type StreamFeatureFlagQueryError = HandlerErrorResponse
+export type StreamFeatureFlagQueryError = DtoErrorResponse
 
 export function useStreamFeatureFlag<
   TData = Awaited<ReturnType<typeof streamFeatureFlag>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options: {
     query: Partial<UseQueryOptions<Awaited<ReturnType<typeof streamFeatureFlag>>, TError, TData>> &
@@ -2222,7 +2222,7 @@ export function useStreamFeatureFlag<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useStreamFeatureFlag<
   TData = Awaited<ReturnType<typeof streamFeatureFlag>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof streamFeatureFlag>>, TError, TData>> &
@@ -2240,7 +2240,7 @@ export function useStreamFeatureFlag<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useStreamFeatureFlag<
   TData = Awaited<ReturnType<typeof streamFeatureFlag>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof streamFeatureFlag>>, TError, TData>>
@@ -2254,7 +2254,7 @@ export function useStreamFeatureFlag<
 
 export function useStreamFeatureFlag<
   TData = Awaited<ReturnType<typeof streamFeatureFlag>>,
-  TError = HandlerErrorResponse,
+  TError = DtoErrorResponse,
 >(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof streamFeatureFlag>>, TError, TData>>

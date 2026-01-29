@@ -302,8 +302,9 @@ export default function FeatureFlagFormPage() {
 
         const response = await updateFeatureFlagFlag(key, request)
         if (response.status !== 200 || !response.data.success) {
+          const error = response.data.error as { message?: string } | undefined
           throw new Error(
-            response.data.error?.message ||
+            error?.message ||
               t('featureFlags.messages.updateError', 'Failed to update feature flag')
           )
         }
@@ -320,8 +321,9 @@ export default function FeatureFlagFormPage() {
 
         const response = await createFeatureFlagFlag(request)
         if (response.status !== 201 || !response.data.success) {
+          const error = response.data.error as { message?: string } | undefined
           throw new Error(
-            response.data.error?.message ||
+            error?.message ||
               t('featureFlags.messages.createError', 'Failed to create feature flag')
           )
         }

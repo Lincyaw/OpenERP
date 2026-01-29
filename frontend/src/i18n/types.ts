@@ -492,6 +492,30 @@ export interface CatalogTranslations {
   'productDetail.fields.sortOrder': string
   'productDetail.fields.createdAt': string
   'productDetail.fields.updatedAt': string
+  // Attachments
+  'attachments.title': string
+  'attachments.description': string
+  'attachments.uploadArea': string
+  'attachments.dragDropHint': string
+  'attachments.allowedTypes': string
+  'attachments.maxSize': string
+  'attachments.empty': string
+  'attachments.mainImage': string
+  'attachments.setAsMain': string
+  'attachments.delete': string
+  'attachments.previewImage': string
+  'attachments.errors.invalidType': string
+  'attachments.errors.fileTooLarge': string
+  'attachments.errors.initiateError': string
+  'attachments.errors.uploadError': string
+  'attachments.errors.confirmError': string
+  'attachments.errors.deleteError': string
+  'attachments.errors.setMainError': string
+  'attachments.messages.uploadSuccess': string
+  'attachments.messages.deleteSuccess': string
+  'attachments.messages.setMainSuccess': string
+  'attachments.confirmDelete.title': string
+  'attachments.confirmDelete.content': string
 }
 
 /**

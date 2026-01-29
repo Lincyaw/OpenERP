@@ -744,11 +744,11 @@ func (s *ExpenseIncomeService) GetCashFlowSummary(ctx context.Context, tenantID 
 	}
 
 	// Calculate receipt voucher total (inflow from customers)
+	// Include both CONFIRMED (money received) and ALLOCATED (money received and reconciled)
 	receiptTotal := decimal.Zero
 	if s.receiptVoucherRepo != nil {
-		allocatedStatus := finance.VoucherStatusAllocated
 		receiptFilter := finance.ReceiptVoucherFilter{
-			Status:   &allocatedStatus,
+			Statuses: []finance.VoucherStatus{finance.VoucherStatusConfirmed, finance.VoucherStatusAllocated},
 			FromDate: &from,
 			ToDate:   &to,
 		}
@@ -762,11 +762,11 @@ func (s *ExpenseIncomeService) GetCashFlowSummary(ctx context.Context, tenantID 
 	}
 
 	// Calculate payment voucher total (outflow to suppliers)
+	// Include both CONFIRMED (money paid) and ALLOCATED (money paid and reconciled)
 	paymentTotal := decimal.Zero
 	if s.paymentVoucherRepo != nil {
-		allocatedStatus := finance.VoucherStatusAllocated
 		paymentFilter := finance.PaymentVoucherFilter{
-			Status:   &allocatedStatus,
+			Statuses: []finance.VoucherStatus{finance.VoucherStatusConfirmed, finance.VoucherStatusAllocated},
 			FromDate: &from,
 			ToDate:   &to,
 		}
@@ -844,11 +844,10 @@ func (s *ExpenseIncomeService) GetCashFlowSummary(ctx context.Context, tenantID 
 			})
 		}
 
-		// Get allocated receipt vouchers (收款)
+		// Get receipt vouchers (收款) - CONFIRMED and ALLOCATED
 		if s.receiptVoucherRepo != nil {
-			allocatedStatus := finance.VoucherStatusAllocated
 			receiptFilter := finance.ReceiptVoucherFilter{
-				Status:   &allocatedStatus,
+				Statuses: []finance.VoucherStatus{finance.VoucherStatusConfirmed, finance.VoucherStatusAllocated},
 				FromDate: &from,
 				ToDate:   &to,
 			}
@@ -870,11 +869,10 @@ func (s *ExpenseIncomeService) GetCashFlowSummary(ctx context.Context, tenantID 
 			}
 		}
 
-		// Get allocated payment vouchers (付款)
+		// Get payment vouchers (付款) - CONFIRMED and ALLOCATED
 		if s.paymentVoucherRepo != nil {
-			allocatedStatus := finance.VoucherStatusAllocated
 			paymentFilter := finance.PaymentVoucherFilter{
-				Status:   &allocatedStatus,
+				Statuses: []finance.VoucherStatus{finance.VoucherStatusConfirmed, finance.VoucherStatusAllocated},
 				FromDate: &from,
 				ToDate:   &to,
 			}
