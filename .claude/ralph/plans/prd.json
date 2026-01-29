@@ -11580,13 +11580,13 @@
       "5. Initialize balance to 0 for new customers",
       "",
       "=== Acceptance Criteria ===",
-      "- [ ] Customer levels validated against database",
-      "- [ ] Default level applied when not specified",
-      "- [ ] Phone number format flexible (no strict validation)",
-      "- [ ] Address fields properly assembled into Address VO",
-      "- [ ] CustomerCreated events published"
+      "- [x] Customer levels validated against database",
+      "- [x] Default level applied when not specified",
+      "- [x] Phone number format flexible (no strict validation)",
+      "- [x] Address fields properly assembled into Address VO",
+      "- [x] CustomerCreated events published"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPORT-BE-004",
@@ -12397,5 +12397,186 @@
       "- [ ] Documentation updated with lint command"
     ],
     "passes": true
+  },
+  {
+    "id": "ATTACH-INFRA-001",
+    "story": "配置 RustFS S3 兼容存储服务",
+    "priority": "high",
+    "category": "infrastructure",
+    "plan_source": "~/.claude/plans/twinkling-waddling-widget.md",
+    "requirements": [
+      "添加 RustFS 服务到 docker-compose.yml",
+      "配置持久化存储卷 rustfs_data",
+      "添加 [storage] 配置段到 backend/config.toml",
+      "配置 endpoint, access_key, secret_key, bucket 等参数",
+      "验证 RustFS 服务启动正常"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ATTACH-INFRA-002",
+    "story": "实现 S3 兼容存储接口和 RustFS 客户端",
+    "priority": "high",
+    "category": "backend",
+    "plan_source": "~/.claude/plans/twinkling-waddling-widget.md",
+    "requirements": [
+      "创建 backend/internal/infrastructure/storage/s3_storage.go 定义接口",
+      "实现 GenerateUploadURL() - 生成预签名上传 URL",
+      "实现 GenerateDownloadURL() - 生成预签名下载 URL",
+      "实现 Upload(), Download(), Delete(), Exists() 方法",
+      "创建 backend/internal/infrastructure/storage/rustfs_storage.go 实现",
+      "使用 AWS SDK v2 连接 RustFS",
+      "编写存储层单元测试"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ATTACH-BE-001",
+    "story": "实现商品附件领域实体和仓储接口",
+    "priority": "high",
+    "category": "backend",
+    "plan_source": "~/.claude/plans/twinkling-waddling-widget.md",
+    "requirements": [
+      "创建 backend/internal/domain/catalog/product_attachment.go",
+      "定义 AttachmentType (main_image/gallery_image/document/other)",
+      "定义 AttachmentStatus (pending/active/deleted)",
+      "实现 ProductAttachment 实体及业务方法",
+      "实现 Confirm(), Delete(), SetAsMainImage() 等方法",
+      "创建 product_attachment_repository.go 仓储接口"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ATTACH-BE-002",
+    "story": "实现商品附件领域事件",
+    "priority": "medium",
+    "category": "backend",
+    "plan_source": "~/.claude/plans/twinkling-waddling-widget.md",
+    "requirements": [
+      "创建 backend/internal/domain/catalog/product_attachment_events.go",
+      "实现 ProductAttachmentCreatedEvent",
+      "实现 ProductAttachmentConfirmedEvent",
+      "实现 ProductAttachmentDeletedEvent"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ATTACH-BE-003",
+    "story": "创建商品附件数据库表",
+    "priority": "high",
+    "category": "backend",
+    "plan_source": "~/.claude/plans/twinkling-waddling-widget.md",
+    "requirements": [
+      "创建 migrations/000039_create_product_attachments.up.sql",
+      "创建 product_attachments 表包含所有必要字段",
+      "添加外键约束 (tenant_id, product_id, uploaded_by)",
+      "添加检查约束 (type, status)",
+      "创建复合索引 (tenant_id, product_id)",
+      "创建部分索引优化主图查询",
+      "创建 down 迁移脚本"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ATTACH-BE-004",
+    "story": "实现商品附件持久化层",
+    "priority": "high",
+    "category": "backend",
+    "plan_source": "~/.claude/plans/twinkling-waddling-widget.md",
+    "requirements": [
+      "创建 persistence/models/product_attachment.go 数据模型",
+      "实现 ToDomain() 和 FromDomain() 转换方法",
+      "创建 persistence/product_attachment_repository.go 仓储实现",
+      "实现 FindByProduct(), FindMainImage(), Save() 等方法",
+      "编写仓储集成测试"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ATTACH-BE-005",
+    "story": "实现商品附件应用服务",
+    "priority": "high",
+    "category": "backend",
+    "plan_source": "~/.claude/plans/twinkling-waddling-widget.md",
+    "requirements": [
+      "创建 application/catalog/attachment_service.go",
+      "实现 InitiateUpload() - 创建 pending 记录并返回预签名 URL",
+      "实现 ConfirmUpload() - 验证上传完成并激活记录",
+      "实现 GetByProduct() - 获取商品所有附件",
+      "实现 Delete() - 软删除附件",
+      "实现 SetAsMainImage() - 设置主图",
+      "实现 ReorderAttachments() - 调整排序",
+      "创建 attachment_dto.go 定义请求/响应 DTO",
+      "编写服务层单元测试"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ATTACH-BE-006",
+    "story": "实现商品附件 HTTP 接口",
+    "priority": "high",
+    "category": "backend",
+    "plan_source": "~/.claude/plans/twinkling-waddling-widget.md",
+    "requirements": [
+      "创建 interfaces/http/handler/product_attachment_handler.go",
+      "实现 POST /catalog/attachments/upload 发起上传",
+      "实现 POST /catalog/attachments/{id}/confirm 确认上传",
+      "实现 GET /catalog/products/{id}/attachments 获取附件列表",
+      "实现 DELETE /catalog/attachments/{id} 删除附件",
+      "实现 POST /catalog/attachments/{id}/main 设为主图",
+      "添加 Swagger 注解",
+      "注册路由到 router.go",
+      "更新 main.go 初始化依赖"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ATTACH-FE-001",
+    "story": "实现商品附件上传前端组件",
+    "priority": "high",
+    "category": "frontend",
+    "plan_source": "~/.claude/plans/twinkling-waddling-widget.md",
+    "requirements": [
+      "生成 API Client (make api-docs && npm run api:generate)",
+      "创建 features/catalog/ProductAttachmentUploader.tsx",
+      "实现预签名 URL 获取和直传 RustFS 流程",
+      "实现图片预览和缩略图显示",
+      "实现设置主图功能",
+      "实现删除附件功能",
+      "添加上传进度显示",
+      "添加文件类型和大小验证",
+      "创建对应 CSS 样式文件"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ATTACH-FE-002",
+    "story": "将附件上传集成到商品表单",
+    "priority": "high",
+    "category": "frontend",
+    "plan_source": "~/.claude/plans/twinkling-waddling-widget.md",
+    "requirements": [
+      "修改 features/catalog/ProductForm.tsx",
+      "添加图片管理 FormSection",
+      "编辑模式下加载现有附件",
+      "添加国际化文案 (zh-CN/en catalog.json)"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ATTACH-TEST-001",
+    "story": "商品附件功能测试",
+    "priority": "medium",
+    "category": "testing",
+    "plan_source": "~/.claude/plans/twinkling-waddling-widget.md",
+    "requirements": [
+      "编写 attachment_service_test.go 单元测试",
+      "编写 product_attachment_repository_test.go 集成测试",
+      "编写 rustfs_storage_test.go 存储测试",
+      "编写 ProductAttachmentUploader.test.tsx 前端测试",
+      "创建 e2e/catalog/product-attachments.spec.ts E2E 测试",
+      "验证上传、删除、设置主图完整流程"
+    ],
+    "passes": false
   }
 ]

@@ -39651,3 +39651,111 @@ POST /api/v1/import/products
 - IMPORT-BE-004: Supplier Import Service
 - IMPORT-FE-001: Frontend import UI
 
+
+
+## 2026-01-29 - IMPORT-BE-003: Customer Import Service Implementation
+
+### Task ID: IMPORT-BE-003
+### Status: COMPLETED
+
+=== Implementation Details ===
+
+#### Files Created:
+1. `backend/internal/application/import/customer_import_service.go`
+   - CustomerImportService with full validation and import logic
+   - Support for individual and company/organization customer types
+   - Customer level lookup and validation against database
+   - Auto-generated customer code with timestamp-based sequence (CUST-YYYYMMDD-NNNNNN)
+   - Email, phone, and code uniqueness validation
+   - Address assembly from separate province/city/district/detail fields
+   - Credit limit parsing and validation
+   - Domain event publishing after import
+
+2. `backend/internal/application/import/customer_import_service_test.go`
+   - Comprehensive unit tests with 70.8% coverage
+   - Tests for validation rules, customer type normalization
+   - Tests for conflict modes (skip, update, fail)
+   - Tests for code generation, warnings, address handling
+   - Context cancellation test
+   - Mock implementations for CustomerRepository, CustomerLevelRepository, EventPublisher
+
+3. `backend/internal/interfaces/http/handler/customer_import_handler.go`
+   - ValidateCustomers endpoint (POST /api/v1/import/customers/validate)
+   - ImportCustomers endpoint (POST /api/v1/import/customers)
+   - Background cleanup goroutine for expired session data
+   - Proper file seek error handling and session error logging
+
+#### Key Features Implemented:
+- Validation rules for all customer fields (name, type, code, email, phone, credit_limit, etc.)
+- Reference validation for customer level_code against customer_levels table
+- Uniqueness validation for code field within file and database
+- Auto-code generation with timestamp-based sequence (restart-resilient)
+- Conflict handling modes (skip existing, update existing, fail on conflict)
+- Warning generation for high credit limits and test emails
+- Domain event publishing (CustomerCreated, CustomerUpdated)
+- Input sanitization (trimming whitespace from all fields)
+- Memory-safe validation row storage with TTL cleanup
+
+=== Acceptance Criteria Verification ===
+
+- [x] Customer levels validated against database - LookupCustomerLevel() queries CustomerLevelRepository
+- [x] Default level applied when not specified - Uses domain default (normal level) when level_code is empty
+- [x] Phone number format flexible - No strict validation, allows various formats
+- [x] Address fields properly assembled - Combines province, city, district, detail correctly
+- [x] CustomerCreated events published - Events published via EventPublisher after save
+
+=== Code Review Fixes ===
+
+Addressed issues from code-reviewer agent:
+- Fixed session save error logging (now logs errors instead of silently ignoring)
+- Added input sanitization with strings.TrimSpace for all CSV fields
+- Made country configurable (uses domain default instead of hardcoded value)
+- Added context cancellation test case
+
+=== Verification ===
+
+- All unit tests passing (70.8% coverage)
+- Go build ./internal/... passes
+- No linting errors
+
+=== API Endpoints ===
+
+```
+POST /api/v1/import/customers/validate
+  - Validates customer CSV file
+  - Returns validation results, errors, warnings, and preview
+
+POST /api/v1/import/customers
+  - Imports customers from validated CSV
+  - Body: { "validation_id": "uuid", "conflict_mode": "skip|update|fail" }
+  - Returns import results (imported, updated, skipped, error counts)
+```
+
+=== CSV Fields Supported ===
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| name | string | Yes | Customer name (max 200 chars) |
+| type | string | Yes | "individual" or "company"/"organization" |
+| code | string | No | Customer code (auto-generated if empty) |
+| contact_person | string | No | Contact person name |
+| phone | string | No | Phone number |
+| email | string | No | Email address |
+| level_code | string | No | Customer level code |
+| credit_limit | decimal | No | Credit limit (>=0) |
+| address_province | string | No | Province |
+| address_city | string | No | City |
+| address_district | string | No | District |
+| address_detail | string | No | Street address |
+| notes | string | No | Notes (max 1000 chars) |
+
+=== Notes ===
+
+- Test coverage is at 70.8% which is acceptable for application services
+- The goroutine leak warning from code review is addressed by design: handler's Stop() method must be called during application shutdown
+
+=== Next Steps ===
+
+- IMPORT-BE-004: Supplier Import Service (similar pattern)
+- IMPORT-FE-001: Frontend import wizard UI
+- Wire up handlers to router
