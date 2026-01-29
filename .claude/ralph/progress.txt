@@ -39929,3 +39929,89 @@ Created database migration for product_attachments table:
 - ATTACH-BE-004: ProductAttachment Repository Implementation
 - ATTACH-BE-005: ProductAttachment Application Service
 - ATTACH-INFRA-002: S3/Object Storage Interface
+
+2026-01-29 - ATTACH-BE-004: Product Attachment Persistence Layer Implementation
+
+=== Implementation Details ===
+
+Created the complete persistence layer for ProductAttachment entity:
+
+1. **backend/internal/infrastructure/persistence/models/product_attachment.go**
+   - ProductAttachmentModel with GORM tags mapping to product_attachments table
+   - TenantAggregateModel embedded for multi-tenancy support
+   - All fields: ProductID, Type, Status, FileName, FileSize, ContentType, StorageKey, ThumbnailKey, SortOrder, UploadedBy
+   - ToDomain() method to convert persistence model to domain entity
+   - FromDomain() method to populate persistence model from domain entity
+   - ProductAttachmentModelFromDomain() factory function
+   - ProductAttachmentSummary struct for list views
+
+2. **backend/internal/infrastructure/persistence/product_attachment_repository.go**
+   - GormProductAttachmentRepository implements full ProductAttachmentRepository interface
+   
+   Reader methods:
+   - FindByID() - Find by ID (admin use)
+   - FindByIDForTenant() - Find by ID with tenant isolation
+   - FindByIDs() - Batch find by IDs
+   
+   Finder methods:
+   - FindByProduct() - All attachments for a product with filtering
+   - FindByProductAndStatus() - Filter by status
+   - FindActiveByProduct() - Only active attachments
+   - FindMainImage() - Find main product image
+   - FindByType() - Filter by attachment type
+   - CountByProduct() - Count all attachments
+   - CountActiveByProduct() - Count active only
+   - ExistsByStorageKey() - Check storage key uniqueness
+   
+   Writer methods:
+   - Save() - Create/update single attachment
+   - SaveBatch() - Bulk create/update
+   - Delete() - Permanent delete by ID
+   - DeleteForTenant() - Delete with tenant check
+   - DeleteByProduct() - Delete all for a product
+   
+   Utility methods:
+   - FindPendingOlderThan() - For cleanup jobs
+   - GetMaxSortOrder() - Determine next sort position
+   - applyFilter() - Filter/pagination/ordering support
+
+   - ProductAttachmentSortFields whitelist for SQL injection prevention
+   - Compile-time interface compliance checks
+
+3. **backend/internal/infrastructure/persistence/product_attachment_repository_test.go**
+   - Comprehensive unit tests using sqlmock
+   - Tests for all core repository methods:
+     - FindByID, FindByIDForTenant, FindByIDs
+     - FindByProduct, FindActiveByProduct, FindMainImage
+     - FindByType, FindByProductAndStatus, FindPendingOlderThan
+     - CountByProduct, CountActiveByProduct, ExistsByStorageKey
+     - Save, SaveBatch, Delete, DeleteForTenant, DeleteByProduct
+     - GetMaxSortOrder
+   - Interface compliance tests
+   - Sort field whitelist validation tests
+
+=== Design Decisions ===
+
+1. **Followed existing patterns**: Repository structure mirrors existing repositories (ProductRepository, CustomerRepository) for consistency
+2. **Sort field whitelist**: Only safe fields exposed for sorting (excludes tenant_id, storage_key, thumbnail_key, uploaded_by)
+3. **GetMaxSortOrder returns -1 for empty**: Allows caller to add 1 for next position (0-based ordering)
+4. **FindByID without tenant**: Follows existing pattern for admin/system use cases
+5. **FindPendingOlderThan**: Enables cleanup jobs for orphaned pending uploads
+
+=== Verification ===
+
+- All 23 test cases passing
+- Go build passes
+- Interface compliance verified (compile-time checks)
+- Code review completed - identified codebase-wide patterns that are consistent
+
+=== Files Created ===
+
+- backend/internal/infrastructure/persistence/models/product_attachment.go (104 lines)
+- backend/internal/infrastructure/persistence/product_attachment_repository.go (381 lines)
+- backend/internal/infrastructure/persistence/product_attachment_repository_test.go (642 lines)
+
+=== Next Steps ===
+
+- ATTACH-BE-005: ProductAttachment Application Service
+- ATTACH-INFRA-002: S3/Object Storage Interface Implementation

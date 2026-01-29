@@ -12490,7 +12490,7 @@
       "实现 FindByProduct(), FindMainImage(), Save() 等方法",
       "编写仓储集成测试"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ATTACH-BE-005",
