@@ -45,7 +45,7 @@
 /* Size variants */
 .form-field-help--small {
   font-size: 12px;
-  padding: 2px;
+  padding: var(--spacing-0-5);
 }
 
 .form-field-help--small .semi-icon {
@@ -82,7 +82,7 @@
 
 /* Tooltip content styling */
 .form-field-help__tooltip-content {
-  max-width: 280px;
+  max-width: 17.5rem;
 }
 
 .form-field-help__tooltip-title {
