@@ -12475,7 +12475,7 @@
       "创建部分索引优化主图查询",
       "创建 down 迁移脚本"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ATTACH-BE-004",

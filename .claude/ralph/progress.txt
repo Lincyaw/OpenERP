@@ -39848,3 +39848,84 @@ Addressed critical security issues identified during review:
 - ATTACH-BE-003: Database migration for product_attachments table
 - ATTACH-BE-004: Persistence layer implementation
 - ATTACH-INFRA-002: S3 storage interface implementation
+
+2026-01-29 - ATTACH-BE-003: Product Attachments Database Migration
+
+=== Implementation Details ===
+
+Created database migration for product_attachments table:
+
+1. **backend/migrations/000039_create_product_attachments.up.sql**
+   - Created product_attachments table with all fields matching domain entity:
+     - id (UUID, PK)
+     - tenant_id (UUID, FK to tenants)
+     - product_id (UUID, FK to products)
+     - type (VARCHAR(20) - main_image/gallery_image/document/other)
+     - status (VARCHAR(20) - pending/active/deleted)
+     - file_name (VARCHAR(255))
+     - file_size (BIGINT, max 100MB)
+     - content_type (VARCHAR(100))
+     - storage_key (VARCHAR(500))
+     - thumbnail_key (VARCHAR(500), nullable)
+     - sort_order (INTEGER, default 0)
+     - uploaded_by (UUID, FK to users, nullable)
+     - created_at, updated_at, version (standard audit columns)
+
+   - Foreign key constraints:
+     - tenant_id -> tenants(id) ON DELETE CASCADE
+     - product_id -> products(id) ON DELETE CASCADE
+     - uploaded_by -> users(id) ON DELETE SET NULL
+
+   - Check constraints:
+     - chk_product_attachment_type: Validates enum values
+     - chk_product_attachment_status: Validates enum values
+     - chk_product_attachment_file_size: 0 < size <= 100MB
+     - chk_product_attachment_sort_order: >= 0
+
+   - Indexes for query optimization:
+     - idx_product_attachments_tenant_id: Tenant isolation
+     - idx_product_attachments_product_id: Product lookup
+     - idx_product_attachments_tenant_product: Composite index for common queries
+     - idx_product_attachments_status: Status filtering
+     - idx_product_attachments_product_active: Partial index for active attachments
+     - idx_product_attachments_main_image: Partial index for main image lookup (critical for product listing)
+     - idx_product_attachments_type: Type filtering within product
+     - idx_product_attachments_uploaded_by: User upload tracking
+     - idx_product_attachments_sort: Sort order for gallery display
+
+   - Trigger for updated_at timestamp auto-update
+   - Comprehensive column comments for documentation
+
+2. **backend/migrations/000039_create_product_attachments.down.sql**
+   - Drops trigger first
+   - Drops all indexes explicitly (for clarity)
+   - Drops the table
+
+=== Design Decisions ===
+
+1. **Partial indexes**: Used partial indexes for main_image and active status queries because:
+   - Main image queries are extremely common (every product list page)
+   - Active attachments are the primary use case, deleted/pending are rare queries
+   - Partial indexes reduce index size and improve write performance
+
+2. **CASCADE vs SET NULL**:
+   - tenant_id/product_id use CASCADE: Deleting parent should clean up attachments
+   - uploaded_by uses SET NULL: Keep attachment even if user is deleted (audit trail)
+
+3. **BIGINT for file_size**: Supports files up to 9 exabytes (future-proof)
+
+4. **100MB limit in CHECK constraint**: Matches domain MaxAttachmentFileSize constant
+
+=== Verification ===
+
+- Migration up: Applied successfully (v39)
+- Migration down: Rolled back successfully (table dropped)
+- Migration up: Re-applied successfully
+- Table structure verified with \d product_attachments
+- All foreign keys, constraints, and indexes confirmed
+
+=== Next Steps ===
+
+- ATTACH-BE-004: ProductAttachment Repository Implementation
+- ATTACH-BE-005: ProductAttachment Application Service
+- ATTACH-INFRA-002: S3/Object Storage Interface
