@@ -109,7 +109,25 @@
     "actions": "Actions",
     "selectedItems": "{{count}} items selected",
     "totalRecords": "Total {{total}} records",
-    "searchPlaceholder": "Search..."
+    "searchPlaceholder": "Search...",
+    "export": {
+      "csv": "Export CSV",
+      "excel": "Export Excel",
+      "selected": "Export selected",
+      "all": "Export all"
+    },
+    "bulk": {
+      "confirm": "Bulk Confirm",
+      "delete": "Bulk Delete",
+      "export": "Bulk Export",
+      "confirmTitle": "Bulk Confirm",
+      "confirmContent": "Are you sure you want to confirm {{count}} selected items?",
+      "deleteTitle": "Bulk Delete",
+      "deleteContent": "Are you sure you want to delete {{count}} selected items? This action cannot be undone.",
+      "success": "Bulk operation completed successfully",
+      "error": "Bulk operation failed",
+      "partialSuccess": "Partial success ({{success}}/{{total}})"
+    }
   },
   "dashboard": {
     "title": "Dashboard",

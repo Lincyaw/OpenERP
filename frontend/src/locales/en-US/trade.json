@@ -71,7 +71,8 @@
       "deleteSuccess": "Order \"{{orderNumber}}\" deleted",
       "deleteError": "Failed to delete order",
       "notExist": "Order does not exist",
-      "fetchDetailError": "Failed to fetch order details"
+      "fetchDetailError": "Failed to fetch order details",
+      "noDraftOrders": "No draft orders in the selection"
     },
     "summary": {
       "total": "Total Orders",

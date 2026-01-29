@@ -269,6 +269,20 @@ export interface UseTableStateReturn {
 }
 
 /**
+ * Export action configuration
+ */
+export interface ExportAction {
+  /** Handler for CSV export */
+  onExportCSV?: () => void
+  /** Handler for Excel export */
+  onExportExcel?: () => void
+  /** Whether export is loading */
+  loading?: boolean
+  /** Disable export (e.g., when no data) */
+  disabled?: boolean
+}
+
+/**
  * TableToolbar props
  */
 export interface TableToolbarProps {
@@ -291,6 +305,8 @@ export interface TableToolbarProps {
     icon?: ReactNode
     onClick: () => void
   }>
+  /** Export actions configuration */
+  exportActions?: ExportAction
   /** Filter elements */
   filters?: ReactNode
   /** Additional class name */

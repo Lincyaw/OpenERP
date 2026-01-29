@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { Button, Input, Space } from '@douyinfe/semi-ui-19'
-import { IconSearch, IconPlus } from '@douyinfe/semi-icons'
+import { Button, Input, Space, Dropdown } from '@douyinfe/semi-ui-19'
+import { IconSearch, IconPlus, IconDownload } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
 import type { TableToolbarProps } from './types'
 import './TableToolbar.css'
@@ -20,9 +20,12 @@ import './TableToolbar.css'
  *     onClick: () => navigate('/catalog/products/new'),
  *   }}
  *   secondaryActions={[
- *     { key: 'export', label: '导出', onClick: handleExport },
- *     { key: 'import', label: '导入', onClick: handleImport },
+ *     { key: 'refresh', label: '刷新', onClick: handleRefresh },
  *   ]}
+ *   exportActions={{
+ *     onExportCSV: handleExportCSV,
+ *     onExportExcel: handleExportExcel,
+ *   }}
  *   filters={
  *     <Space>
  *       <Select placeholder="分类" options={categoryOptions} onChange={setCategory} />
@@ -38,6 +41,7 @@ export function TableToolbar({
   onSearchChange,
   primaryAction,
   secondaryActions = [],
+  exportActions,
   filters,
   className = '',
   showSearch = true,
@@ -47,6 +51,27 @@ export function TableToolbar({
   const { t } = useTranslation()
   const showBulkMode = selectedCount > 0 && bulkActions
   const placeholder = searchPlaceholder || t('table.searchPlaceholder')
+
+  // Export dropdown menu items
+  const exportMenuItems = []
+  if (exportActions?.onExportCSV) {
+    exportMenuItems.push({
+      node: 'item',
+      key: 'csv',
+      name: t('table.export.csv'),
+      onClick: exportActions.onExportCSV,
+    })
+  }
+  if (exportActions?.onExportExcel) {
+    exportMenuItems.push({
+      node: 'item',
+      key: 'excel',
+      name: t('table.export.excel'),
+      onClick: exportActions.onExportExcel,
+    })
+  }
+
+  const showExportButton = exportMenuItems.length > 0
 
   return (
     <div className={`table-toolbar ${className}`}>
@@ -74,6 +99,17 @@ export function TableToolbar({
           </div>
           <div className="table-toolbar-right">
             <Space>
+              {showExportButton && (
+                <Dropdown trigger="click" position="bottomRight" menu={exportMenuItems}>
+                  <Button
+                    icon={<IconDownload />}
+                    loading={exportActions?.loading}
+                    disabled={exportActions?.disabled}
+                  >
+                    {t('actions.export')}
+                  </Button>
+                </Dropdown>
+              )}
               {secondaryActions.map((action) => (
                 <Button key={action.key} icon={action.icon} onClick={action.onClick}>
                   {action.label}
@@ -116,8 +152,8 @@ interface BulkActionBarProps {
  *   selectedCount={selectedRowKeys.length}
  *   onCancel={() => setSelectedRowKeys([])}
  * >
- *   <Button onClick={handleBulkEnable}>批量启用</Button>
- *   <Button onClick={handleBulkDisable}>批量禁用</Button>
+ *   <Button onClick={handleBulkConfirm}>批量确认</Button>
+ *   <Button onClick={handleBulkExport}>批量导出</Button>
  *   <Button type="danger" onClick={handleBulkDelete}>批量删除</Button>
  * </BulkActionBar>
  * ```

@@ -39125,3 +39125,80 @@ loadgen -config configs/erp.yaml -scenario flash_sale -dry-run -v
 
 - LOADGEN-029: ERP configuration file and integration tests
 - Future: Support scenario chaining and composition
+
+## 2026-01-29 - UX-010: 添加批量操作和导出功能
+
+### Task ID: UX-010
+### Status: Complete
+
+### Implementation Details
+
+#### 1. Export Utility (frontend/src/utils/export.ts) - NEW
+Created comprehensive export utility with the following features:
+- `exportToCSV()` - Export data to CSV format with proper escaping for commas, quotes, and newlines
+- `exportToExcel()` - Export data to Excel format using dynamic import of xlsx library
+- `downloadFile()` - Trigger file download with UTF-8 BOM support for Excel compatibility
+- `generateExportFilename()` - Generate timestamped filenames with sanitization
+- `formatDateForExport()` - Format dates consistently for export
+- `formatNumberForExport()` - Format numbers with decimal precision
+- Support for nested object paths (e.g., 'customer.name')
+- Configurable column transforms for status translations and currency formatting
+
+#### 2. TableToolbar Enhancement (frontend/src/components/common/table/TableToolbar.tsx)
+- Added `exportActions` prop with `onExportCSV`, `onExportExcel`, `loading`, and `disabled` options
+- Added export dropdown using Semi Design's Dropdown component
+- Export button with IconDownload icon and loading state support
+- New `ExportAction` interface added to types.ts
+
+#### 3. BulkActionBar Component (frontend/src/components/common/table/TableToolbar.tsx)
+- Already existed in the codebase
+- Used for displaying bulk operation buttons when items are selected
+
+#### 4. SalesOrders Page Bulk Operations (frontend/src/pages/trade/SalesOrders.tsx)
+- Added row selection with checkboxes using DataTable's rowSelection prop
+- Implemented bulk confirm (only draft status orders)
+- Implemented bulk delete (only draft status orders)
+- Added CSV and Excel export functionality
+- Used Promise.allSettled for parallel bulk operations (performance improvement)
+- Selection state properly cleared when data changes or after bulk operations
+
+#### 5. Translations Added
+- zh-CN/common.json: table.export.csv, table.export.excel, table.bulk.confirm/delete/success/error/partialSuccess
+- en-US/common.json: Same translations in English
+- zh-CN/trade.json: salesOrder.messages.noDraftOrders
+- en-US/trade.json: Same translation in English
+
+### Key Files Modified
+- `frontend/src/utils/export.ts` (NEW)
+- `frontend/src/utils/index.ts` (updated exports)
+- `frontend/src/components/common/table/types.ts` (added ExportAction interface)
+- `frontend/src/components/common/table/TableToolbar.tsx` (added export dropdown)
+- `frontend/src/components/common/table/index.ts` (added ExportAction export)
+- `frontend/src/locales/zh-CN/common.json` (bulk operation translations)
+- `frontend/src/locales/en-US/common.json` (bulk operation translations)
+- `frontend/src/locales/zh-CN/trade.json` (noDraftOrders message)
+- `frontend/src/locales/en-US/trade.json` (noDraftOrders message)
+- `frontend/src/pages/trade/SalesOrders.tsx` (bulk operations + export)
+- `frontend/package.json` (added xlsx dependency)
+
+### Verification
+- TypeScript type-check: PASSED
+- ESLint: PASSED (only pre-existing warnings in other files)
+- Code review: Addressed all critical and high priority issues
+
+### Design Decisions
+1. **Dynamic xlsx import**: Used dynamic import(`xlsx`) to minimize initial bundle size
+2. **UTF-8 BOM**: Included BOM in CSV exports for proper Excel UTF-8 handling
+3. **Promise.allSettled**: Used for bulk operations to execute in parallel and handle partial failures
+4. **Filename sanitization**: Added sanitization to prevent potential issues with special characters
+5. **Draft-only operations**: Bulk confirm and delete only operate on draft status orders for data safety
+
+### Notes
+- The xlsx library (SheetJS) uses Apache-2.0 license which is permissive
+- Export currently exports only the current page data (not all filtered results)
+- Tests for export utilities should be added in future work
+
+### Next Steps
+- Consider implementing "Export All" that fetches all pages
+- Add unit tests for export utilities
+- Apply similar bulk operations pattern to PurchaseOrders page

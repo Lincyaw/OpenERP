@@ -71,7 +71,8 @@
       "deleteSuccess": "订单 \"{{orderNumber}}\" 已删除",
       "deleteError": "删除订单失败",
       "notExist": "订单不存在",
-      "fetchDetailError": "获取订单详情失败"
+      "fetchDetailError": "获取订单详情失败",
+      "noDraftOrders": "所选订单中没有草稿状态的订单"
     },
     "summary": {
       "total": "总订单数",

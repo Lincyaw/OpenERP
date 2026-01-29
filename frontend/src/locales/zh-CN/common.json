@@ -109,7 +109,25 @@
     "actions": "操作",
     "selectedItems": "已选择 {{count}} 项",
     "totalRecords": "共 {{total}} 条记录",
-    "searchPlaceholder": "搜索..."
+    "searchPlaceholder": "搜索...",
+    "export": {
+      "csv": "导出 CSV",
+      "excel": "导出 Excel",
+      "selected": "导出选中项",
+      "all": "导出全部"
+    },
+    "bulk": {
+      "confirm": "批量确认",
+      "delete": "批量删除",
+      "export": "批量导出",
+      "confirmTitle": "批量确认",
+      "confirmContent": "确定要确认选中的 {{count}} 项吗？",
+      "deleteTitle": "批量删除",
+      "deleteContent": "确定要删除选中的 {{count}} 项吗？此操作不可恢复。",
+      "success": "批量操作成功",
+      "error": "批量操作失败",
+      "partialSuccess": "部分操作成功（{{success}}/{{total}}）"
+    }
   },
   "dashboard": {
     "title": "工作台",

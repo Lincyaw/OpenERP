@@ -9,15 +9,19 @@ import {
   Modal,
   Spin,
   DatePicker,
+  Button,
 } from '@douyinfe/semi-ui-19'
-import { IconPlus, IconRefresh } from '@douyinfe/semi-icons'
+import { IconPlus, IconRefresh, IconTickCircle, IconDelete } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   DataTable,
   TableToolbar,
+  BulkActionBar,
   useTableState,
   type DataTableColumn,
   type TableAction,
+  type RowSelection,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import {
@@ -40,6 +44,14 @@ import { ShipOrderModal } from './components'
 import { PrintPreviewModal } from '@/components/printing'
 import { useI18n } from '@/hooks/useI18n'
 import { useFormatters } from '@/hooks/useFormatters'
+import {
+  exportToCSV,
+  exportToExcel,
+  downloadFile,
+  generateExportFilename,
+  formatDateForExport,
+  formatNumberForExport,
+} from '@/utils/export'
 import './SalesOrders.css'
 
 const { Title } = Typography
@@ -71,10 +83,13 @@ const STATUS_TAG_COLORS: Record<string, 'blue' | 'cyan' | 'green' | 'grey' | 're
  * - Filter by status, customer, date range
  * - Order status actions (confirm, ship, complete, cancel)
  * - Navigate to order detail/edit pages
+ * - Bulk operations (confirm, delete) for draft orders
+ * - Export to CSV/Excel
  */
 export default function SalesOrdersPage() {
   const navigate = useNavigate()
   const { t } = useI18n({ ns: 'trade' })
+  const { t: tCommon } = useTranslation()
   const { formatCurrency, formatDate } = useFormatters()
 
   // State for data
@@ -91,6 +106,13 @@ export default function SalesOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [customerFilter, setCustomerFilter] = useState<string>('')
   const [dateRange, setDateRange] = useState<[Date, Date] | null>(null)
+
+  // Selection state for bulk operations
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
+  const [selectedRows, setSelectedRows] = useState<SalesOrder[]>([])
+
+  // Export loading state
+  const [exportLoading, setExportLoading] = useState(false)
 
   // Ship modal state
   const [shipModalVisible, setShipModalVisible] = useState(false)
@@ -212,6 +234,12 @@ export default function SalesOrdersPage() {
     return () => abortController.abort()
   }, [fetchOrders])
 
+  // Clear selection when data changes
+  useEffect(() => {
+    setSelectedRowKeys([])
+    setSelectedRows([])
+  }, [orderList])
+
   // Handle search
   const handleSearch = useCallback(
     (value: string) => {
@@ -260,6 +288,12 @@ export default function SalesOrdersPage() {
     [handleStateChange, state.pagination.pageSize]
   )
 
+  // Handle row selection change
+  const handleSelectionChange = useCallback((keys: string[], rows: SalesOrder[]) => {
+    setSelectedRowKeys(keys)
+    setSelectedRows(rows)
+  }, [])
+
   // Handle confirm order
   const handleConfirm = useCallback(
     async (order: SalesOrder) => {
@@ -285,6 +319,161 @@ export default function SalesOrdersPage() {
     },
     [fetchOrders, t]
   )
+
+  // Handle bulk confirm (only draft orders)
+  const handleBulkConfirm = useCallback(() => {
+    const draftOrders = selectedRows.filter((order) => order.status === 'draft' && order.id)
+    if (draftOrders.length === 0) {
+      Toast.warning(t('salesOrder.messages.noDraftOrders'))
+      return
+    }
+
+    Modal.confirm({
+      title: tCommon('table.bulk.confirmTitle'),
+      content: tCommon('table.bulk.confirmContent', { count: draftOrders.length }),
+      okText: tCommon('actions.confirm'),
+      cancelText: tCommon('actions.cancel'),
+      onOk: async () => {
+        // Use Promise.allSettled for parallel execution
+        const results = await Promise.allSettled(
+          draftOrders.map((order) => confirmSalesOrder(order.id!, {}))
+        )
+
+        const successCount = results.filter((r) => r.status === 'fulfilled').length
+
+        if (successCount === draftOrders.length) {
+          Toast.success(tCommon('table.bulk.success'))
+        } else if (successCount > 0) {
+          Toast.warning(
+            tCommon('table.bulk.partialSuccess', {
+              success: successCount,
+              total: draftOrders.length,
+            })
+          )
+        } else {
+          Toast.error(tCommon('table.bulk.error'))
+        }
+
+        setSelectedRowKeys([])
+        setSelectedRows([])
+        fetchOrders()
+      },
+    })
+  }, [selectedRows, t, tCommon, fetchOrders])
+
+  // Handle bulk delete (only draft orders)
+  const handleBulkDelete = useCallback(() => {
+    const draftOrders = selectedRows.filter((order) => order.status === 'draft' && order.id)
+    if (draftOrders.length === 0) {
+      Toast.warning(t('salesOrder.messages.noDraftOrders'))
+      return
+    }
+
+    Modal.confirm({
+      title: tCommon('table.bulk.deleteTitle'),
+      content: tCommon('table.bulk.deleteContent', { count: draftOrders.length }),
+      okText: tCommon('actions.delete'),
+      cancelText: tCommon('actions.cancel'),
+      okButtonProps: { type: 'danger' },
+      onOk: async () => {
+        // Use Promise.allSettled for parallel execution
+        const results = await Promise.allSettled(
+          draftOrders.map((order) => deleteSalesOrder(order.id!))
+        )
+
+        const successCount = results.filter((r) => r.status === 'fulfilled').length
+
+        if (successCount === draftOrders.length) {
+          Toast.success(tCommon('table.bulk.success'))
+        } else if (successCount > 0) {
+          Toast.warning(
+            tCommon('table.bulk.partialSuccess', {
+              success: successCount,
+              total: draftOrders.length,
+            })
+          )
+        } else {
+          Toast.error(tCommon('table.bulk.error'))
+        }
+
+        setSelectedRowKeys([])
+        setSelectedRows([])
+        fetchOrders()
+      },
+    })
+  }, [selectedRows, t, tCommon, fetchOrders])
+
+  // Export configuration
+  const getExportConfig = useCallback(
+    () => ({
+      headers: [
+        t('salesOrder.columns.orderNumber'),
+        t('salesOrder.columns.customer'),
+        t('salesOrder.columns.amount'),
+        t('salesOrder.columns.status'),
+        t('salesOrder.columns.createdAt'),
+      ],
+      fields: ['order_number', 'customer_name', 'payable_amount', 'status', 'created_at'] as const,
+      transforms: {
+        payable_amount: (value: unknown) => formatNumberForExport(value as number | undefined),
+        status: (value: unknown) => {
+          const status = value as string | undefined
+          return status ? t(`salesOrder.status.${status}`) : ''
+        },
+        created_at: (value: unknown) => formatDateForExport(value as string | undefined),
+      },
+      sheetName: t('salesOrder.title'),
+    }),
+    [t]
+  )
+
+  // Handle CSV export
+  const handleExportCSV = useCallback(() => {
+    const dataToExport = selectedRows.length > 0 ? selectedRows : orderList
+    if (dataToExport.length === 0) {
+      Toast.warning(tCommon('messages.noData'))
+      return
+    }
+
+    setExportLoading(true)
+    try {
+      const config = getExportConfig()
+      const csv = exportToCSV(dataToExport, config)
+      const filename = generateExportFilename('sales_orders', 'csv')
+      downloadFile(csv, filename, 'text/csv')
+      Toast.success(tCommon('messages.operationSuccess'))
+    } catch {
+      Toast.error(tCommon('messages.operationFailed'))
+    } finally {
+      setExportLoading(false)
+    }
+  }, [selectedRows, orderList, getExportConfig, tCommon])
+
+  // Handle Excel export
+  const handleExportExcel = useCallback(async () => {
+    const dataToExport = selectedRows.length > 0 ? selectedRows : orderList
+    if (dataToExport.length === 0) {
+      Toast.warning(tCommon('messages.noData'))
+      return
+    }
+
+    setExportLoading(true)
+    try {
+      const config = getExportConfig()
+      const blob = await exportToExcel(dataToExport, config)
+      const filename = generateExportFilename('sales_orders', 'xlsx')
+      downloadFile(
+        blob,
+        filename,
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      )
+      Toast.success(tCommon('messages.operationSuccess'))
+    } catch {
+      Toast.error(tCommon('messages.operationFailed'))
+    } finally {
+      setExportLoading(false)
+    }
+  }, [selectedRows, orderList, getExportConfig, tCommon])
 
   // Handle ship order - open modal
   const handleShip = useCallback((order: SalesOrder) => {
@@ -417,6 +606,28 @@ export default function SalesOrdersPage() {
   const handleRefresh = useCallback(() => {
     fetchOrders()
   }, [fetchOrders])
+
+  // Cancel selection
+  const handleCancelSelection = useCallback(() => {
+    setSelectedRowKeys([])
+    setSelectedRows([])
+  }, [])
+
+  // Row selection configuration
+  const rowSelection: RowSelection<SalesOrder> = useMemo(
+    () => ({
+      selectedRowKeys,
+      onChange: handleSelectionChange,
+      type: 'checkbox',
+      fixed: true,
+    }),
+    [selectedRowKeys, handleSelectionChange]
+  )
+
+  // Check if selected rows have any draft orders
+  const hasDraftOrdersSelected = useMemo(() => {
+    return selectedRows.some((order) => order.status === 'draft')
+  }, [selectedRows])
 
   // Table columns - Simplified to 6 essential columns (UX-007)
   // Removed: item_count, total_amount (keeping payable_amount as "amount"), confirmed_at, shipped_at
@@ -592,6 +803,12 @@ export default function SalesOrdersPage() {
               onClick: handleRefresh,
             },
           ]}
+          exportActions={{
+            onExportCSV: handleExportCSV,
+            onExportExcel: handleExportExcel,
+            loading: exportLoading,
+            disabled: orderList.length === 0,
+          }}
           filters={
             <Space>
               <Select
@@ -621,6 +838,25 @@ export default function SalesOrdersPage() {
           }
         />
 
+        {/* Bulk Action Bar - only show when items are selected */}
+        <BulkActionBar selectedCount={selectedRowKeys.length} onCancel={handleCancelSelection}>
+          <Button
+            icon={<IconTickCircle />}
+            onClick={handleBulkConfirm}
+            disabled={!hasDraftOrdersSelected}
+          >
+            {tCommon('table.bulk.confirm')}
+          </Button>
+          <Button
+            type="danger"
+            icon={<IconDelete />}
+            onClick={handleBulkDelete}
+            disabled={!hasDraftOrdersSelected}
+          >
+            {tCommon('table.bulk.delete')}
+          </Button>
+        </BulkActionBar>
+
         <Spin spinning={loading}>
           <DataTable<SalesOrder>
             data={orderList}
@@ -628,6 +864,7 @@ export default function SalesOrdersPage() {
             rowKey="id"
             loading={loading}
             pagination={paginationMeta}
+            rowSelection={rowSelection}
             actions={tableActions}
             onStateChange={handleStateChange}
             sortState={state.sort}

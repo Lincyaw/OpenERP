@@ -24,4 +24,5 @@ export type {
   UseTableStateOptions,
   UseTableStateReturn,
   TableToolbarProps,
+  ExportAction,
 } from './types'
