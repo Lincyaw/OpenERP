@@ -38632,3 +38632,68 @@ Based on code review feedback, applied the following fixes:
 
 4. Added missing i18n translation:
    - orderCreatedNotConfirmed: "Order created but confirmation failed, please confirm manually from the list"
+
+2025-01-29 - Task FF-DOC-001: Feature Flag 使用文档
+
+=== Implementation Details ===
+创建了完整的 Feature Flag 使用指南文档 (.claude/ralph/docs/feature_flag_guide.md)，包括以下内容：
+
+#### 1. 快速开始 (Quick Start)
+- 通过 API 创建新 Flag 的完整示例
+- Flag 类型说明 (boolean, percentage, variant, user_segment)
+- Flag Key 命名规范和示例
+- 启用/禁用 Flag 的 API 调用
+- 单个和批量 Flag 评估
+
+#### 2. 后端使用示例
+- **中间件注入获取**: 配置 FeatureFlagMiddleware，在 Handler 中使用 GetFeatureFlag/GetFeatureVariant/GetAllFlags
+- **条件路由**: 使用 WithFeatureFlag 包装 Handler
+- **直接调用评估服务**: 在后台任务、事件处理器中使用 EvaluationService
+- **条件执行代码块**: 简单条件执行和策略模式示例
+
+#### 3. 前端使用示例
+- **useFeatureFlag Hook**: 基础用法和带默认值的用法
+- **useFeatureVariant Hook**: A/B 测试和多变体场景
+- **useFeatureFlags Hook**: 批量获取多个 Flag
+- **Feature 组件**: 声明式条件渲染（基础、带 Fallback、带 Loading、Variant 渲染）
+- **A/B 测试完整示例**: 曝光记录、转化追踪
+- **状态管理**: useFeatureFlagReady/Loading/Error hooks
+
+#### 4. 最佳实践
+- Flag 命名规范 (enable_/show_/use_/allow_ 前缀)
+- Flag 生命周期管理 (DISABLED → ENABLED → ARCHIVED)
+- 建议的 Flag 存活时间
+- 清理过期 Flag 的流程
+- 避免 Flag 嵌套的示例
+- 前后端测试建议
+
+#### 5. 故障排查
+- Flag 不生效检查清单 (8 项检查点)
+- 前端缓存问题排查 (检查、刷新、清除)
+- 后端缓存问题排查 (统计、失效、预热)
+- 日志查看方法
+- 常见错误及解决方案表格
+- 紧急情况处理 (Kill Switch、清除缓存)
+
+#### 6. 附录
+- API 端点参考表 (15 个端点)
+- 相关文档链接
+
+### 修改文件
+- `.claude/ralph/docs/feature_flag_guide.md` (新建)
+
+### 验证结果
+- ✅ 文档内容清晰完整
+- ✅ 代码示例可运行（基于实际代码库实现）
+- ✅ 覆盖常见场景（CRUD、评估、A/B测试、故障排查）
+- ✅ 中英文混合，便于中文用户理解
+
+### 设计决策
+1. **中文为主**: 考虑到项目团队可能以中文为主，文档以中文撰写，代码示例保留英文
+2. **实际代码引用**: 所有示例均基于实际代码库中的 API 和组件，确保可直接使用
+3. **渐进式结构**: 从快速开始到深入用法再到故障排查，便于不同熟悉程度的开发者使用
+4. **完整的故障排查**: 提供详细的检查清单和常见问题解决方案，减少支持负担
+
+### 下一步建议
+- 可以考虑添加 Feature Flag 管理界面的使用指南 (FeatureFlagList.tsx, FeatureFlagForm.tsx)
+- 可以添加更多高级用法示例（如与 OpenTelemetry 集成的监控）

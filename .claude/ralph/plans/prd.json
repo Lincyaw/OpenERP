@@ -9314,7 +9314,7 @@
       "- 代码示例可运行",
       "- 覆盖常见场景"
     ],
-    "passes": false,
+    "passes": true,
     "specRef": "Feature Flag System - Appendix",
     "affectedModules": [
       ".claude/ralph/docs/feature_flag_guide.md"
