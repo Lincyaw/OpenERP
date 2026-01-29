@@ -33,7 +33,7 @@ func (r *GormInventoryReportRepository) GetInventorySummary(filter report.Invent
 		Select(`
 			COUNT(DISTINCT ii.product_id) as total_products,
 			COALESCE(SUM(ii.available_quantity), 0) as total_quantity,
-			COALESCE(SUM(ii.available_quantity * ii.average_cost), 0) as total_value,
+			COALESCE(SUM(ii.available_quantity * ii.unit_cost), 0) as total_value,
 			SUM(CASE WHEN ii.available_quantity > 0 AND ii.available_quantity <= 10 THEN 1 ELSE 0 END) as low_stock_count,
 			SUM(CASE WHEN ii.available_quantity = 0 THEN 1 ELSE 0 END) as out_of_stock_count
 		`).
@@ -103,7 +103,7 @@ func (r *GormInventoryReportRepository) GetInventoryTurnover(filter report.Inven
 				AND so.created_at BETWEEN ? AND ?
 				AND so.status IN ('CONFIRMED', 'SHIPPED', 'COMPLETED')
 			), 0) as sold_quantity,
-			(ii.available_quantity * ii.average_cost) as stock_value
+			(ii.available_quantity * ii.unit_cost) as stock_value
 		`, filter.StartDate, filter.EndDate).
 		Joins("JOIN products p ON p.id = ii.product_id").
 		Joins("JOIN warehouses w ON w.id = ii.warehouse_id").
@@ -180,7 +180,7 @@ func (r *GormInventoryReportRepository) GetInventoryValueByCategory(filter repor
 	// First get total value for percentage calculation
 	var totalInventoryValue decimal.Decimal
 	if err := r.db.Table("inventory_items ii").
-		Select("COALESCE(SUM(ii.available_quantity * ii.average_cost), 0)").
+		Select("COALESCE(SUM(ii.available_quantity * ii.unit_cost), 0)").
 		Where("ii.tenant_id = ?", filter.TenantID).
 		Scan(&totalInventoryValue).Error; err != nil {
 		return nil, err
@@ -192,7 +192,7 @@ func (r *GormInventoryReportRepository) GetInventoryValueByCategory(filter repor
 			COALESCE(c.name, 'Uncategorized') as category_name,
 			COUNT(DISTINCT ii.product_id) as product_count,
 			COALESCE(SUM(ii.available_quantity), 0) as total_quantity,
-			COALESCE(SUM(ii.available_quantity * ii.average_cost), 0) as total_value
+			COALESCE(SUM(ii.available_quantity * ii.unit_cost), 0) as total_value
 		`).
 		Joins("JOIN products p ON p.id = ii.product_id").
 		Joins("LEFT JOIN categories c ON c.id = p.category_id").
@@ -240,7 +240,7 @@ func (r *GormInventoryReportRepository) GetInventoryValueByWarehouse(filter repo
 	// First get total value for percentage calculation
 	var totalInventoryValue decimal.Decimal
 	if err := r.db.Table("inventory_items ii").
-		Select("COALESCE(SUM(ii.available_quantity * ii.average_cost), 0)").
+		Select("COALESCE(SUM(ii.available_quantity * ii.unit_cost), 0)").
 		Where("ii.tenant_id = ?", filter.TenantID).
 		Scan(&totalInventoryValue).Error; err != nil {
 		return nil, err
@@ -252,7 +252,7 @@ func (r *GormInventoryReportRepository) GetInventoryValueByWarehouse(filter repo
 			w.name as warehouse_name,
 			COUNT(DISTINCT ii.product_id) as product_count,
 			COALESCE(SUM(ii.available_quantity), 0) as total_quantity,
-			COALESCE(SUM(ii.available_quantity * ii.average_cost), 0) as total_value
+			COALESCE(SUM(ii.available_quantity * ii.unit_cost), 0) as total_value
 		`).
 		Joins("JOIN warehouses w ON w.id = ii.warehouse_id").
 		Where("ii.tenant_id = ?", filter.TenantID).
@@ -327,7 +327,7 @@ func (r *GormInventoryReportRepository) GetSlowMovingProducts(filter report.Inve
 				AND so.created_at BETWEEN ? AND ?
 				AND so.status IN ('CONFIRMED', 'SHIPPED', 'COMPLETED')
 			), 0) as sold_quantity,
-			(ii.available_quantity * ii.average_cost) as stock_value
+			(ii.available_quantity * ii.unit_cost) as stock_value
 		`, filter.StartDate, filter.EndDate).
 		Joins("JOIN products p ON p.id = ii.product_id").
 		Joins("JOIN warehouses w ON w.id = ii.warehouse_id").

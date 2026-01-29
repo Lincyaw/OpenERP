@@ -264,7 +264,7 @@ func newTestService(
 ) *printing.PrintService {
 	templateEngine := infra.NewTemplateEngine()
 	logger := zap.NewNop()
-	return printing.NewPrintService(templateRepo, jobRepo, templateEngine, renderer, storage, logger)
+	return printing.NewPrintService(templateRepo, jobRepo, templateEngine, renderer, storage, nil, logger)
 }
 
 func createTestTemplate(tenantID uuid.UUID, docType domain.DocType, name string) *domain.PrintTemplate {

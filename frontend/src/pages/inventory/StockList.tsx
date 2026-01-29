@@ -337,8 +337,19 @@ export default function StockListPage() {
         dataIndex: 'product_id',
         width: 180,
         ellipsis: true,
-        render: (productId: unknown) => (
-          <span className="product-name-cell">
+        render: (productId: unknown, record: InventoryItem) => (
+          <span
+            className="product-name-cell table-cell-link"
+            onClick={() => record.id && navigate(`/inventory/stock/${record.id}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                if (record.id) navigate(`/inventory/stock/${record.id}`)
+              }
+            }}
+            role="link"
+            tabIndex={0}
+          >
             {getProductName(productId as string | undefined)}
           </span>
         ),

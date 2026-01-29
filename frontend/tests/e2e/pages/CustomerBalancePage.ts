@@ -84,7 +84,7 @@ export class CustomerBalancePage extends BasePage {
    */
   async navigateToBalance(customerId: string): Promise<void> {
     await this.goto(`/partner/customers/${customerId}/balance`)
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
     // Wait for balance summary to load - need to wait for text content, not just visibility
     // The element exists immediately but is empty until API returns data
     await this.page.waitForFunction(

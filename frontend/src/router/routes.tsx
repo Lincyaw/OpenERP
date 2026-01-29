@@ -42,6 +42,7 @@ const SupplierDetailPage = () => lazyLoad(() => import('@/pages/partner/Supplier
 const WarehousesPage = () => lazyLoad(() => import('@/pages/partner/Warehouses'))
 const WarehouseNewPage = () => lazyLoad(() => import('@/pages/partner/WarehouseNew'))
 const WarehouseEditPage = () => lazyLoad(() => import('@/pages/partner/WarehouseEdit'))
+const WarehouseDetailPage = () => lazyLoad(() => import('@/pages/partner/WarehouseDetail'))
 const CustomerBalancePage = () => lazyLoad(() => import('@/pages/partner/CustomerBalance'))
 
 // Inventory module
@@ -70,6 +71,7 @@ const SalesReturnDetailPage = () => lazyLoad(() => import('@/pages/trade/SalesRe
 const SalesReturnApprovalPage = () => lazyLoad(() => import('@/pages/trade/SalesReturnApproval'))
 const PurchaseReturnsPage = () => lazyLoad(() => import('@/pages/trade/PurchaseReturns'))
 const PurchaseReturnNewPage = () => lazyLoad(() => import('@/pages/trade/PurchaseReturnNew'))
+const PurchaseReturnDetailPage = () => lazyLoad(() => import('@/pages/trade/PurchaseReturnDetail'))
 
 // Finance module
 const ReceivablesPage = () => lazyLoad(() => import('@/pages/finance/Receivables'))
@@ -83,6 +85,8 @@ const ExpenseFormPage = () => lazyLoad(() => import('@/pages/finance/ExpenseForm
 const OtherIncomesPage = () => lazyLoad(() => import('@/pages/finance/OtherIncomes'))
 const OtherIncomeFormPage = () => lazyLoad(() => import('@/pages/finance/OtherIncomeForm'))
 const CashFlowPage = () => lazyLoad(() => import('@/pages/finance/CashFlow'))
+const ReceivableDetailPage = () => lazyLoad(() => import('@/pages/finance/ReceivableDetail'))
+const PayableDetailPage = () => lazyLoad(() => import('@/pages/finance/PayableDetail'))
 
 // Report module
 const SalesReportPage = () => lazyLoad(() => import('@/pages/report/SalesReport'))
@@ -703,6 +707,7 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'suppliers/:id', element: SupplierDetailPage() },
           { path: 'suppliers/:id/edit', element: SupplierEditPage() },
           { path: 'warehouses/new', element: WarehouseNewPage() },
+          { path: 'warehouses/:id', element: WarehouseDetailPage() },
           { path: 'warehouses/:id/edit', element: WarehouseEditPage() }
         )
       }
@@ -738,13 +743,16 @@ export function getRouteObjects(): RouteObject[] {
           { path: 'sales-returns/:id', element: SalesReturnDetailPage() },
           // Purchase returns routes
           { path: 'purchase-returns', element: PurchaseReturnsPage() },
-          { path: 'purchase-returns/new', element: PurchaseReturnNewPage() }
+          { path: 'purchase-returns/new', element: PurchaseReturnNewPage() },
+          { path: 'purchase-returns/:id', element: PurchaseReturnDetailPage() }
         )
       }
 
       // Add finance module detail routes (not in menu)
       if (route.path === '/finance') {
         childRoutes.push(
+          { path: 'receivables/:id', element: ReceivableDetailPage() },
+          { path: 'payables/:id', element: PayableDetailPage() },
           { path: 'receipts/new', element: ReceiptVoucherNewPage() },
           { path: 'receipts/:id/reconcile', element: ReceiptReconcilePage() },
           { path: 'payments/new', element: PaymentVoucherNewPage() },

@@ -10632,7 +10632,7 @@
       "# 测试分页功能",
       "# 测试搜索功能"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "FF-VAL-007",

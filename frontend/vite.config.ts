@@ -52,10 +52,11 @@ export default defineConfig({
     },
   },
   server: {
+    host: '0.0.0.0', // 允许外部机器访问
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://10.10.10.146:8080',
         changeOrigin: true,
       },
     },

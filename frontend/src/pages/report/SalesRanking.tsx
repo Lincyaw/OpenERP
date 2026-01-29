@@ -789,7 +789,7 @@ export default function SalesRankingPage() {
                   <Table
                     columns={productColumns}
                     dataSource={sortedProductRankings}
-                    rowKey="product_id"
+                    rowKey={(record, index) => `${record.product_id}-${index}`}
                     pagination={{
                       pageSize: 10,
                       showTotal: true,

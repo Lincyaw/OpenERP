@@ -588,7 +588,8 @@
       "ship": "发货",
       "complete": "完成",
       "cancel": "取消",
-      "delete": "删除"
+      "delete": "删除",
+      "print": "打印"
     },
     "modal": {
       "submitTitle": "提交审批",
@@ -622,6 +623,65 @@
       "cancelError": "取消失败",
       "deleteSuccess": "退货单已删除",
       "deleteError": "删除失败"
+    }
+  },
+  "purchaseReturnDetail": {
+    "title": "采购退货单详情",
+    "back": "返回列表",
+    "notExist": "退货单不存在",
+    "notExistDesc": "请检查退货单号是否正确",
+    "basicInfo": {
+      "title": "基本信息",
+      "returnNumber": "退货单号",
+      "orderNumber": "原订单号",
+      "supplierName": "供应商",
+      "returnStatus": "退货状态",
+      "itemCount": "商品数量",
+      "totalQuantity": "退货总数",
+      "createdAt": "创建时间",
+      "reason": "退货原因",
+      "remark": "备注",
+      "trackingNumber": "物流单号"
+    },
+    "items": {
+      "title": "退货商品",
+      "empty": "暂无商品",
+      "columns": {
+        "index": "序号",
+        "productCode": "商品编码",
+        "productName": "商品名称",
+        "unit": "单位",
+        "originalQuantity": "原数量",
+        "returnQuantity": "退货数量",
+        "unitCost": "采购单价",
+        "refundAmount": "退款金额",
+        "reason": "退货原因"
+      }
+    },
+    "amount": {
+      "totalRefund": "退款总额"
+    },
+    "timeline": {
+      "title": "状态变更",
+      "empty": "暂无记录",
+      "created": "创建退货单",
+      "submitted": "提交审批",
+      "approved": "审批通过",
+      "rejected": "审批拒绝",
+      "shipped": "商品已发货",
+      "completed": "退货完成",
+      "cancelled": "退货取消"
+    },
+    "modal": {
+      "approvalNotePlaceholder": "请输入审批备注（可选）",
+      "rejectReasonPlaceholder": "请输入拒绝原因",
+      "shippingNotePlaceholder": "请输入发货备注（可选）",
+      "cancelReasonPlaceholder": "请输入取消原因（可选）"
+    },
+    "messages": {
+      "notExist": "退货单不存在",
+      "fetchDetailError": "获取退货单详情失败",
+      "rejectReasonRequired": "请输入拒绝原因"
     }
   },
   "common": {

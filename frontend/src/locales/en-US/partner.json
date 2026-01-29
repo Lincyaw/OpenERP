@@ -515,5 +515,37 @@
       "createdAt": "Created At",
       "updatedAt": "Updated At"
     }
+  },
+  "warehouseDetail": {
+    "title": "Warehouse Details",
+    "back": "Back to Warehouse List",
+    "notExist": "Warehouse Not Found",
+    "notExistDesc": "The requested warehouse does not exist",
+    "timestamps": "Timestamps",
+    "notes": "Notes",
+    "messages": {
+      "fetchError": "Failed to fetch warehouse information"
+    },
+    "fields": {
+      "code": "Warehouse Code",
+      "name": "Warehouse Name",
+      "shortName": "Short Name",
+      "type": "Warehouse Type",
+      "status": "Status",
+      "isDefault": "Default Warehouse",
+      "notDefault": "No",
+      "managerName": "Manager Name",
+      "phone": "Phone",
+      "email": "Email",
+      "country": "Country",
+      "province": "Province/State",
+      "city": "City",
+      "address": "Address",
+      "postalCode": "Postal Code",
+      "fullAddress": "Full Address",
+      "sortOrder": "Sort Order",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At"
+    }
   }
 }

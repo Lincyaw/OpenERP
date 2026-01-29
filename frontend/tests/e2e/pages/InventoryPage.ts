@@ -52,7 +52,8 @@ export class InventoryPage extends BasePage {
       .locator('.semi-select')
       .filter({ hasText: /状态|全部状态/ })
       .first()
-    this.searchInput = page.locator('input[placeholder*="搜索"]')
+    // Search input uses TableToolbar component with class .table-toolbar-search
+    this.searchInput = page.locator('.table-toolbar-search input')
     this.refreshButton = page.locator('button').filter({ hasText: '刷新' })
     this.tableRows = page.locator('.semi-table-tbody .semi-table-row')
     this.tableBody = page.locator('.semi-table-tbody')
@@ -766,10 +767,10 @@ export class InventoryPage extends BasePage {
    */
   async waitForStockTakingCreateSuccess(): Promise<string> {
     await this.waitForToast('创建成功')
-    // Wait for URL change and network to be idle to ensure redirect is complete
+    // Wait for URL change and DOM to be ready
     await this.page.waitForURL(/\/inventory\/stock-taking$/, {
       timeout: 10000,
-      waitUntil: 'networkidle',
+      waitUntil: 'domcontentloaded',
     })
     // Extra wait for table to render
     await this.page.waitForTimeout(500)

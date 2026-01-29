@@ -311,7 +311,22 @@ export default function ProductsPage() {
         ellipsis: true,
         render: (name: unknown, record: Product) => (
           <div className="product-name-cell">
-            <span className="product-name">{(name as string) || '-'}</span>
+            <span
+              className="product-name table-cell-link"
+              onClick={() => {
+                if (record.id) navigate(`/catalog/products/${record.id}`)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  if (record.id) navigate(`/catalog/products/${record.id}`)
+                }
+              }}
+              role="link"
+              tabIndex={0}
+            >
+              {(name as string) || '-'}
+            </span>
             {record.barcode && <span className="product-barcode">{record.barcode}</span>}
           </div>
         ),
@@ -375,7 +390,7 @@ export default function ProductsPage() {
         },
       },
     ],
-    [t, formatCurrency, formatDate]
+    [t, formatCurrency, formatDate, navigate]
   )
 
   // Table row actions

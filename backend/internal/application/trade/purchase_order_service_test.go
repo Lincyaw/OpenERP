@@ -196,12 +196,14 @@ func TestPurchaseOrderService_Create(t *testing.T) {
 			SupplierName: testSupplierName,
 			Items: []CreatePurchaseOrderItemInput{
 				{
-					ProductID:   testPOProductID,
-					ProductName: testPOProductName,
-					ProductCode: testPOProductCode,
-					Unit:        testPOUnit,
-					Quantity:    decimal.NewFromInt(5),
-					UnitCost:    decimal.NewFromInt(100),
+					ProductID:      testPOProductID,
+					ProductName:    testPOProductName,
+					ProductCode:    testPOProductCode,
+					Unit:           testPOUnit,
+					BaseUnit:       testPOUnit,
+					Quantity:       decimal.NewFromInt(5),
+					ConversionRate: decimal.NewFromInt(1),
+					UnitCost:       decimal.NewFromInt(100),
 				},
 			},
 		}
@@ -232,12 +234,14 @@ func TestPurchaseOrderService_Create(t *testing.T) {
 			Discount:     &discount,
 			Items: []CreatePurchaseOrderItemInput{
 				{
-					ProductID:   testPOProductID,
-					ProductName: testPOProductName,
-					ProductCode: testPOProductCode,
-					Unit:        testPOUnit,
-					Quantity:    decimal.NewFromInt(5),
-					UnitCost:    decimal.NewFromInt(100),
+					ProductID:      testPOProductID,
+					ProductName:    testPOProductName,
+					ProductCode:    testPOProductCode,
+					Unit:           testPOUnit,
+					BaseUnit:       testPOUnit,
+					Quantity:       decimal.NewFromInt(5),
+					ConversionRate: decimal.NewFromInt(1),
+					UnitCost:       decimal.NewFromInt(100),
 				},
 			},
 		}
@@ -266,12 +270,14 @@ func TestPurchaseOrderService_Create(t *testing.T) {
 			WarehouseID:  &warehouseID,
 			Items: []CreatePurchaseOrderItemInput{
 				{
-					ProductID:   testPOProductID,
-					ProductName: testPOProductName,
-					ProductCode: testPOProductCode,
-					Unit:        testPOUnit,
-					Quantity:    decimal.NewFromInt(1),
-					UnitCost:    decimal.NewFromInt(100),
+					ProductID:      testPOProductID,
+					ProductName:    testPOProductName,
+					ProductCode:    testPOProductCode,
+					Unit:           testPOUnit,
+					BaseUnit:       testPOUnit,
+					Quantity:       decimal.NewFromInt(1),
+					ConversionRate: decimal.NewFromInt(1),
+					UnitCost:       decimal.NewFromInt(100),
 				},
 			},
 		}

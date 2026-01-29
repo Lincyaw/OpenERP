@@ -97,7 +97,7 @@ export class CustomersPage extends BasePage {
    */
   async navigateToCreate(): Promise<void> {
     await this.goto('/partner/customers/new')
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   /**
@@ -105,7 +105,7 @@ export class CustomersPage extends BasePage {
    */
   async navigateToEdit(customerId: string): Promise<void> {
     await this.goto(`/partner/customers/${customerId}/edit`)
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   /**

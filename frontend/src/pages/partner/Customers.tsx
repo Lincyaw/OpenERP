@@ -382,7 +382,22 @@ export default function CustomersPage() {
         ellipsis: true,
         render: (name: unknown, record: Customer) => (
           <div className="customer-name-cell">
-            <span className="customer-name">{(name as string) || '-'}</span>
+            <span
+              className="customer-name table-cell-link"
+              onClick={() => {
+                if (record.id) navigate(`/partner/customers/${record.id}`)
+              }}
+              onKeyDown={(e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && record.id) {
+                  e.preventDefault()
+                  navigate(`/partner/customers/${record.id}`)
+                }
+              }}
+              role="link"
+              tabIndex={0}
+            >
+              {(name as string) || '-'}
+            </span>
             {record.short_name && <span className="customer-short-name">{record.short_name}</span>}
           </div>
         ),
@@ -466,7 +481,7 @@ export default function CustomersPage() {
         },
       },
     ],
-    [t, formatDate]
+    [t, formatDate, navigate]
   )
 
   // Handle view balance

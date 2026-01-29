@@ -79,7 +79,7 @@ auth_rate_limit_requests = 5000   # Higher for E2E tests, use 5 in production
 auth_rate_limit_window = "1m"   # 1 minute window
 # For cookie-based auth with credentials, use specific origins (not "*")
 # In production, set to your actual frontend origin
-cors_allow_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+cors_allow_origins = ["http://localhost:3000", "http://127.0.0.1:3000", "http://10.10.10.146:3000"]
 cors_allow_methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
 cors_allow_headers = ["Content-Type", "Authorization", "X-Request-ID", "X-Tenant-ID"]
 # SECURITY: If behind a reverse proxy/load balancer, set trusted_proxies to

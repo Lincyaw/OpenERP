@@ -426,8 +426,23 @@ export default function SalesOrdersPage() {
         dataIndex: 'order_number',
         width: 160,
         sortable: true,
-        render: (orderNumber: unknown) => (
-          <span className="order-number">{(orderNumber as string) || '-'}</span>
+        render: (orderNumber: unknown, record: SalesOrder) => (
+          <span
+            className="order-number table-cell-link"
+            onClick={() => {
+              if (record.id) navigate(`/trade/sales/${record.id}`)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                if (record.id) navigate(`/trade/sales/${record.id}`)
+              }
+            }}
+            role="link"
+            tabIndex={0}
+          >
+            {(orderNumber as string) || '-'}
+          </span>
         ),
       },
       {

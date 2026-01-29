@@ -355,7 +355,22 @@ export default function SuppliersPage() {
         ellipsis: true,
         render: (name: unknown, record: Supplier) => (
           <div className="supplier-name-cell">
-            <span className="supplier-name">{(name as string) || '-'}</span>
+            <span
+              className="supplier-name table-cell-link"
+              onClick={() => {
+                if (record.id) navigate(`/partner/suppliers/${record.id}`)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  if (record.id) navigate(`/partner/suppliers/${record.id}`)
+                }
+              }}
+              role="link"
+              tabIndex={0}
+            >
+              {(name as string) || '-'}
+            </span>
             {record.short_name && <span className="supplier-short-name">{record.short_name}</span>}
           </div>
         ),
@@ -432,7 +447,7 @@ export default function SuppliersPage() {
         },
       },
     ],
-    [t, formatDate]
+    [t, formatDate, navigate]
   )
 
   // Table row actions

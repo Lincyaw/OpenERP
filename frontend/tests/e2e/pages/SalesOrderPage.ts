@@ -487,7 +487,7 @@ export class SalesOrderPage extends BasePage {
     } catch {
       // If status tag doesn't change, refresh and retry
       await this.page.reload()
-      await this.page.waitForLoadState('networkidle')
+      await this.page.waitForLoadState('domcontentloaded')
     }
   }
 

@@ -83,7 +83,7 @@ test.describe('Purchase Flow E2E Tests', () => {
 
       // Navigate to purchase order list
       await page.goto('/trade/purchase')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Wait for either table or empty state
       await Promise.race([
@@ -105,7 +105,7 @@ test.describe('Purchase Flow E2E Tests', () => {
     test('should navigate to new order form', async ({ page }) => {
       // Navigate to new order page
       await page.goto('/trade/purchase/new')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Wait for form to load
       await page.waitForTimeout(2000)
@@ -127,7 +127,7 @@ test.describe('Purchase Flow E2E Tests', () => {
 
       // Navigate to new order form
       await page.goto('/trade/purchase/new')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Take screenshot of empty form
@@ -204,7 +204,7 @@ test.describe('Purchase Flow E2E Tests', () => {
     test('should view existing orders from seed data', async ({ page }) => {
       // Navigate to purchase order list
       await page.goto('/trade/purchase')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Check if there are any orders in the table
@@ -233,7 +233,7 @@ test.describe('Purchase Flow E2E Tests', () => {
     test('should filter orders by status', async ({ page }) => {
       // Navigate to purchase order list
       await page.goto('/trade/purchase')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Find status filter
@@ -268,7 +268,7 @@ test.describe('Purchase Flow E2E Tests', () => {
 
     test('should verify draft order exists in seed data', async ({ page }) => {
       await page.goto('/trade/purchase')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Search for the draft order from seed data
@@ -291,7 +291,7 @@ test.describe('Purchase Flow E2E Tests', () => {
 
     test('should verify completed order exists in seed data', async ({ page }) => {
       await page.goto('/trade/purchase')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Search for the completed order from seed data
@@ -321,7 +321,7 @@ test.describe('Purchase Flow E2E Tests', () => {
 
       // Navigate to payables
       await page.goto('/finance/payables')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Check if we were redirected to login (session expired)
@@ -366,7 +366,7 @@ test.describe('Purchase Flow E2E Tests', () => {
     test('should navigate to new payment voucher page', async ({ page }) => {
       // Navigate to new payment voucher
       await page.goto('/finance/payments/new')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Take screenshot
@@ -393,7 +393,7 @@ test.describe('Purchase Flow E2E Tests', () => {
 
     test('should verify payable exists from seed data', async ({ page }) => {
       await page.goto('/finance/payables')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Take screenshot
@@ -417,7 +417,7 @@ test.describe('Purchase Flow E2E Tests', () => {
     test('should view order detail page', async ({ page }) => {
       // First, get an order ID from the list
       await page.goto('/trade/purchase')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Check if there are any orders
@@ -454,7 +454,7 @@ test.describe('Purchase Flow E2E Tests', () => {
     test('should navigate to receiving page for confirmed order', async ({ page }) => {
       // Navigate to purchase order list
       await page.goto('/trade/purchase')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Search for a confirmed order
@@ -525,7 +525,7 @@ test.describe('Smoke Test - Purchase Module Navigation', () => {
   for (const pageInfo of purchasePages) {
     test(`should load ${pageInfo.name} page`, async ({ page }) => {
       await page.goto(pageInfo.url)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Take screenshot
@@ -560,7 +560,7 @@ test.describe('Smoke Test - Finance Module (Purchase Related)', () => {
   for (const pageInfo of financePages) {
     test(`should load ${pageInfo.name} page`, async ({ page }) => {
       await page.goto(pageInfo.url)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Take screenshot
@@ -592,7 +592,7 @@ test.describe('Purchase Flow Integration', () => {
 
     // Step 1: Navigate to purchase order list and verify data exists
     await page.goto('/trade/purchase')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(2000)
 
     // Take initial screenshot
@@ -607,7 +607,7 @@ test.describe('Purchase Flow Integration', () => {
 
     // Step 2: Navigate to new order form
     await page.goto('/trade/purchase/new')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(1500)
 
     await page.screenshot({ path: 'test-results/screenshots/purchase-flow-step2-new-form.png' })
@@ -622,7 +622,7 @@ test.describe('Purchase Flow Integration', () => {
 
     // Step 3: Navigate to payables to verify finance integration
     await page.goto('/finance/payables')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(2000)
 
     await page.screenshot({ path: 'test-results/screenshots/purchase-flow-step3-payables.png' })
@@ -636,7 +636,7 @@ test.describe('Purchase Flow Integration', () => {
 
     // Step 4: Navigate to payment voucher creation
     await page.goto('/finance/payments/new')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(1500)
 
     await page.screenshot({ path: 'test-results/screenshots/purchase-flow-step4-payment-new.png' })
@@ -667,7 +667,7 @@ test.describe('Purchase Flow Integration', () => {
 
   test('should verify purchase order statuses from seed data', async ({ page }) => {
     await page.goto('/trade/purchase')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(2000)
 
     // Take screenshot of full list
@@ -705,7 +705,7 @@ test.describe('Purchase Flow Integration', () => {
   test('should verify batch and cost tracking in receiving', async ({ page }) => {
     // Navigate to a completed order to verify batch/cost data
     await page.goto('/trade/purchase')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(2000)
 
     // Search for completed order with receiving history
@@ -752,7 +752,7 @@ test.describe('Supplier Integration', () => {
 
   test('should display supplier options in purchase order form', async ({ page }) => {
     await page.goto('/trade/purchase/new')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(1500)
 
     // Find and click the supplier select
@@ -780,7 +780,7 @@ test.describe('Supplier Integration', () => {
 
   test('should search suppliers by name', async ({ page }) => {
     await page.goto('/trade/purchase/new')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(1500)
 
     const supplierSelect = page.locator('.semi-select').first()
@@ -820,7 +820,7 @@ test.describe('Inventory Integration', () => {
 
   test('should navigate to inventory page', async ({ page }) => {
     await page.goto('/inventory')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(2000)
 
     await page.screenshot({ path: 'test-results/screenshots/purchase-inventory-list.png' })
@@ -841,7 +841,7 @@ test.describe('Inventory Integration', () => {
 
   test('should verify product inventory from seed data', async ({ page }) => {
     await page.goto('/inventory')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(2000)
 
     // Search for a product that should have inventory from seed data

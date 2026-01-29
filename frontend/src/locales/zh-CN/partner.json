@@ -515,5 +515,37 @@
       "createdAt": "创建时间",
       "updatedAt": "更新时间"
     }
+  },
+  "warehouseDetail": {
+    "title": "仓库详情",
+    "back": "返回仓库列表",
+    "notExist": "仓库不存在",
+    "notExistDesc": "未找到对应的仓库信息",
+    "timestamps": "时间信息",
+    "notes": "备注",
+    "messages": {
+      "fetchError": "获取仓库信息失败"
+    },
+    "fields": {
+      "code": "仓库编码",
+      "name": "仓库名称",
+      "shortName": "简称",
+      "type": "仓库类型",
+      "status": "状态",
+      "isDefault": "默认仓库",
+      "notDefault": "否",
+      "managerName": "仓库管理员",
+      "phone": "电话",
+      "email": "邮箱",
+      "country": "国家",
+      "province": "省份",
+      "city": "城市",
+      "address": "详细地址",
+      "postalCode": "邮政编码",
+      "fullAddress": "完整地址",
+      "sortOrder": "排序顺序",
+      "createdAt": "创建时间",
+      "updatedAt": "更新时间"
+    }
   }
 }

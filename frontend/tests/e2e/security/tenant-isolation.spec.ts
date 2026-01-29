@@ -116,7 +116,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
       const token = await getApiToken(page, 'admin')
 
       const response = await page.request.get(
-        `http://erp-backend:8080/api/v1/partner/customers/${otherTenantFakeData.customerId}`,
+        `http://localhost:8080/api/v1/partner/customers/${otherTenantFakeData.customerId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -137,7 +137,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
       const token = await getApiToken(page, 'admin')
 
       const response = await page.request.get(
-        `http://erp-backend:8080/api/v1/catalog/products/${otherTenantFakeData.productId}`,
+        `http://localhost:8080/api/v1/catalog/products/${otherTenantFakeData.productId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -155,7 +155,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
       const token = await getApiToken(page, 'admin')
 
       const response = await page.request.get(
-        `http://erp-backend:8080/api/v1/trade/sales-orders/${otherTenantFakeData.salesOrderId}`,
+        `http://localhost:8080/api/v1/trade/sales-orders/${otherTenantFakeData.salesOrderId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -171,7 +171,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
       const token = await getApiToken(page, 'admin')
 
       const response = await page.request.get(
-        `http://erp-backend:8080/api/v1/partner/warehouses/${otherTenantFakeData.warehouseId}`,
+        `http://localhost:8080/api/v1/partner/warehouses/${otherTenantFakeData.warehouseId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -188,7 +188,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
 
       // Verify that accessing own tenant's resources works
       const response = await page.request.get(
-        `http://erp-backend:8080/api/v1/partner/customers/${defaultTenantData.customerId}`,
+        `http://localhost:8080/api/v1/partner/customers/${defaultTenantData.customerId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -215,7 +215,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
     }) => {
       // Try to directly navigate to edit page of a non-existent customer
       await page.goto(`/partner/customers/${otherTenantFakeData.customerId}/edit`)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Should either:
@@ -244,7 +244,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
       page,
     }) => {
       await page.goto(`/catalog/products/${otherTenantFakeData.productId}/edit`)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       const url = page.url()
@@ -267,7 +267,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
       page,
     }) => {
       await page.goto(`/trade/sales/${otherTenantFakeData.salesOrderId}`)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       const url = page.url()
@@ -289,7 +289,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
 
     test('should prevent accessing warehouse detail with invalid ID', async ({ page }) => {
       await page.goto(`/inventory/warehouses/${otherTenantFakeData.warehouseId}`)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       const url = page.url()
@@ -317,7 +317,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
       const token = await getApiToken(page, 'admin')
 
       const response = await page.request.put(
-        `http://erp-backend:8080/api/v1/partner/customers/${otherTenantFakeData.customerId}`,
+        `http://localhost:8080/api/v1/partner/customers/${otherTenantFakeData.customerId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -338,7 +338,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
       const token = await getApiToken(page, 'admin')
 
       const response = await page.request.delete(
-        `http://erp-backend:8080/api/v1/partner/customers/${otherTenantFakeData.customerId}`,
+        `http://localhost:8080/api/v1/partner/customers/${otherTenantFakeData.customerId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -354,7 +354,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
       const token = await getApiToken(page, 'admin')
 
       const response = await page.request.put(
-        `http://erp-backend:8080/api/v1/catalog/products/${otherTenantFakeData.productId}`,
+        `http://localhost:8080/api/v1/catalog/products/${otherTenantFakeData.productId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -374,7 +374,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
       const token = await getApiToken(page, 'admin')
 
       const response = await page.request.post(
-        `http://erp-backend:8080/api/v1/trade/sales-orders/${otherTenantFakeData.salesOrderId}/cancel`,
+        `http://localhost:8080/api/v1/trade/sales-orders/${otherTenantFakeData.salesOrderId}/cancel`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -396,7 +396,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
     test('should have correct tenant context in user session', async ({ page }) => {
       // Navigate to dashboard to ensure page is loaded
       await page.goto('/')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Verify the user's tenant context is correct
       const userInfo = await page.evaluate(() => {
@@ -423,7 +423,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
 
       // Wait for page to load fully
       await productsPage.navigateToList()
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Verify we're on the products page and can see products
       // If products are displayed, it means the API was called successfully with proper auth
@@ -475,7 +475,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
 
       // Try to access system settings (admin only)
       await page.goto('/system/users')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Should either be redirected or shown access denied
@@ -528,7 +528,7 @@ test.describe('Multi-Tenant Isolation (SMOKE-005)', () => {
 
       // Try to access finance receivables (finance role only)
       await page.goto('/finance/receivables')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Capture the result

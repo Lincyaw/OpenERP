@@ -588,7 +588,8 @@
       "ship": "Ship",
       "complete": "Complete",
       "cancel": "Cancel",
-      "delete": "Delete"
+      "delete": "Delete",
+      "print": "Print"
     },
     "modal": {
       "submitTitle": "Submit for Approval",
@@ -622,6 +623,65 @@
       "cancelError": "Failed to cancel",
       "deleteSuccess": "Return deleted",
       "deleteError": "Failed to delete"
+    }
+  },
+  "purchaseReturnDetail": {
+    "title": "Purchase Return Details",
+    "back": "Back to List",
+    "notExist": "Return not found",
+    "notExistDesc": "Please check if the return number is correct",
+    "basicInfo": {
+      "title": "Basic Information",
+      "returnNumber": "Return Number",
+      "orderNumber": "Original Order",
+      "supplierName": "Supplier",
+      "returnStatus": "Return Status",
+      "itemCount": "Item Count",
+      "totalQuantity": "Total Quantity",
+      "createdAt": "Created At",
+      "reason": "Return Reason",
+      "remark": "Remark",
+      "trackingNumber": "Tracking Number"
+    },
+    "items": {
+      "title": "Return Items",
+      "empty": "No items",
+      "columns": {
+        "index": "No.",
+        "productCode": "Product Code",
+        "productName": "Product Name",
+        "unit": "Unit",
+        "originalQuantity": "Original Qty",
+        "returnQuantity": "Return Qty",
+        "unitCost": "Unit Cost",
+        "refundAmount": "Refund Amount",
+        "reason": "Reason"
+      }
+    },
+    "amount": {
+      "totalRefund": "Total Refund"
+    },
+    "timeline": {
+      "title": "Status History",
+      "empty": "No records",
+      "created": "Return Created",
+      "submitted": "Submitted for Approval",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "shipped": "Goods Shipped",
+      "completed": "Return Completed",
+      "cancelled": "Return Cancelled"
+    },
+    "modal": {
+      "approvalNotePlaceholder": "Enter approval note (optional)",
+      "rejectReasonPlaceholder": "Enter rejection reason",
+      "shippingNotePlaceholder": "Enter shipping note (optional)",
+      "cancelReasonPlaceholder": "Enter cancellation reason (optional)"
+    },
+    "messages": {
+      "notExist": "Return not found",
+      "fetchDetailError": "Failed to fetch return details",
+      "rejectReasonRequired": "Please enter rejection reason"
     }
   },
   "common": {

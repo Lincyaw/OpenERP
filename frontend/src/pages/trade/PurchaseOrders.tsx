@@ -370,8 +370,21 @@ export default function PurchaseOrdersPage() {
         dataIndex: 'order_number',
         width: 160,
         sortable: true,
-        render: (orderNumber: unknown) => (
-          <span className="order-number">{(orderNumber as string) || '-'}</span>
+        render: (orderNumber: unknown, record: PurchaseOrder) => (
+          <span
+            className="order-number table-cell-link"
+            onClick={() => record.id && navigate(`/trade/purchase/${record.id}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                if (record.id) navigate(`/trade/purchase/${record.id}`)
+              }
+            }}
+            role="link"
+            tabIndex={0}
+          >
+            {(orderNumber as string) || '-'}
+          </span>
         ),
       },
       {

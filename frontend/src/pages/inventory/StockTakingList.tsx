@@ -252,7 +252,22 @@ export default function StockTakingListPage() {
         title: t('stockTaking.list.columns.takingNumber'),
         dataIndex: 'taking_number',
         width: 160,
-        render: (number: unknown) => <span className="taking-number">{number as string}</span>,
+        render: (number: unknown, record: StockTakingItem) => (
+          <span
+            className="taking-number table-cell-link"
+            onClick={() => record.id && navigate(`/inventory/stock-taking/${record.id}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                if (record.id) navigate(`/inventory/stock-taking/${record.id}`)
+              }
+            }}
+            role="link"
+            tabIndex={0}
+          >
+            {number as string}
+          </span>
+        ),
       },
       {
         title: t('stockTaking.list.columns.warehouse'),

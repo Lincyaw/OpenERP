@@ -670,5 +670,89 @@
   },
   "common": {
     "loading": "加载中..."
+  },
+  "receivableDetail": {
+    "title": "应收账款详情",
+    "back": "返回",
+    "notExist": "应收账款不存在",
+    "notExistDesc": "该应收账款记录不存在或已被删除",
+    "basicInfo": {
+      "title": "基本信息",
+      "receivableNumber": "单据编号",
+      "customerName": "客户名称",
+      "sourceDocument": "来源单据",
+      "sourceType": "来源类型",
+      "status": "状态",
+      "dueDate": "到期日",
+      "createdAt": "创建时间",
+      "remark": "备注",
+      "viewSource": "查看来源"
+    },
+    "amount": {
+      "title": "金额汇总",
+      "totalAmount": "应收金额",
+      "paidAmount": "已收金额",
+      "outstandingAmount": "待收金额"
+    },
+    "paymentRecords": {
+      "title": "收款记录",
+      "columns": {
+        "index": "#",
+        "amount": "收款金额",
+        "appliedAt": "收款时间",
+        "remark": "备注"
+      },
+      "empty": "暂无收款记录"
+    },
+    "actions": {
+      "refresh": "刷新"
+    },
+    "messages": {
+      "notExist": "应收账款不存在",
+      "fetchError": "获取应收账款详情失败",
+      "sourceNotNavigable": "无法跳转到来源单据"
+    }
+  },
+  "payableDetail": {
+    "title": "应付账款详情",
+    "back": "返回",
+    "notExist": "应付账款不存在",
+    "notExistDesc": "该应付账款记录不存在或已被删除",
+    "basicInfo": {
+      "title": "基本信息",
+      "payableNumber": "单据编号",
+      "supplierName": "供应商名称",
+      "sourceDocument": "来源单据",
+      "sourceType": "来源类型",
+      "status": "状态",
+      "dueDate": "到期日",
+      "createdAt": "创建时间",
+      "remark": "备注",
+      "viewSource": "查看来源"
+    },
+    "amount": {
+      "title": "金额汇总",
+      "totalAmount": "应付金额",
+      "paidAmount": "已付金额",
+      "outstandingAmount": "待付金额"
+    },
+    "paymentRecords": {
+      "title": "付款记录",
+      "columns": {
+        "index": "#",
+        "amount": "付款金额",
+        "appliedAt": "付款时间",
+        "remark": "备注"
+      },
+      "empty": "暂无付款记录"
+    },
+    "actions": {
+      "refresh": "刷新"
+    },
+    "messages": {
+      "notExist": "应付账款不存在",
+      "fetchError": "获取应付账款详情失败",
+      "sourceNotNavigable": "无法跳转到来源单据"
+    }
   }
 }

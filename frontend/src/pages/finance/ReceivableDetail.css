@@ -1,0 +1,142 @@
+/* Receivable Detail Page Styles */
+
+.receivable-detail-page {
+  padding: var(--spacing-6);
+}
+
+/* Loading container */
+.receivable-detail-page .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+/* Page header */
+.receivable-detail-page .page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-6);
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+}
+
+.receivable-detail-page .header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.receivable-detail-page .page-title {
+  margin: 0;
+}
+
+.receivable-detail-page .header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+/* Info card */
+.receivable-detail-page .info-card {
+  margin-bottom: var(--spacing-6);
+}
+
+.receivable-detail-page .info-card .semi-card-header {
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid var(--semi-color-border);
+}
+
+.receivable-basic-info {
+  padding: var(--spacing-4);
+}
+
+/* Amount card */
+.receivable-detail-page .amount-card {
+  margin-bottom: var(--spacing-6);
+}
+
+.amount-summary {
+  padding: var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  max-width: 400px;
+}
+
+.amount-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-2) 0;
+}
+
+.amount-row.outstanding-row {
+  border-top: 1px solid var(--semi-color-border);
+  padding-top: var(--spacing-4);
+  margin-top: var(--spacing-2);
+}
+
+.total-amount {
+  font-size: var(--semi-font-size-header-5);
+  font-family: var(--semi-font-family-code);
+  color: var(--semi-color-text-0);
+}
+
+.paid-amount {
+  font-size: var(--semi-font-size-header-5);
+  font-family: var(--semi-font-family-code);
+  color: var(--semi-color-success);
+}
+
+.outstanding-amount {
+  font-size: var(--semi-font-size-header-4);
+  font-family: var(--semi-font-family-code);
+  color: var(--semi-color-primary);
+}
+
+.outstanding-amount.overdue {
+  color: var(--semi-color-danger);
+}
+
+/* Payment records card */
+.receivable-detail-page .payment-records-card {
+  margin-bottom: var(--spacing-6);
+}
+
+.payment-amount {
+  font-family: var(--semi-font-family-code);
+  color: var(--semi-color-success);
+}
+
+/* Overdue date styling */
+.overdue-date {
+  color: var(--semi-color-danger);
+  font-weight: var(--semi-font-weight-medium);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .receivable-detail-page {
+    padding: var(--spacing-4);
+  }
+
+  .receivable-detail-page .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .receivable-detail-page .header-left {
+    flex-wrap: wrap;
+  }
+
+  .receivable-detail-page .header-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .amount-summary {
+    max-width: 100%;
+  }
+}

@@ -8,6 +8,7 @@ import (
 	"github.com/erp/backend/internal/domain/printing"
 	"github.com/erp/backend/internal/domain/shared"
 	infra "github.com/erp/backend/internal/infrastructure/printing"
+	"github.com/erp/backend/internal/infrastructure/printing/providers"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -19,6 +20,7 @@ type PrintService struct {
 	templateEngine *infra.TemplateEngine
 	pdfRenderer    infra.PDFRenderer
 	pdfStorage     infra.PDFStorage
+	dataProviders  *providers.DataProviderRegistry
 	logger         *zap.Logger
 }
 
@@ -29,6 +31,7 @@ func NewPrintService(
 	templateEngine *infra.TemplateEngine,
 	pdfRenderer infra.PDFRenderer,
 	pdfStorage infra.PDFStorage,
+	dataProviders *providers.DataProviderRegistry,
 	logger *zap.Logger,
 ) *PrintService {
 	if logger == nil {
@@ -40,6 +43,7 @@ func NewPrintService(
 		templateEngine: templateEngine,
 		pdfRenderer:    pdfRenderer,
 		pdfStorage:     pdfStorage,
+		dataProviders:  dataProviders,
 		logger:         logger,
 	}
 }
@@ -404,10 +408,24 @@ func (s *PrintService) PreviewDocument(ctx context.Context, tenantID uuid.UUID, 
 		return nil, shared.NewDomainError("INVALID_STATE", "Template is not available for use")
 	}
 
-	// Render template with provided data
+	// Load data from provider if not provided
+	data := req.Data
+	if data == nil && s.dataProviders != nil && req.DocumentID != uuid.Nil {
+		docData, err := s.dataProviders.LoadData(ctx, tenantID, docType, req.DocumentID)
+		if err != nil {
+			s.logger.Warn("failed to load document data from provider",
+				zap.Error(err),
+				zap.String("docType", string(docType)),
+				zap.String("documentID", req.DocumentID.String()))
+			return nil, fmt.Errorf("failed to load document data: %w", err)
+		}
+		data = docData
+	}
+
+	// Render template with data
 	result, err := s.templateEngine.Render(ctx, &infra.RenderTemplateRequest{
 		Template: template,
-		Data:     req.Data,
+		Data:     data,
 	})
 	if err != nil {
 		var renderErr *infra.RenderError
@@ -495,10 +513,26 @@ func (s *PrintService) GeneratePDF(ctx context.Context, tenantID, userID uuid.UU
 		return nil, fmt.Errorf("failed to update job status: %w", err)
 	}
 
+	// Load data from provider if not provided
+	data := req.Data
+	if data == nil && s.dataProviders != nil && req.DocumentID != uuid.Nil {
+		docData, err := s.dataProviders.LoadData(ctx, tenantID, docType, req.DocumentID)
+		if err != nil {
+			s.logger.Warn("failed to load document data from provider",
+				zap.Error(err),
+				zap.String("docType", string(docType)),
+				zap.String("documentID", req.DocumentID.String()))
+			_ = job.Fail("Failed to load document data")
+			_ = s.jobRepo.Save(ctx, job)
+			return nil, fmt.Errorf("failed to load document data: %w", err)
+		}
+		data = docData
+	}
+
 	// Render HTML
 	renderResult, err := s.templateEngine.Render(ctx, &infra.RenderTemplateRequest{
 		Template: template,
-		Data:     req.Data,
+		Data:     data,
 	})
 	if err != nil {
 		s.logger.Error("template rendering failed", zap.Error(err), zap.String("jobId", job.ID.String()))

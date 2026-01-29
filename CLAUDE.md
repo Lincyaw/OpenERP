@@ -1,321 +1,192 @@
-## 1. Project Overview
+# CLAUDE.md
 
-### 1.1 Project Introduction
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-An inventory management system based on DDD (Domain-Driven Design), adopting a modularized monolithic architecture with multi-tenancy support.
+## Project Overview
 
+DDD-based inventory management system with multi-tenancy support. Modular monolith architecture.
 
-- Detailed design specification: `.claude/ralph/docs/spec.md`
-- Project progress planning: `.claude/ralph/docs/task.md`
-- **Frontend Design System**: `frontend/README.md` - **MUST READ before developing frontend**
+- **Design spec**: `.claude/ralph/docs/spec.md`
+- **Frontend design system**: `frontend/README.md` (MUST READ before frontend work)
 
----
-
-## 2. Frontend Development Guidelines
-
-> **CRITICAL**: Before implementing ANY frontend code, you MUST read and follow the design system documentation in `frontend/README.md`.
-
-### Key Requirements
-
-1. **Use Design Tokens**: Always use CSS variables (e.g., `--spacing-4`, `--color-primary`) instead of hardcoded values
-2. **Responsive Design**: Use mobile-first approach with breakpoints (375px, 768px, 1024px, 1440px)
-3. **Accessibility**: Follow WCAG 2.1 AA guidelines (contrast, focus, keyboard navigation)
-4. **Theme Support**: Components must work in light, dark, and elder-friendly themes
-5. **Layout Components**: Use `Container`, `Grid`, `Flex`, `Stack`, `Row` from `@/components/common`
-
----
-
-## 3. Technology Stack
-
-All technology stacks use the latest stable versions
-
-### 3.1 Backend
-
-| Category | Technology |
-|------|----------|
-| Language | Go |
-| Web Framework | Gin |
-| ORM | GORM |
-| Database | PostgreSQL |
-| Cache | Redis |
-| Message Queue | Redis Stream |
-| Validation | go-playground/validator |
-| JWT | golang-jwt/jwt |
-| Logging | zap |
-| Configuration | viper |
-| Migration | golang-migrate |
-| Testing | testify |
-
-### 3.2 Frontend
-
-| Category | Technology |
-|------|----------|
-| Framework | React |
-| Language | TypeScript |
-| UI Component Library | Semi Design @douyinfe/semi-ui |
-| State Management | Zustand |
-| Routing | React Router |
-| HTTP Client | Axios |
-| Forms | React Hook Form |
-| Charts | ECharts / @visactor/vchart |
-| Build Tool | Vite |
-| Testing | Vitest + React Testing Library |
-| E2E Testing | Playwright |
-
-### 3.3 Semi Design Installation
+## Quick Start
 
 ```bash
-npm install @douyinfe/semi-ui
-npm install @douyinfe/semi-icons
+make setup                # First-time setup (creates .env, installs deps)
+make dev                  # Start database (postgres + redis)
+make dev-backend          # Terminal 1: Run backend
+make dev-frontend         # Terminal 2: Run frontend
+# Access: http://localhost:3000 | Login: admin / admin123
 ```
 
-Use `semi-ui-skills` to write better frontend code with Semi Design.
+## Development Commands
 
----
+### Backend (Go)
 
-## 4. Docker Compose Configuration
-
-### 4.1 Two Usage Modes
-
-This project supports two development/deployment modes:
-
-| Mode | Description | Use Case |
-|------|-------------|----------|
-| **Docker Mode** | All services run in Docker containers | Quick start, CI/CD, demos |
-| **Local Dev Mode** | Database in Docker, frontend/backend run locally | Daily development, debugging |
-
-### 4.2 Configuration Files
-
-| File | Purpose |
-|------|---------|
-| `.env.example` | Configuration template (copy to `.env`) |
-| `.env` | Your local configuration (gitignored) |
-| `backend/config.toml` | Application default configuration |
-
-### 4.3 Unified Port Configuration
-
-| Service | Port |
-|---------|------|
-| Backend | 8080 |
-| Frontend | 3000 |
-| PostgreSQL | 5432 |
-| Redis | 6379 |
-
-### 4.4 Quick Start
-
-**First-time setup:**
 ```bash
-make setup
+# Run
+cd backend && go run cmd/server/main.go
+
+# Test
+go test ./...                              # All tests
+go test -v ./internal/domain/inventory/... # Single package
+go test -run TestProductCreate ./...       # Single test by name
+go test -cover ./...                       # With coverage
+go test -race ./...                        # Race detection
+
+# Makefile shortcuts
+make test                  # All tests
+make test-unit             # Unit tests only
+make test-coverage         # Generate coverage report
+
+# Migrations
+./bin/migrate up           # Apply migrations
+./bin/migrate down         # Rollback all
+./bin/migrate create <name> "description"  # Create new migration
+
+# API docs regeneration
+make api-docs              # Generates backend/docs/swagger.yaml
 ```
 
-**Docker Mode (all services in containers):**
+### Frontend (React/TypeScript)
+
 ```bash
-make docker-up      # Start all services
-# Access: http://localhost:3000
-# Login:  admin / admin123
-make docker-down    # Stop all services
+cd frontend
+npm run dev                # Start dev server
+npm run build              # Production build
+npm run lint               # ESLint
+npm run lint:fix           # Fix lint issues
+npm run type-check         # TypeScript check
+npm run api:generate       # Regenerate API client from OpenAPI
+
+# Unit tests
+npm run test               # Watch mode
+npm run test:run           # Single run
+npm run test:coverage      # With coverage
 ```
 
-**Local Development Mode:**
+### E2E Testing (Playwright)
+
 ```bash
-make dev            # Start database (postgres + redis)
-make dev-backend    # Terminal 1: Run backend locally
-make dev-frontend   # Terminal 2: Run frontend locally
-make dev-stop       # Stop database
+make e2e                   # Full E2E run (resets DB, runs all)
+make e2e ARGS="tests/e2e/auth/auth.spec.ts"  # Single file
+make e2e ARGS="--project=chromium"           # Single browser
+make e2e-ui                # Playwright UI mode
+make e2e-debug             # Debug mode
+make e2e-local             # Against locally running services
+
+# Database for E2E
+make db-reset              # Clean + migrate + seed
+make db-seed               # Load seed data only
+make db-psql               # Open psql shell
 ```
 
-### 4.5 Environment Variable Overrides
+### Observability
 
-Override any `backend/config.toml` value using `ERP_` prefix:
+```bash
+make otel-up               # Start OpenTelemetry Collector
+make otel-status           # Check OTEL health
+make pyroscope-up          # Start Pyroscope profiler
+make pyroscope-ui          # Open Pyroscope UI
+```
 
+### Load Generator
+
+```bash
+make loadgen-build         # Build loadgen binary
+make loadgen-test          # Run loadgen tests
+```
+
+## Architecture
+
+### Backend DDD Layers (`backend/internal/`)
+
+```
+domain/          # Business logic (entities, value objects, domain services)
+  ├── catalog/   # Product/Category management
+  ├── partner/   # Customer/Supplier management
+  ├── inventory/ # Stock tracking, cost calculation
+  ├── trade/     # Sales/Purchase orders
+  ├── finance/   # Receivables, payables, reconciliation
+  ├── identity/  # User/tenant management
+  └── shared/    # Shared kernel (Money, events, base types)
+
+application/     # Use cases, orchestrates domain objects
+infrastructure/  # External concerns (DB, cache, events, telemetry)
+  ├── persistence/  # GORM repositories
+  ├── event/        # Domain event bus
+  ├── strategy/     # Strategy pattern implementations
+  └── telemetry/    # OpenTelemetry, Pyroscope
+
+interfaces/http/ # HTTP layer
+  ├── handler/   # Gin handlers
+  ├── dto/       # Request/response DTOs
+  ├── middleware/# Auth, tenant, rate limiting
+  └── router/    # Route definitions
+```
+
+### Frontend Structure (`frontend/src/`)
+
+```
+api/         # Auto-generated API client (DO NOT EDIT)
+components/  # Reusable UI components
+  └── common/layout/  # Container, Grid, Flex, Stack, Row
+pages/       # Route pages by feature
+store/       # Zustand state management
+hooks/       # Custom React hooks
+styles/tokens/  # Design tokens (spacing, colors, typography)
+```
+
+## API Development Workflow
+
+1. **Backend**: Add swag annotations to handler
+2. **Generate**: `make api-docs`
+3. **Frontend**: `cd frontend && npm run api:generate`
+4. Files in `frontend/src/api/` are auto-generated - never edit manually
+
+## Key Patterns
+
+### Multi-tenancy
+
+All entities include `TenantID`. Middleware extracts tenant from JWT and injects into context.
+
+### Domain Events
+
+Contexts communicate via events (e.g., `OrderConfirmed` → inventory lock). Events stored in outbox table for reliability.
+
+### Strategy Pattern
+
+Business logic variants (cost calculation, product validation) use strategy interfaces in `infrastructure/strategy/`.
+
+## Frontend Guidelines
+
+- **Design tokens**: Use CSS variables (`--spacing-4`, `--color-primary`)
+- **Responsive**: Mobile-first (375px → 768px → 1024px → 1440px)
+- **UI library**: Semi Design (`@douyinfe/semi-ui-19`)
+- **State**: Zustand for global, React Hook Form for forms
+- **Accessibility**: WCAG 2.1 AA (4.5:1 contrast, 44px touch targets)
+
+## Testing Requirements
+
+- **Coverage threshold**: 80%
+- **E2E**: Real database, no mocking
+- **Backend**: testify assertions, sqlmock for DB
+- **Frontend**: Vitest + React Testing Library
+
+## Environment Configuration
+
+Override `backend/config.toml` with `ERP_` prefix:
 ```bash
 ERP_DATABASE_PASSWORD=secret
-ERP_JWT_SECRET=my-secret-key
+ERP_JWT_SECRET=my-secret
 ERP_LOG_LEVEL=debug
 ```
 
-**Mapping:** `ERP_DATABASE_HOST` → `[database] host` in TOML
+## Ports
 
----
-
-## 5. API Contract & Code Generation
-
-### 5.1 Overview
-
-This project uses **OpenAPI 3.0** specification as the single source of truth for API contracts. Frontend TypeScript SDK is auto-generated from the OpenAPI spec, reducing maintenance effort and ensuring type safety.
-
-### 5.2 Technology Stack
-
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| Spec Generation | swaggo/swag | Generate OpenAPI from Go annotations |
-| Spec Location | `backend/docs/openapi.yaml` | Single source of truth |
-| Client Generator | orval | Generate TypeScript axios client |
-| Generated SDK | `frontend/src/api/` | Auto-generated, DO NOT edit manually |
-
-### 5.3 Backend: Writing OpenAPI Annotations
-
-Every HTTP handler MUST include swag annotations:
-
-```go
-// CreateProduct godoc
-// @Summary      Create a new product
-// @Description  Create a new product in the catalog
-// @Tags         products
-// @Accept       json
-// @Produce      json
-// @Param        request body dto.CreateProductRequest true "Product creation request"
-// @Success      201 {object} dto.Response{data=dto.ProductResponse}
-// @Failure      400 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      401 {object} dto.Response{error=dto.ErrorInfo}
-// @Failure      500 {object} dto.Response{error=dto.ErrorInfo}
-// @Security     BearerAuth
-// @Router       /products [post]
-func (h *ProductHandler) Create(c *gin.Context) {
-    // implementation
-}
-```
-
-**Required annotations:**
-- `@Summary` - Brief description (shown in UI)
-- `@Description` - Detailed description
-- `@Tags` - API grouping (products, customers, orders, etc.)
-- `@Accept` / `@Produce` - Content types (usually json)
-- `@Param` - Request parameters (path, query, body)
-- `@Success` / `@Failure` - Response schemas with status codes
-- `@Security` - Authentication requirement
-- `@Router` - HTTP method and path
-
-### 5.4 Backend: Generating OpenAPI Spec
-
-```bash
-# Generate OpenAPI spec from annotations
-make api-docs
-
-# Output files:
-# - backend/docs/swagger.yaml (OpenAPI spec)
-# - backend/docs/swagger.json (OpenAPI spec)
-# - backend/docs/docs.go (Go embed file)
-```
-
-### 5.5 Frontend: Generating TypeScript SDK
-
-```bash
-# Generate SDK from OpenAPI spec
-cd frontend
-npx orval
-
-# Output: src/api/ directory with typed axios client
-```
-
-**orval.config.ts** (frontend root):
-```typescript
-import { defineConfig } from 'orval'
-
-export default defineConfig({
-  erp: {
-    input: '../backend/docs/swagger.yaml',
-    output: {
-      mode: 'tags-split',
-      target: './src/api',
-      schemas: './src/api/models',
-      client: 'axios',
-      override: {
-        mutator: {
-          path: './src/services/axios-instance.ts',
-          name: 'axiosInstance',
-        },
-      },
-    },
-  },
-})
-```
-
-### 5.6 Workflow
-
-1. **Backend developer** adds/modifies API handler with swag annotations
-2. **Run** `make api-docs` to regenerate OpenAPI spec
-3. **Run** `npm run api:generate` in frontend to regenerate SDK
-4. **Frontend developer** uses typed SDK with full autocomplete
-
-### 5.7 Rules
-
-- **NEVER manually edit** files in `frontend/src/api/` - they are auto-generated
-- **ALWAYS regenerate SDK** after backend API changes
-- **ALWAYS include** all swag annotations for new handlers
-- **CI should verify** OpenAPI spec is up-to-date with code
-- **Review generated SDK** in PR to catch breaking changes
-
----
-
-## 6. E2E Testing Specification
-
-### 6.1 Test Environment
-
-All E2E tests use unified ports:
-
-| Component | Port |
-|-----------|------|
+| Service | Port |
+|---------|------|
 | Frontend | 3000 |
 | Backend | 8080 |
 | PostgreSQL | 5432 |
 | Redis | 6379 |
-
-### 6.2 E2E Testing Standards
-
-1. **No Mocking**: Integration tests must connect to real database, API responses must NOT be mocked
-2. **Data Isolation**: Each test case should have independent test data to avoid side effects
-3. **Complete Flow**: Tests must cover the full workflow from UI operations to database changes
-4. **Screenshots/Videos**: Failed test cases must automatically capture screenshots, key flows should be recorded
-5. **Multi-Browser**: Must cover at least Chrome
-6. **Responsive**: Test both desktop and mobile viewports
-
-### 6.3 Integration Test Acceptance Criteria
-
-A completed integration (INT) task must satisfy:
-- [ ] Docker environment starts successfully
-- [ ] Seed data (`seed-data.sql`) loads completely
-- [ ] Playwright E2E tests pass at 100% rate
-- [ ] Tests cover all scenarios described in requirements
-- [ ] HTML test report is generated
-- [ ] No flaky tests (stable pass after 3 consecutive runs)
-
-### 6.4 Test Commands
-
-```bash
-# Run E2E tests (resets environment, runs all tests)
-make e2e
-
-# Run E2E tests with Playwright UI (requires local services)
-make e2e-ui
-
-# Run E2E tests in debug mode
-make e2e-debug
-
-# Run specific test file
-make e2e ARGS="tests/e2e/auth/auth.spec.ts"
-
-# Run only Chromium browser
-make e2e ARGS="--project=chromium"
-
-# Run tests against locally running services
-make e2e-local
-```
-
-### 6.5 Database Operations
-
-```bash
-# Load seed data
-make db-seed
-
-# Reset database (clean + migrate + seed)
-make db-reset
-
-# Open psql shell
-make db-psql
-```
-
-**Notes**:
-- E2E tests automatically reset the database before running
-- Default: 16 parallel workers
-- CI mode (CI=true): 2 workers with 2 retries on failure

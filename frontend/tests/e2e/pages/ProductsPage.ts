@@ -20,6 +20,7 @@ export class ProductsPage extends BasePage {
   readonly tableRows: Locator
   readonly bulkActionBar: Locator
   readonly emptyState: Locator
+  readonly successMessage: Locator
 
   // Form page elements
   readonly codeInput: Locator
@@ -39,7 +40,8 @@ export class ProductsPage extends BasePage {
 
     // List page elements
     this.pageTitle = page.locator('.products-header h4, .product-form-header h4')
-    this.searchInput = page.locator('.semi-input-wrapper input[placeholder*="搜索"]')
+    // Search input uses TableToolbar component with class .table-toolbar-search
+    this.searchInput = page.locator('.table-toolbar-search input')
     this.statusFilter = page.locator('.semi-select').filter({ hasText: /状态/ })
     this.addProductButton = page.locator('button').filter({ hasText: '新增商品' })
     this.refreshButton = page.locator('button').filter({ hasText: '刷新' })
@@ -47,6 +49,8 @@ export class ProductsPage extends BasePage {
     this.tableRows = page.locator('.semi-table-tbody .semi-table-row')
     this.bulkActionBar = page.locator('.bulk-action-bar')
     this.emptyState = page.locator('.semi-table-empty')
+    // Toast message for success notifications
+    this.successMessage = page.locator('.semi-toast-content')
 
     // Form elements - using name attributes set by React Hook Form
     this.codeInput = page.locator('input[name="code"]')
@@ -76,7 +80,7 @@ export class ProductsPage extends BasePage {
    */
   async navigateToCreate(): Promise<void> {
     await this.goto('/catalog/products/new')
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   /**
@@ -84,7 +88,7 @@ export class ProductsPage extends BasePage {
    */
   async navigateToEdit(productId: string): Promise<void> {
     await this.goto(`/catalog/products/${productId}/edit`)
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   /**

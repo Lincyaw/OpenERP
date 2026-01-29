@@ -314,7 +314,20 @@ export default function PayablesPage() {
         sortable: true,
         render: (number: unknown, record: PayableRow) => (
           <div className="payable-number-cell">
-            <span className="payable-number">{(number as string) || '-'}</span>
+            <span
+              className="payable-number table-cell-link"
+              onClick={() => record.id && navigate(`/finance/payables/${record.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  if (record.id) navigate(`/finance/payables/${record.id}`)
+                }
+              }}
+              role="link"
+              tabIndex={0}
+            >
+              {(number as string) || '-'}
+            </span>
             {isOverdue(record) && (
               <Tooltip content={t('payables.tooltip.overdue')}>
                 <span style={{ display: 'inline-flex' }}>

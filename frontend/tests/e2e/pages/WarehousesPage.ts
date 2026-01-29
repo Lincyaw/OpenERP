@@ -94,7 +94,7 @@ export class WarehousesPage extends BasePage {
    */
   async navigateToCreate(): Promise<void> {
     await this.goto('/partner/warehouses/new')
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   /**
@@ -102,7 +102,7 @@ export class WarehousesPage extends BasePage {
    */
   async navigateToEdit(warehouseId: string): Promise<void> {
     await this.goto(`/partner/warehouses/${warehouseId}/edit`)
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   /**

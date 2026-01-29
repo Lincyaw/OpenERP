@@ -1,6 +1,7 @@
 package event
 
 import (
+	"github.com/erp/backend/internal/domain/featureflag"
 	"github.com/erp/backend/internal/domain/finance"
 	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/trade"
@@ -116,4 +117,14 @@ func RegisterAllEvents(serializer *EventSerializer) {
 	// Finance domain - Payment Gateway events
 	serializer.Register("GatewayPaymentCompleted", &finance.GatewayPaymentCompletedEvent{})
 	serializer.Register("GatewayRefundCompleted", &finance.GatewayRefundCompletedEvent{})
+
+	// Feature Flag domain events
+	serializer.Register(featureflag.EventTypeFlagCreated, &featureflag.FlagCreatedEvent{})
+	serializer.Register(featureflag.EventTypeFlagUpdated, &featureflag.FlagUpdatedEvent{})
+	serializer.Register(featureflag.EventTypeFlagEnabled, &featureflag.FlagEnabledEvent{})
+	serializer.Register(featureflag.EventTypeFlagDisabled, &featureflag.FlagDisabledEvent{})
+	serializer.Register(featureflag.EventTypeFlagArchived, &featureflag.FlagArchivedEvent{})
+	serializer.Register(featureflag.EventTypeOverrideCreated, &featureflag.OverrideCreatedEvent{})
+	serializer.Register(featureflag.EventTypeOverrideRemoved, &featureflag.OverrideRemovedEvent{})
+	serializer.Register(featureflag.EventTypeOverrideUpdated, &featureflag.OverrideUpdatedEvent{})
 }

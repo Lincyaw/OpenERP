@@ -74,12 +74,50 @@ export const test = base.extend<{
   },
 
   /**
-   * Authenticated page fixture - logs in as admin before test
+   * Authenticated page fixture - ensures user is logged in before test
+   * If storage state is already authenticated, skips login
    */
   authenticatedPage: async ({ page }, use) => {
     const loginPage = new LoginPage(page)
-    await loginPage.navigate()
-    await loginPage.loginAndWait(TEST_USERS.admin.username, TEST_USERS.admin.password)
+
+    // Check if already authenticated via storage state
+    await page.goto('/')
+    await page.waitForLoadState('domcontentloaded')
+
+    // Give time for any redirects to complete
+    await page.waitForTimeout(500)
+
+    const currentUrl = page.url()
+    const isOnLogin = currentUrl.includes('/login')
+
+    if (isOnLogin) {
+      // Not authenticated, need to login
+      await loginPage.login(TEST_USERS.admin.username, TEST_USERS.admin.password)
+
+      // Wait for navigation away from login page
+      await page
+        .waitForFunction(() => !window.location.pathname.includes('/login'), { timeout: 15000 })
+        .catch(() => {
+          // Navigation might have failed - continue to check auth state
+        })
+
+      // Wait for auth state to be persisted
+      await page.waitForFunction(
+        () => {
+          const user = window.localStorage.getItem('user')
+          const erpAuth = window.localStorage.getItem('erp-auth')
+          if (!user || !erpAuth) return false
+          try {
+            const parsed = JSON.parse(erpAuth)
+            return parsed?.state?.user !== null && parsed?.state?.user !== undefined
+          } catch {
+            return false
+          }
+        },
+        { timeout: 10000 }
+      )
+    }
+
     await use(loginPage)
   },
 

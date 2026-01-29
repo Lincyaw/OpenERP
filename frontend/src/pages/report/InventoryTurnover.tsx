@@ -766,7 +766,7 @@ export default function InventoryTurnoverPage() {
             <Table
               columns={columns}
               dataSource={filteredTurnovers}
-              rowKey="product_id"
+              rowKey={(record, index) => `${record.product_id}-${index}`}
               pagination={{
                 pageSize: 20,
                 showSizeChanger: true,

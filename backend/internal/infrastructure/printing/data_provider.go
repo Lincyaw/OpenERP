@@ -49,6 +49,10 @@ type DocumentMeta struct {
 	UpdatedAt   time.Time        `json:"updatedAt"`
 	CreatedBy   string           `json:"createdBy"`
 	Remark      string           `json:"remark"`
+
+	// Formatted fields for templates
+	CreatedAtFormatted string `json:"createdAtFormatted"`
+	UpdatedAtFormatted string `json:"updatedAtFormatted"`
 }
 
 // CompanyInfo contains tenant/company information for printing
@@ -404,6 +408,94 @@ type StockTakingItemData struct {
 	SystemQuantityFormatted string `json:"systemQuantityFormatted"`
 	ActualQuantityFormatted string `json:"actualQuantityFormatted"`
 	VarianceFormatted       string `json:"varianceFormatted"`
+}
+
+// =============================================================================
+// Sales Return Data
+// =============================================================================
+
+// SalesReturnData represents sales return data for template rendering
+type SalesReturnData struct {
+	ID               uuid.UUID             `json:"id"`
+	ReturnNumber     string                `json:"returnNumber"`
+	SalesOrderNumber string                `json:"salesOrderNumber"`
+	Customer         CustomerInfo          `json:"customer"`
+	Warehouse        *WarehouseInfo        `json:"warehouse"`
+	Items            []SalesReturnItemData `json:"items"`
+	TotalRefund      decimal.Decimal       `json:"totalRefund"`
+	TotalQuantity    decimal.Decimal       `json:"totalQuantity"`
+	ItemCount        int                   `json:"itemCount"`
+	Status           string                `json:"status"`
+	Reason           string                `json:"reason"`
+	ApprovedAt       *time.Time            `json:"approvedAt"`
+	CompletedAt      *time.Time            `json:"completedAt"`
+	Remark           string                `json:"remark"`
+
+	// Formatted fields
+	TotalRefundFormatted string `json:"totalRefundFormatted"`
+	TotalRefundChinese   string `json:"totalRefundChinese"`
+}
+
+// SalesReturnItemData represents a line item in sales return
+type SalesReturnItemData struct {
+	Index       int             `json:"index"`
+	ProductID   uuid.UUID       `json:"productId"`
+	ProductCode string          `json:"productCode"`
+	ProductName string          `json:"productName"`
+	Unit        string          `json:"unit"`
+	Quantity    decimal.Decimal `json:"quantity"`
+	UnitPrice   decimal.Decimal `json:"unitPrice"`
+	Amount      decimal.Decimal `json:"amount"`
+	Reason      string          `json:"reason"`
+
+	// Formatted fields
+	QuantityFormatted     string `json:"quantityFormatted"`
+	UnitPriceFormatted    string `json:"unitPriceFormatted"`
+	RefundAmountFormatted string `json:"refundAmountFormatted"`
+}
+
+// =============================================================================
+// Purchase Return Data
+// =============================================================================
+
+// PurchaseReturnData represents purchase return data for template rendering
+type PurchaseReturnData struct {
+	ID                  uuid.UUID                `json:"id"`
+	ReturnNumber        string                   `json:"returnNumber"`
+	PurchaseOrderNumber string                   `json:"purchaseOrderNumber"`
+	Supplier            SupplierInfo             `json:"supplier"`
+	Warehouse           *WarehouseInfo           `json:"warehouse"`
+	Items               []PurchaseReturnItemData `json:"items"`
+	TotalRefund         decimal.Decimal          `json:"totalRefund"`
+	TotalQuantity       decimal.Decimal          `json:"totalQuantity"`
+	ItemCount           int                      `json:"itemCount"`
+	Status              string                   `json:"status"`
+	Reason              string                   `json:"reason"`
+	ApprovedAt          *time.Time               `json:"approvedAt"`
+	CompletedAt         *time.Time               `json:"completedAt"`
+	Remark              string                   `json:"remark"`
+
+	// Formatted fields
+	TotalRefundFormatted string `json:"totalRefundFormatted"`
+	TotalRefundChinese   string `json:"totalRefundChinese"`
+}
+
+// PurchaseReturnItemData represents a line item in purchase return
+type PurchaseReturnItemData struct {
+	Index       int             `json:"index"`
+	ProductID   uuid.UUID       `json:"productId"`
+	ProductCode string          `json:"productCode"`
+	ProductName string          `json:"productName"`
+	Unit        string          `json:"unit"`
+	Quantity    decimal.Decimal `json:"quantity"`
+	UnitPrice   decimal.Decimal `json:"unitPrice"`
+	Amount      decimal.Decimal `json:"amount"`
+	Reason      string          `json:"reason"`
+
+	// Formatted fields
+	QuantityFormatted     string `json:"quantityFormatted"`
+	UnitPriceFormatted    string `json:"unitPriceFormatted"`
+	RefundAmountFormatted string `json:"refundAmountFormatted"`
 }
 
 // =============================================================================

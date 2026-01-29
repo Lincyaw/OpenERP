@@ -453,8 +453,21 @@ export default function PurchaseReturnsPage() {
         dataIndex: 'return_number',
         width: 150,
         sortable: true,
-        render: (returnNumber: unknown) => (
-          <span className="return-number">{(returnNumber as string) || '-'}</span>
+        render: (returnNumber: unknown, record: PurchaseReturn) => (
+          <span
+            className="return-number table-cell-link"
+            onClick={() => record.id && navigate(`/trade/purchase-returns/${record.id}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                if (record.id) navigate(`/trade/purchase-returns/${record.id}`)
+              }
+            }}
+            role="link"
+            tabIndex={0}
+          >
+            {(returnNumber as string) || '-'}
+          </span>
         ),
       },
       {

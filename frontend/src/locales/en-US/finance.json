@@ -670,5 +670,89 @@
   },
   "common": {
     "loading": "Loading..."
+  },
+  "receivableDetail": {
+    "title": "Receivable Details",
+    "back": "Back",
+    "notExist": "Receivable not found",
+    "notExistDesc": "The receivable record does not exist or has been deleted",
+    "basicInfo": {
+      "title": "Basic Information",
+      "receivableNumber": "Document No.",
+      "customerName": "Customer Name",
+      "sourceDocument": "Source Document",
+      "sourceType": "Source Type",
+      "status": "Status",
+      "dueDate": "Due Date",
+      "createdAt": "Created At",
+      "remark": "Remark",
+      "viewSource": "View Source"
+    },
+    "amount": {
+      "title": "Amount Summary",
+      "totalAmount": "Total Amount",
+      "paidAmount": "Paid Amount",
+      "outstandingAmount": "Outstanding Amount"
+    },
+    "paymentRecords": {
+      "title": "Payment History",
+      "columns": {
+        "index": "#",
+        "amount": "Amount",
+        "appliedAt": "Applied At",
+        "remark": "Remark"
+      },
+      "empty": "No payment records"
+    },
+    "actions": {
+      "refresh": "Refresh"
+    },
+    "messages": {
+      "notExist": "Receivable not found",
+      "fetchError": "Failed to fetch receivable details",
+      "sourceNotNavigable": "Cannot navigate to source document"
+    }
+  },
+  "payableDetail": {
+    "title": "Payable Details",
+    "back": "Back",
+    "notExist": "Payable not found",
+    "notExistDesc": "The payable record does not exist or has been deleted",
+    "basicInfo": {
+      "title": "Basic Information",
+      "payableNumber": "Document No.",
+      "supplierName": "Supplier Name",
+      "sourceDocument": "Source Document",
+      "sourceType": "Source Type",
+      "status": "Status",
+      "dueDate": "Due Date",
+      "createdAt": "Created At",
+      "remark": "Remark",
+      "viewSource": "View Source"
+    },
+    "amount": {
+      "title": "Amount Summary",
+      "totalAmount": "Total Amount",
+      "paidAmount": "Paid Amount",
+      "outstandingAmount": "Outstanding Amount"
+    },
+    "paymentRecords": {
+      "title": "Payment History",
+      "columns": {
+        "index": "#",
+        "amount": "Amount",
+        "appliedAt": "Applied At",
+        "remark": "Remark"
+      },
+      "empty": "No payment records"
+    },
+    "actions": {
+      "refresh": "Refresh"
+    },
+    "messages": {
+      "notExist": "Payable not found",
+      "fetchError": "Failed to fetch payable details",
+      "sourceNotNavigable": "Cannot navigate to source document"
+    }
   }
 }

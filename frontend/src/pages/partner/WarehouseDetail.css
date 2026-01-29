@@ -1,0 +1,104 @@
+/* Warehouse Detail Page Styles */
+
+.warehouse-detail-page {
+  padding: var(--spacing-6);
+}
+
+/* Loading container */
+.warehouse-detail-page .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+/* Page header */
+.warehouse-detail-page .page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-6);
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+}
+
+.warehouse-detail-page .header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.warehouse-detail-page .page-title {
+  margin: 0;
+}
+
+.warehouse-detail-page .header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+/* Name card */
+.warehouse-detail-page .warehouse-name-card {
+  margin-bottom: var(--spacing-6);
+}
+
+.warehouse-name-display {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: var(--spacing-4);
+}
+
+.warehouse-code {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-2);
+  background: var(--semi-color-fill-0);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--semi-border-radius-small);
+  width: fit-content;
+}
+
+.warehouse-name {
+  margin: 0;
+  color: var(--semi-color-text-0);
+}
+
+/* Info cards */
+.warehouse-detail-page .info-card {
+  margin-bottom: var(--spacing-6);
+}
+
+.warehouse-detail-page .info-card .semi-card-header {
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid var(--semi-color-border);
+}
+
+.warehouse-basic-info,
+.warehouse-contact-info,
+.warehouse-address-info,
+.warehouse-timestamps {
+  padding: var(--spacing-4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .warehouse-detail-page {
+    padding: var(--spacing-4);
+  }
+
+  .warehouse-detail-page .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .warehouse-detail-page .header-left {
+    flex-wrap: wrap;
+  }
+
+  .warehouse-detail-page .header-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

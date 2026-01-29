@@ -25,9 +25,29 @@ export class BasePage {
 
   /**
    * Wait for page to be fully loaded
+   * Uses a robust strategy that works with apps having persistent connections (SSE/WebSocket)
    */
   async waitForPageLoad(): Promise<void> {
-    await this.page.waitForLoadState('networkidle')
+    // Wait for DOM to be loaded
+    await this.page.waitForLoadState('domcontentloaded')
+
+    // Wait for main content area to be visible (Semi Design layout)
+    await this.page
+      .locator('.semi-layout-content, main, [role="main"], .page-content')
+      .first()
+      .waitFor({ state: 'visible', timeout: 10000 })
+      .catch(() => {
+        // Content might already be visible or use different structure
+      })
+
+    // Wait for any loading spinners to disappear
+    await this.page
+      .locator('.semi-spin-spinning, .loading-spinner, [data-testid="loading"]')
+      .first()
+      .waitFor({ state: 'hidden', timeout: 5000 })
+      .catch(() => {
+        // Spinner might not exist or already hidden
+      })
   }
 
   /**

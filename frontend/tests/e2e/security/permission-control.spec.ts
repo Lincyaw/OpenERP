@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures'
-import { login, getApiToken, clearAuth } from '../utils/auth'
+import { login, getApiToken, clearAuth, getApiBaseUrl } from '../utils/auth'
 
 /**
  * Permission Control E2E Tests (SMOKE-006)
@@ -29,7 +29,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
   test.describe('Role-Based Menu Visibility', () => {
     test('admin should see all menu items including System menu', async ({ page }) => {
       await login(page, 'admin')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Admin should see all main menus
@@ -70,7 +70,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
     test('sales user should see sales-related menus but NOT System menu', async ({ page }) => {
       await login(page, 'sales')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Take screenshot of sales menu
@@ -109,7 +109,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
     test('warehouse user should see inventory-related menus', async ({ page }) => {
       await login(page, 'warehouse')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Take screenshot of warehouse menu
@@ -143,7 +143,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
     test('finance user should see finance-related menus', async ({ page }) => {
       await login(page, 'finance')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Take screenshot of finance menu
@@ -178,7 +178,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Navigate to sales orders (should have access)
       await page.goto('/trade/sales')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Should not be redirected to 403 or login
@@ -206,7 +206,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Navigate to customers (should have access)
       await page.goto('/partner/customers')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       const url = page.url()
@@ -225,7 +225,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
       // Try to access finance expenses (should NOT have access - this is accountant-only)
       // Note: Sales users CAN access receivables (/finance/receivables) per business requirements
       await page.goto('/finance/expenses')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       const url = page.url()
@@ -260,7 +260,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Try to access system users (admin only)
       await page.goto('/system/users')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       const url = page.url()
@@ -288,7 +288,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Navigate to inventory (should have access)
       await page.goto('/inventory/stock')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       const url = page.url()
@@ -306,7 +306,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Try to create sales order (sales role only)
       await page.goto('/trade/sales/new')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       const url = page.url()
@@ -335,7 +335,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Navigate to receivables (should have access)
       await page.goto('/finance/receivables')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       const url = page.url()
@@ -353,7 +353,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Navigate to expenses (should have access)
       await page.goto('/finance/expenses')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       const url = page.url()
@@ -371,7 +371,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Try to access inventory stock-taking (warehouse role only)
       await page.goto('/inventory/stock-taking')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       const url = page.url()
@@ -400,7 +400,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Admin should be able to access system users
       await page.goto('/system/users')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       const url = page.url()
@@ -426,7 +426,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Try to access payables API (sales users should NOT have access to payables)
       // Note: Sales users CAN access receivables and expenses per seed data permissions
-      const response = await page.request.get('http://erp-backend:8080/api/v1/finance/payables', {
+      const response = await page.request.get(`${getApiBaseUrl()}/api/v1/finance/payables`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -443,26 +443,23 @@ test.describe('Permission Control (SMOKE-006)', () => {
       const token = await getApiToken(page, 'warehouse')
 
       // Try to create a sales order via API (correct path with domain prefix)
-      const response = await page.request.post(
-        'http://erp-backend:8080/api/v1/trade/sales-orders',
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          data: {
-            customer_id: '50000000-0000-0000-0000-000000000001',
-            warehouse_id: '52000000-0000-0000-0000-000000000001',
-            items: [
-              {
-                product_id: '40000000-0000-0000-0000-000000000001',
-                quantity: 1,
-                unit_price: 8999,
-              },
-            ],
-          },
-        }
-      )
+      const response = await page.request.post(`${getApiBaseUrl()}/api/v1/trade/sales-orders`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        data: {
+          customer_id: '50000000-0000-0000-0000-000000000001',
+          warehouse_id: '52000000-0000-0000-0000-000000000001',
+          items: [
+            {
+              product_id: '40000000-0000-0000-0000-000000000001',
+              quantity: 1,
+              unit_price: 8999,
+            },
+          ],
+        },
+      })
 
       console.log(`Warehouse creating sales order: ${response.status()}`)
       // Should return 401, 403, 400, or 429 (rate limited)
@@ -473,21 +470,18 @@ test.describe('Permission Control (SMOKE-006)', () => {
       const token = await getApiToken(page, 'finance')
 
       // Try to adjust inventory via API (correct path with domain prefix)
-      const response = await page.request.post(
-        'http://erp-backend:8080/api/v1/inventory/stock/adjust',
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          data: {
-            warehouse_id: '52000000-0000-0000-0000-000000000001',
-            product_id: '40000000-0000-0000-0000-000000000001',
-            quantity: 10,
-            reason: 'Test adjustment',
-          },
-        }
-      )
+      const response = await page.request.post(`${getApiBaseUrl()}/api/v1/inventory/stock/adjust`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        data: {
+          warehouse_id: '52000000-0000-0000-0000-000000000001',
+          product_id: '40000000-0000-0000-0000-000000000001',
+          quantity: 10,
+          reason: 'Test adjustment',
+        },
+      })
 
       console.log(`Finance adjusting inventory: ${response.status()}`)
       // Should return 401, 403, 404, 405, or 429 (rate limited)
@@ -498,7 +492,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
       const token = await getApiToken(page, 'admin')
 
       // Admin should be able to access users list (correct path with domain prefix)
-      const response = await page.request.get('http://erp-backend:8080/api/v1/identity/users', {
+      const response = await page.request.get(`${getApiBaseUrl()}/api/v1/identity/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -513,7 +507,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
       const token = await getApiToken(page, 'sales')
 
       // Sales user should be able to access customers list (correct path with domain prefix)
-      const response = await page.request.get('http://erp-backend:8080/api/v1/partner/customers', {
+      const response = await page.request.get(`${getApiBaseUrl()}/api/v1/partner/customers`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -543,7 +537,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Navigate to sales orders
       await page.goto('/trade/sales')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1500)
 
       // The sales user should see sales orders filtered by created_by
@@ -569,7 +563,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Navigate to inventory
       await page.goto('/inventory/stock')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1500)
 
       // Warehouse user should see inventory items
@@ -592,7 +586,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Navigate to receivables
       await page.goto('/finance/receivables')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1500)
 
       await page.screenshot({
@@ -612,7 +606,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Admin should see all sales orders
       await page.goto('/trade/sales')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Check if page loaded successfully (not redirected to 403 or login)
@@ -625,7 +619,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Admin should see all receivables
       await page.goto('/finance/receivables')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Check if page loaded successfully
@@ -661,7 +655,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Step 1: Frontend should block/redirect
       await page.goto('/system/users')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1500)
 
       const frontendUrl = page.url()
@@ -677,7 +671,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Step 2: Backend should also return 403
       const token = await getApiToken(page, 'sales')
-      const response = await page.request.get('http://erp-backend:8080/api/v1/identity/users', {
+      const response = await page.request.get(`${getApiBaseUrl()}/api/v1/identity/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -700,7 +694,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Step 1: Frontend should allow access to customers
       await page.goto('/partner/customers')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       const frontendUrl = page.url()
@@ -711,7 +705,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Step 2: Backend should also allow access (correct path with domain prefix)
       const token = await getApiToken(page, 'sales')
-      const response = await page.request.get('http://erp-backend:8080/api/v1/partner/customers', {
+      const response = await page.request.get(`${getApiBaseUrl()}/api/v1/partner/customers`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -730,7 +724,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
   test.describe('Permission Edge Cases', () => {
     test('unauthenticated request should return 401', async ({ page }) => {
       // Make API request without authentication (correct path with domain prefix)
-      const response = await page.request.get('http://erp-backend:8080/api/v1/partner/customers')
+      const response = await page.request.get(`${getApiBaseUrl()}/api/v1/partner/customers`)
 
       console.log(`Unauthenticated request: ${response.status()}`)
       expect(response.status()).toBe(401)
@@ -738,7 +732,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
     test('invalid token should return 401', async ({ page }) => {
       // Make API request with invalid token (correct path with domain prefix)
-      const response = await page.request.get('http://erp-backend:8080/api/v1/partner/customers', {
+      const response = await page.request.get(`${getApiBaseUrl()}/api/v1/partner/customers`, {
         headers: {
           Authorization: 'Bearer invalid_token_12345',
         },
@@ -758,7 +752,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
 
       // Try to access protected route
       await page.goto('/trade/sales')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Should be redirected to login or show login form
@@ -812,7 +806,7 @@ test.describe('Permission Control (SMOKE-006)', () => {
         // Login as this role
         try {
           await login(page, role.type)
-          await page.waitForLoadState('networkidle')
+          await page.waitForLoadState('domcontentloaded')
           await page.waitForTimeout(1000)
 
           // Take screenshot of dashboard/home

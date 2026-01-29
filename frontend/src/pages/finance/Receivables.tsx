@@ -314,7 +314,20 @@ export default function ReceivablesPage() {
         sortable: true,
         render: (number: unknown, record: ReceivableRow) => (
           <div className="receivable-number-cell">
-            <span className="receivable-number">{(number as string) || '-'}</span>
+            <span
+              className="receivable-number table-cell-link"
+              onClick={() => record.id && navigate(`/finance/receivables/${record.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  if (record.id) navigate(`/finance/receivables/${record.id}`)
+                }
+              }}
+              role="link"
+              tabIndex={0}
+            >
+              {(number as string) || '-'}
+            </span>
             {isOverdue(record) && (
               <Tooltip content={t('receivables.tooltip.overdue')}>
                 <span style={{ display: 'inline-flex' }}>

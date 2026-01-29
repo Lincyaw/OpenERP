@@ -28,6 +28,7 @@ import (
 	"github.com/erp/backend/internal/infrastructure/persistence"
 	infraPlugin "github.com/erp/backend/internal/infrastructure/plugin"
 	infraPrinting "github.com/erp/backend/internal/infrastructure/printing"
+	"github.com/erp/backend/internal/infrastructure/printing/providers"
 	"github.com/erp/backend/internal/infrastructure/scheduler"
 	infraStrategy "github.com/erp/backend/internal/infrastructure/strategy"
 	"github.com/erp/backend/internal/infrastructure/telemetry"
@@ -470,12 +471,23 @@ func main() {
 		log.Warn("Failed to initialize PDF storage, printing features may be limited", zap.Error(err))
 	}
 
+	// Initialize DataProviderRegistry for print templates
+	dataProviderRegistry := providers.NewDataProviderRegistry()
+	dataProviderRegistry.Register(providers.NewSalesOrderProvider(salesOrderRepo, customerRepo, warehouseRepo))
+	dataProviderRegistry.Register(providers.NewPurchaseOrderProvider(purchaseOrderRepo, supplierRepo, warehouseRepo))
+	dataProviderRegistry.Register(providers.NewSalesReturnProvider(salesReturnRepo, customerRepo, warehouseRepo))
+	dataProviderRegistry.Register(providers.NewPurchaseReturnProvider(purchaseReturnRepo, supplierRepo, warehouseRepo))
+	dataProviderRegistry.Register(providers.NewReceiptVoucherProvider(receiptVoucherRepo, customerRepo))
+	dataProviderRegistry.Register(providers.NewPaymentVoucherProvider(paymentVoucherRepo, supplierRepo))
+	dataProviderRegistry.Register(providers.NewStockTakingProvider(stockTakingRepo, warehouseRepo))
+
 	printService := printingapp.NewPrintService(
 		printTemplateRepo,
 		printJobRepo,
 		templateEngine,
 		pdfRenderer,
 		pdfStorage,
+		dataProviderRegistry,
 		log,
 	)
 

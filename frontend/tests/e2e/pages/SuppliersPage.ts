@@ -102,7 +102,7 @@ export class SuppliersPage extends BasePage {
    */
   async navigateToCreate(): Promise<void> {
     await this.goto('/partner/suppliers/new')
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   /**
@@ -110,7 +110,7 @@ export class SuppliersPage extends BasePage {
    */
   async navigateToEdit(supplierId: string): Promise<void> {
     await this.goto(`/partner/suppliers/${supplierId}/edit`)
-    await this.page.waitForLoadState('networkidle')
+    await this.page.waitForLoadState('domcontentloaded')
   }
 
   /**

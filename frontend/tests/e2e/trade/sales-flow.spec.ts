@@ -47,7 +47,7 @@ test.describe('Sales Flow E2E Tests', () => {
 
       // Navigate to sales order list
       await page.goto('/trade/sales')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Wait for either table or empty state
       await Promise.race([
@@ -69,7 +69,7 @@ test.describe('Sales Flow E2E Tests', () => {
     test('should navigate to new order form', async ({ page }) => {
       // Navigate to new order page
       await page.goto('/trade/sales/new')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Wait for form to load
       await page.waitForTimeout(2000)
@@ -91,7 +91,7 @@ test.describe('Sales Flow E2E Tests', () => {
 
       // Navigate to new order form
       await page.goto('/trade/sales/new')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Take screenshot of empty form
@@ -164,7 +164,7 @@ test.describe('Sales Flow E2E Tests', () => {
     test('should view existing orders from seed data', async ({ page }) => {
       // Navigate to sales order list
       await page.goto('/trade/sales')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Check if there are any orders in the table
@@ -193,7 +193,7 @@ test.describe('Sales Flow E2E Tests', () => {
     test('should filter orders by status', async ({ page }) => {
       // Navigate to sales order list
       await page.goto('/trade/sales')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Find status filter
@@ -231,7 +231,7 @@ test.describe('Sales Flow E2E Tests', () => {
 
       // Navigate to receivables
       await page.goto('/finance/receivables')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Check if we were redirected to login (session expired)
@@ -276,7 +276,7 @@ test.describe('Sales Flow E2E Tests', () => {
     test('should navigate to new receipt voucher page', async ({ page }) => {
       // Navigate to new receipt voucher
       await page.goto('/finance/receipts/new')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Take screenshot
@@ -306,7 +306,7 @@ test.describe('Sales Flow E2E Tests', () => {
     test('should view order detail page', async ({ page }) => {
       // First, get an order ID from the list
       await page.goto('/trade/sales')
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(2000)
 
       // Check if there are any orders
@@ -360,7 +360,7 @@ test.describe('Smoke Test - Sales Module Navigation', () => {
   for (const pageInfo of salesPages) {
     test(`should load ${pageInfo.name} page`, async ({ page }) => {
       await page.goto(pageInfo.url)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Take screenshot
@@ -396,7 +396,7 @@ test.describe('Smoke Test - Finance Module Navigation', () => {
   for (const pageInfo of financePages) {
     test(`should load ${pageInfo.name} page`, async ({ page }) => {
       await page.goto(pageInfo.url)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
       await page.waitForTimeout(1000)
 
       // Take screenshot

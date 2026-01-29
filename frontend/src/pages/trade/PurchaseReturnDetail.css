@@ -1,0 +1,168 @@
+/* Purchase Return Detail Page Styles */
+
+.purchase-return-detail-page {
+  padding: var(--spacing-6);
+}
+
+/* Loading container */
+.purchase-return-detail-page .loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+/* Page header */
+.purchase-return-detail-page .page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-6);
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+}
+
+.purchase-return-detail-page .header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.purchase-return-detail-page .page-title {
+  margin: 0 !important;
+}
+
+.purchase-return-detail-page .header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+/* Cards */
+.purchase-return-detail-page .info-card,
+.purchase-return-detail-page .items-card,
+.purchase-return-detail-page .timeline-card {
+  margin-bottom: var(--spacing-4);
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+}
+
+/* Return basic info descriptions */
+.purchase-return-detail-page .return-basic-info {
+  background: transparent;
+}
+
+.purchase-return-detail-page .return-basic-info .semi-descriptions-item {
+  padding: var(--spacing-2) 0;
+}
+
+/* Product code styling */
+.purchase-return-detail-page .product-code {
+  font-family: var(--semi-font-family-code);
+  font-size: var(--semi-font-size-small);
+  color: var(--semi-color-text-2);
+}
+
+/* Return quantity styling - highlight the return quantity */
+.purchase-return-detail-page .return-quantity {
+  font-weight: var(--semi-font-weight-medium);
+  color: var(--semi-color-warning);
+}
+
+/* Refund amount styling */
+.purchase-return-detail-page .refund-amount {
+  font-weight: var(--semi-font-weight-medium);
+  color: var(--semi-color-danger);
+}
+
+/* Amount summary section */
+.purchase-return-detail-page .amount-summary {
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--semi-color-border);
+  max-width: 300px;
+  margin-left: auto;
+}
+
+.purchase-return-detail-page .amount-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-2) 0;
+}
+
+.purchase-return-detail-page .amount-row.total-row {
+  padding-top: var(--spacing-3);
+  margin-top: var(--spacing-2);
+  border-top: 1px dashed var(--semi-color-border);
+}
+
+.purchase-return-detail-page .refund-total {
+  font-size: var(--semi-font-size-large);
+  color: var(--semi-color-danger);
+}
+
+/* Status timeline */
+.purchase-return-detail-page .status-timeline {
+  padding: var(--spacing-4) 0;
+}
+
+.purchase-return-detail-page .status-timeline .semi-timeline-item-time {
+  color: var(--semi-color-text-2);
+  font-size: var(--semi-font-size-small);
+}
+
+/* Table adjustments */
+.purchase-return-detail-page .items-card .semi-table-wrapper {
+  border-radius: var(--semi-border-radius-medium);
+  overflow: hidden;
+}
+
+.purchase-return-detail-page .items-card .semi-table-thead > tr > th {
+  background: var(--semi-color-fill-0);
+  font-weight: var(--semi-font-weight-medium);
+}
+
+/* Modal content */
+.purchase-return-detail-page .modal-content {
+  padding: var(--spacing-2) 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .purchase-return-detail-page {
+    padding: var(--spacing-4);
+  }
+
+  .purchase-return-detail-page .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .purchase-return-detail-page .header-left {
+    flex-wrap: wrap;
+  }
+
+  .purchase-return-detail-page .header-right {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .purchase-return-detail-page .amount-summary {
+    max-width: 100%;
+  }
+
+  .purchase-return-detail-page .items-card {
+    overflow-x: auto;
+  }
+}
+
+/* Action button spacing */
+.purchase-return-detail-page .header-right .semi-button {
+  min-width: 80px;
+}
+
+/* Empty state */
+.purchase-return-detail-page .semi-empty {
+  padding: var(--spacing-8) 0;
+}

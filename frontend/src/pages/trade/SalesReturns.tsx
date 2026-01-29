@@ -433,8 +433,21 @@ export default function SalesReturnsPage() {
         dataIndex: 'return_number',
         width: 150,
         sortable: true,
-        render: (returnNumber: unknown) => (
-          <span className="return-number">{(returnNumber as string) || '-'}</span>
+        render: (returnNumber: unknown, record: SalesReturn) => (
+          <span
+            className="return-number table-cell-link"
+            onClick={() => record.id && navigate(`/trade/sales-returns/${record.id}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                if (record.id) navigate(`/trade/sales-returns/${record.id}`)
+              }
+            }}
+            role="link"
+            tabIndex={0}
+          >
+            {(returnNumber as string) || '-'}
+          </span>
         ),
       },
       {

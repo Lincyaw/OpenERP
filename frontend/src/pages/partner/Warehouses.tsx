@@ -341,7 +341,22 @@ export default function WarehousesPage() {
         render: (name: unknown, record: Warehouse) => (
           <div className="warehouse-name-cell">
             <span className="warehouse-name">
-              {(name as string) || '-'}
+              <span
+                className="table-cell-link"
+                onClick={() => {
+                  if (record.id) navigate(`/partner/warehouses/${record.id}`)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    if (record.id) navigate(`/partner/warehouses/${record.id}`)
+                  }
+                }}
+                role="link"
+                tabIndex={0}
+              >
+                {(name as string) || '-'}
+              </span>
               {record.is_default && (
                 <Tag className="default-tag" color="light-blue" size="small">
                   <IconStar size="small" /> {t('warehouses.defaultTag')}
@@ -416,7 +431,7 @@ export default function WarehousesPage() {
         },
       },
     ],
-    [t, formatDate]
+    [t, formatDate, navigate]
   )
 
   // Table row actions
