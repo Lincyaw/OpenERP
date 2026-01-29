@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, Typography, Tag, Toast, Select, Space, Spin, Tooltip } from '@douyinfe/semi-ui-19'
-import { IconRefresh, IconAlertTriangle } from '@douyinfe/semi-icons'
+import {
+  Card,
+  Typography,
+  Tag,
+  Toast,
+  Select,
+  Space,
+  Spin,
+  Tooltip,
+  Banner,
+} from '@douyinfe/semi-ui-19'
+import { IconRefresh, IconAlertTriangle, IconUpload } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -23,6 +33,7 @@ import type {
   HandlerProductListResponse,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
+import { ImportWizard } from '@/components/import'
 import './StockList.css'
 import { createScopedLogger } from '@/utils'
 
@@ -86,6 +97,9 @@ export default function StockListPage() {
   const [searchKeyword, setSearchKeyword] = useState('')
   const [warehouseFilter, setWarehouseFilter] = useState<string>('')
   const [stockStatusFilter, setStockStatusFilter] = useState<string>('')
+
+  // Import wizard state
+  const [importWizardVisible, setImportWizardVisible] = useState(false)
 
   // Warehouse and product options for display
   const [warehouseOptions, setWarehouseOptions] = useState<WarehouseOption[]>([])
@@ -474,6 +488,11 @@ export default function StockListPage() {
 
   return (
     <Container size="full" className="stock-list-page">
+      <Banner
+        type="info"
+        description={t('stock.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
       <Card className="stock-list-card">
         <div className="stock-list-header">
           <Title heading={4} style={{ margin: 0 }}>
@@ -486,6 +505,12 @@ export default function StockListPage() {
           onSearchChange={handleSearch}
           searchPlaceholder={t('stock.searchPlaceholder')}
           secondaryActions={[
+            {
+              key: 'initial-import',
+              label: t('common:actions.import'),
+              icon: <IconUpload />,
+              onClick: () => setImportWizardVisible(true),
+            },
             {
               key: 'refresh',
               label: t('stock.refresh'),
@@ -528,6 +553,14 @@ export default function StockListPage() {
           />
         </Spin>
       </Card>
+
+      {/* Import Wizard Modal */}
+      <ImportWizard
+        entityType="inventory"
+        visible={importWizardVisible}
+        onClose={() => setImportWizardVisible(false)}
+        onSuccess={fetchInventory}
+      />
     </Container>
   )
 }

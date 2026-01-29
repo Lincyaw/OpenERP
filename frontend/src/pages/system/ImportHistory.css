@@ -1,0 +1,44 @@
+.import-history-page {
+  min-height: calc(100vh - var(--header-height, 64px) - var(--spacing-8));
+}
+
+.import-history-card {
+  min-height: 400px;
+}
+
+.import-history-header {
+  margin-bottom: var(--spacing-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.import-filename {
+  font-family: var(--font-family-code, monospace);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.success-count {
+  color: var(--color-success);
+  font-weight: 500;
+}
+
+.error-count {
+  color: var(--color-danger);
+  font-weight: 500;
+}
+
+/* Dark mode support */
+:root[theme-mode='dark'] .import-filename {
+  color: var(--color-text-secondary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .import-history-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+}

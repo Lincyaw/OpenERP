@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, Typography, Tag, Toast, Select, Space, Modal, Spin } from '@douyinfe/semi-ui-19'
-import { IconPlus, IconRefresh } from '@douyinfe/semi-icons'
+import {
+  Card,
+  Typography,
+  Tag,
+  Toast,
+  Select,
+  Space,
+  Modal,
+  Spin,
+  Banner,
+} from '@douyinfe/semi-ui-19'
+import { IconPlus, IconRefresh, IconUpload } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -30,6 +40,7 @@ import type {
   ListCustomersType,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
+import { ImportWizard } from '@/components/import'
 import './Customers.css'
 
 const { Title } = Typography
@@ -114,6 +125,9 @@ export default function CustomersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [typeFilter, setTypeFilter] = useState<string>('')
   const [levelFilter, setLevelFilter] = useState<string>('')
+
+  // Import wizard state
+  const [importWizardVisible, setImportWizardVisible] = useState(false)
 
   // Table state hook
   const { state, handleStateChange, setFilter } = useTableState({
@@ -565,6 +579,11 @@ export default function CustomersPage() {
 
   return (
     <Container size="full" className="customers-page">
+      <Banner
+        type="info"
+        description={t('customers.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
       <Card className="customers-card">
         <div className="customers-header">
           <Title heading={4} style={{ margin: 0 }}>
@@ -582,6 +601,12 @@ export default function CustomersPage() {
             onClick: () => navigate('/partner/customers/new'),
           }}
           secondaryActions={[
+            {
+              key: 'import',
+              label: t('common:actions.import'),
+              icon: <IconUpload />,
+              onClick: () => setImportWizardVisible(true),
+            },
             {
               key: 'refresh',
               label: t('common:actions.refresh'),
@@ -649,6 +674,14 @@ export default function CustomersPage() {
           />
         </Spin>
       </Card>
+
+      {/* Import Wizard Modal */}
+      <ImportWizard
+        entityType="customers"
+        visible={importWizardVisible}
+        onClose={() => setImportWizardVisible(false)}
+        onSuccess={fetchCustomers}
+      />
     </Container>
   )
 }

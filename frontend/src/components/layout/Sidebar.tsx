@@ -45,6 +45,7 @@ import {
   IconLink,
   IconSync,
   IconConnectionPoint1,
+  IconUpload,
   // Logo
   IconGridView,
 } from '@douyinfe/semi-icons'
@@ -111,6 +112,7 @@ const iconMap: Record<string, React.ReactNode> = {
   IconLink: <IconLink />,
   IconSync: <IconSync />,
   IconConnectionPoint1: <IconConnectionPoint1 />,
+  IconUpload: <IconUpload />,
 
   // Logo
   IconGridView: <IconGridView />,
@@ -154,6 +156,7 @@ const titleToI18nKey: Record<string, string> = {
   'Platform Config': 'nav.platformConfig',
   'Platform Sync Status': 'nav.platformSync',
   'Product Mappings': 'nav.productMappings',
+  'Import History': 'nav.importHistory',
   Settings: 'nav.settings',
 }
 

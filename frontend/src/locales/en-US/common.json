@@ -403,8 +403,51 @@
     "platformConfig": "Platform Config",
     "platformSync": "Platform Sync",
     "productMappings": "Product Mappings",
+    "importHistory": "Import History",
     "settings": "Settings",
     "profile": "Profile",
     "notifications": "Notifications"
+  },
+  "importHistory": {
+    "title": "Import History",
+    "description": "View and manage all bulk import operations",
+    "tip": "This page shows the history of all bulk imports. You can view details and download error reports.",
+    "columns": {
+      "id": "Import ID",
+      "entityType": "Entity Type",
+      "filename": "File Name",
+      "status": "Status",
+      "totalRows": "Total Rows",
+      "successRows": "Success",
+      "errorRows": "Errors",
+      "createdBy": "Imported By",
+      "createdAt": "Import Time",
+      "duration": "Duration"
+    },
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed": "Completed",
+      "partial": "Partial Success",
+      "failed": "Failed"
+    },
+    "filters": {
+      "allEntities": "All Entities",
+      "allStatus": "All Status",
+      "dateRange": "Date Range"
+    },
+    "actions": {
+      "viewDetails": "View Details",
+      "downloadErrors": "Download Errors",
+      "retry": "Retry"
+    },
+    "messages": {
+      "fetchError": "Failed to load import history",
+      "noHistory": "No import history found"
+    },
+    "empty": {
+      "title": "No Import History",
+      "description": "Start by importing data from the entity list pages (Products, Customers, Suppliers, Inventory)"
+    }
   }
 }

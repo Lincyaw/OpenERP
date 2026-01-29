@@ -40845,3 +40845,131 @@ Uses backend endpoints:
 === Next Steps ===
 - IMPORT-FE-002: Integrate wizard into entity list pages (Products, Customers, Suppliers)
 - Add more E2E tests for complete import workflow
+
+2026-01-30 - Task ID: IMPORT-FE-002 - Bulk Import Frontend - Import Pages Integration
+
+=== Implementation Details ===
+
+Integrated the ImportWizard component from IMPORT-FE-001 into all relevant entity list pages.
+
+### Files Modified:
+
+**Products Page (frontend/src/pages/catalog/Products.tsx):**
+- Added IconUpload import from @douyinfe/semi-icons
+- Added ImportWizard component import
+- Added importWizardVisible state
+- Added Import button to secondaryActions in TableToolbar
+- Added ImportWizard modal with entityType="products"
+
+**Suppliers Page (frontend/src/pages/partner/Suppliers.tsx):**
+- Added IconUpload import from @douyinfe/semi-icons
+- Added ImportWizard component import
+- Added importWizardVisible state
+- Added Import button to secondaryActions in TableToolbar
+- Added ImportWizard modal with entityType="suppliers"
+
+**Customers Page (frontend/src/pages/partner/Customers.tsx):**
+- Added IconUpload import from @douyinfe/semi-icons
+- Added ImportWizard component import
+- Added importWizardVisible state
+- Added Import button to secondaryActions in TableToolbar
+- Added ImportWizard modal with entityType="customers"
+
+**Inventory Page (frontend/src/pages/inventory/StockList.tsx):**
+- Added IconUpload import from @douyinfe/semi-icons
+- Added ImportWizard component import
+- Added importWizardVisible state
+- Added Import button to secondaryActions in TableToolbar
+- Added ImportWizard modal with entityType="inventory"
+
+### Files Created:
+
+**Import History Page (frontend/src/pages/system/ImportHistory.tsx):**
+- Complete page for viewing import operation history
+- Features:
+  - Pagination and sorting
+  - Filter by entity type
+  - Filter by status (pending, processing, completed, partial, failed)
+  - Status color-coded tags
+  - Entity type color-coded tags
+  - Display of total/success/error row counts
+  - Duration formatting
+  - Download error report action
+  - Empty state with guidance
+
+**Import History CSS (frontend/src/pages/system/ImportHistory.css):**
+- Styling for the Import History page
+- Success/error count highlighting
+- Dark mode support
+- Responsive design
+
+### Route Configuration Updates (frontend/src/router/routes.tsx):
+
+- Added ImportHistoryPage lazy load
+- Added /system/import-history route with:
+  - Title: "Import History"
+  - Icon: IconUpload
+  - Order: 8 (after Product Mappings)
+  - Permission: TENANT_UPDATE
+- Added ImportHistoryPage to getProtectedRouteElement switch
+
+### Navigation Updates (frontend/src/components/layout/Sidebar.tsx):
+
+- Added IconUpload to icon imports
+- Added IconUpload to iconMap
+- Added "Import History": "nav.importHistory" to titleToI18nKey mapping
+
+### i18n Translations:
+
+**English (frontend/src/locales/en-US/common.json):**
+- Added nav.importHistory
+- Added complete importHistory namespace with:
+  - title, description, tip
+  - columns (id, entityType, filename, status, totalRows, successRows, errorRows, createdBy, createdAt, duration)
+  - status (pending, processing, completed, partial, failed)
+  - filters (allEntities, allStatus, dateRange)
+  - actions (viewDetails, downloadErrors, retry)
+  - messages (fetchError, noHistory)
+  - empty (title, description)
+
+**Chinese (frontend/src/locales/zh-CN/common.json):**
+- Added nav.importHistory (导入记录)
+- Added complete importHistory namespace with Chinese translations
+
+=== API Integration ===
+
+The Import History page calls:
+- GET /import/history - List import operations with pagination and filters
+
+Uses ImportWizard component which calls:
+- POST /import/{entity}/validate - Validate CSV file
+- POST /import/{entity} - Execute import with conflict mode
+
+=== Verification ===
+
+- TypeScript type checking: PASSED (npm run type-check)
+- ESLint: PASSED (no new errors in modified files)
+- All pre-existing warnings remain unchanged
+- Permission-based visibility: Relies on route permissions (TENANT_UPDATE)
+
+=== Acceptance Criteria Verification ===
+
+- [x] Import buttons visible on all entity list pages (Products, Customers, Suppliers, Inventory)
+- [x] Modal opens with correct entity type
+- [x] Permission-based visibility (via route permissions)
+- [x] Import History page functional
+- [x] Navigation menu updated (Import History under System menu)
+
+=== Notes ===
+
+1. Import button uses IconUpload icon consistently across all pages
+2. Import wizard onSuccess callback refreshes the list data after successful import
+3. Import History page gracefully handles API errors with empty state
+4. Color-coding helps quickly identify entity types and status
+
+=== Next Steps ===
+
+- IMPORT-BE-006: Import History and Audit Trail (backend API for history)
+- Add E2E tests for complete import workflow
+- Consider adding permission checks for individual import buttons (currently page-level permission)
+

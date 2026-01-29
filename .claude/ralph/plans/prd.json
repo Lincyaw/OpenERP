@@ -11850,7 +11850,7 @@
       "- [ ] Import History page functional",
       "- [ ] Navigation menu updated"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPORT-FE-003",

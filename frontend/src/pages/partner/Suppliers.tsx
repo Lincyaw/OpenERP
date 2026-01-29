@@ -8,9 +8,10 @@ import {
   Space,
   Modal,
   Spin,
+  Banner,
   Rating,
 } from '@douyinfe/semi-ui-19'
-import { IconPlus, IconRefresh } from '@douyinfe/semi-icons'
+import { IconPlus, IconRefresh, IconUpload } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -38,6 +39,7 @@ import type {
   ListSuppliersType,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
+import { ImportWizard } from '@/components/import'
 import './Suppliers.css'
 
 const { Title } = Typography
@@ -99,6 +101,9 @@ export default function SuppliersPage() {
   const [searchKeyword, setSearchKeyword] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [typeFilter, setTypeFilter] = useState<string>('')
+
+  // Import wizard state
+  const [importWizardVisible, setImportWizardVisible] = useState(false)
 
   // Table state hook
   const { state, handleStateChange, setFilter } = useTableState({
@@ -506,6 +511,11 @@ export default function SuppliersPage() {
 
   return (
     <Container size="full" className="suppliers-page">
+      <Banner
+        type="info"
+        description={t('suppliers.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
       <Card className="suppliers-card">
         <div className="suppliers-header">
           <Title heading={4} style={{ margin: 0 }}>
@@ -523,6 +533,12 @@ export default function SuppliersPage() {
             onClick: () => navigate('/partner/suppliers/new'),
           }}
           secondaryActions={[
+            {
+              key: 'import',
+              label: t('common:actions.import'),
+              icon: <IconUpload />,
+              onClick: () => setImportWizardVisible(true),
+            },
             {
               key: 'refresh',
               label: t('common:actions.refresh'),
@@ -583,6 +599,14 @@ export default function SuppliersPage() {
           />
         </Spin>
       </Card>
+
+      {/* Import Wizard Modal */}
+      <ImportWizard
+        entityType="suppliers"
+        visible={importWizardVisible}
+        onClose={() => setImportWizardVisible(false)}
+        onSuccess={fetchSuppliers}
+      />
     </Container>
   )
 }

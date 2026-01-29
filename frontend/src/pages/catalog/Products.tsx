@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, Typography, Tag, Toast, Select, Space, Modal, Spin } from '@douyinfe/semi-ui-19'
-import { IconPlus, IconRefresh } from '@douyinfe/semi-icons'
+import {
+  Card,
+  Typography,
+  Tag,
+  Toast,
+  Select,
+  Space,
+  Modal,
+  Spin,
+  Banner,
+} from '@douyinfe/semi-ui-19'
+import { IconPlus, IconRefresh, IconUpload } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -27,6 +37,7 @@ import type {
   GetProductByCategoryStatus,
 } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
+import { ImportWizard } from '@/components/import'
 import './Products.css'
 
 const { Title } = Typography
@@ -65,6 +76,9 @@ export default function ProductsPage() {
   // Filter state
   const [searchKeyword, setSearchKeyword] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
+
+  // Import wizard state
+  const [importWizardVisible, setImportWizardVisible] = useState(false)
 
   // Table state hook
   const { state, handleStateChange, setFilter } = useTableState({
@@ -450,6 +464,11 @@ export default function ProductsPage() {
 
   return (
     <Container size="full" className="products-page">
+      <Banner
+        type="info"
+        description={t('products.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
       <Card className="products-card">
         <div className="products-header">
           <Title heading={4} style={{ margin: 0 }}>
@@ -467,6 +486,12 @@ export default function ProductsPage() {
             onClick: () => navigate('/catalog/products/new'),
           }}
           secondaryActions={[
+            {
+              key: 'import',
+              label: t('common:actions.import'),
+              icon: <IconUpload />,
+              onClick: () => setImportWizardVisible(true),
+            },
             {
               key: 'refresh',
               label: t('common:actions.refresh'),
@@ -521,6 +546,14 @@ export default function ProductsPage() {
           />
         </Spin>
       </Card>
+
+      {/* Import Wizard Modal */}
+      <ImportWizard
+        entityType="products"
+        visible={importWizardVisible}
+        onClose={() => setImportWizardVisible(false)}
+        onSuccess={fetchProducts}
+      />
     </Container>
   )
 }

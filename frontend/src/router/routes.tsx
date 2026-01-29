@@ -99,6 +99,7 @@ const PaymentSettingsPage = () => lazyLoad(() => import('@/pages/system/PaymentS
 const PlatformConfigPage = () => lazyLoad(() => import('@/pages/system/PlatformConfig'))
 const PlatformSyncStatusPage = () => lazyLoad(() => import('@/pages/system/PlatformSyncStatus'))
 const ProductMappingsPage = () => lazyLoad(() => import('@/pages/integration/ProductMappings'))
+const ImportHistoryPage = () => lazyLoad(() => import('@/pages/system/ImportHistory'))
 
 // Admin module
 const FeatureFlagListPage = () => lazyLoad(() => import('@/pages/admin/FeatureFlagList'))
@@ -498,6 +499,15 @@ export const appRoutes: AppRoute[] = [
           permissions: [Permissions.TENANT_UPDATE],
         },
       },
+      {
+        path: '/system/import-history',
+        meta: {
+          title: 'Import History',
+          icon: 'IconUpload',
+          order: 8,
+          permissions: [Permissions.TENANT_UPDATE],
+        },
+      },
     ],
   },
 
@@ -593,6 +603,8 @@ function getProtectedRouteElement(path: string): React.ReactNode {
       return PlatformSyncStatusPage()
     case '/system/product-mappings':
       return ProductMappingsPage()
+    case '/system/import-history':
+      return ImportHistoryPage()
     case '/admin/feature-flags':
       return FeatureFlagListPage()
     default:
