@@ -23,11 +23,12 @@ export async function login(page: Page, userType: TestUserType = 'admin'): Promi
   if (!currentUrl.includes('/login')) {
     // Already logged in, verify auth state is present
     const isLoggedIn = await page.evaluate(() => {
-      const erpAuth = window.localStorage.getItem('erp-auth')
-      if (!erpAuth) return false
+      // Check for user in localStorage (primary indicator of logged-in state)
+      const userStr = window.localStorage.getItem('user')
+      if (!userStr) return false
       try {
-        const parsed = JSON.parse(erpAuth)
-        return parsed?.state?.user !== null && parsed?.state?.user !== undefined
+        const user = JSON.parse(userStr)
+        return user && typeof user.id === 'string' && user.id.length > 0
       } catch {
         return false
       }
@@ -60,28 +61,30 @@ export async function login(page: Page, userType: TestUserType = 'admin'): Promi
     })
 
   // CRITICAL: Wait for auth state to be persisted
-  // Note: Since SEC-004, access_token is kept in memory only (not localStorage)
-  // We only check for user data in localStorage and erp-auth Zustand state
+  // SEC-004: access_token is kept in memory only (not localStorage)
+  // refresh_token is stored as httpOnly cookie (handled by browser)
+  // We only need to check for user data in localStorage
   await page.waitForFunction(
     () => {
-      // Check for user in localStorage (user data is still persisted)
-      const user = window.localStorage.getItem('user')
-      if (!user) return false
-
-      // Also check for erp-auth Zustand persisted state
-      const erpAuth = window.localStorage.getItem('erp-auth')
-      if (!erpAuth) return false
+      // Check for user in localStorage (user data is still persisted synchronously)
+      // This is the authoritative indicator of successful login
+      const userStr = window.localStorage.getItem('user')
+      if (!userStr) return false
 
       try {
-        const parsed = JSON.parse(erpAuth)
-        // Check if user is stored in Zustand state
-        return parsed?.state?.user !== null && parsed?.state?.user !== undefined
+        const user = JSON.parse(userStr)
+        // Verify user object has required fields
+        return user && typeof user.id === 'string' && user.id.length > 0
       } catch {
         return false
       }
     },
-    { timeout: 10000 }
+    { timeout: 15000 }
   )
+
+  // Brief wait to ensure httpOnly cookie is properly set by the browser
+  // The refresh_token cookie is set by the backend response
+  await page.waitForTimeout(200)
 }
 
 /**
@@ -110,10 +113,27 @@ export async function saveAuthState(
 
 /**
  * Check if user is authenticated
+ * Checks both URL (not on login page) and localStorage for user data
  */
 export async function isAuthenticated(page: Page): Promise<boolean> {
   const url = page.url()
-  return !url.includes('/login')
+  if (url.includes('/login')) {
+    return false
+  }
+
+  // Also verify user data exists in localStorage
+  const hasUser = await page.evaluate(() => {
+    const userStr = window.localStorage.getItem('user')
+    if (!userStr) return false
+    try {
+      const user = JSON.parse(userStr)
+      return user && typeof user.id === 'string' && user.id.length > 0
+    } catch {
+      return false
+    }
+  })
+
+  return hasUser
 }
 
 /**
