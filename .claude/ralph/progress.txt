@@ -38799,3 +38799,150 @@ endpoints:
 - Add support for timezone configuration if needed
 - Document the schedule feature in README.md
 
+
+---
+
+## 2026-01-29 - LOADGEN-022: 会话模拟器 (Session Simulator)
+
+### Task ID: LOADGEN-022
+### Status: COMPLETE ✓
+
+=== Implementation Details ===
+
+Implemented comprehensive session simulator for the load generator, enabling realistic user session simulation with configurable behaviors, think times, and session-level parameter pooling.
+
+### New Files Created
+
+1. **tools/loadgen/internal/selector/session.go**
+   - `SessionID` - Unique identifier type for sessions
+   - `UserBehavior` - Configurable user behavior with weight, think time, and actions per session
+   - `ThinkTimeConfig` - Think time configuration with min/max and distribution support
+   - `ActionsConfig` - Actions per session range configuration
+   - `Session` - Session state with ID, StartTime, Behavior, Parameters, action tracking
+   - `SessionParameters` - Session-level parameter pool for resource reuse
+   - `SessionDurationConfig` - Session duration range configuration
+   - `SessionSimulatorConfig` - Main configuration with concurrentSessions, sessionDuration, behaviors
+   - `SessionSimulator` - Main simulator managing concurrent sessions
+   - `SessionSimulatorStats` / `SessionSimulatorStatsSnapshot` - Statistics tracking
+
+2. **tools/loadgen/internal/selector/session_test.go**
+   - Comprehensive test coverage (90.7%)
+   - Tests for UserBehavior validation and defaults
+   - Tests for SessionParameters operations (Set, Get, GetAll, GetRandom, Clone, Clear)
+   - Tests for Session lifecycle (IsExpired, IsActionLimitReached, IncrementActionCount)
+   - Tests for SessionSimulator operations (Create, Get, End, Clean)
+   - Concurrency tests
+   - Acceptance criteria test: `TestAcceptanceCriteria_100ConcurrentSessions`
+   - Benchmark tests for performance
+
+### Key Features Implemented
+
+1. **Session Structure**
+   - `ID` - Unique session identifier (e.g., "session-1")
+   - `StartTime` - Session creation timestamp
+   - `ExpiresAt` - Session expiration time
+   - `Behavior` - Associated user behavior configuration
+   - `Parameters` - Session-scoped parameter pool
+   - `ActionCount` / `MaxActions` - Action tracking
+   - `LastActionTime` - Last action timestamp
+
+2. **UserBehavior Configuration**
+   - `weight` - Behavior selection weight (higher = more frequent)
+   - `thinkTime` - Think time between actions (min/max/distribution)
+   - `actionsPerSession` - Number of actions per session (min/max)
+   - `tags` - Categorization labels
+
+3. **Think Time Distributions**
+   - `uniform` - Uniformly distributed random duration
+   - `exponential` - Exponentially distributed (favors shorter times)
+   - `normal` - Normal distribution (currently uniform approximation)
+
+4. **SessionParameters (Session-level Parameter Pool)**
+   - `Set(key, value)` - Store a value (appends to list)
+   - `Get(key)` - Get latest value
+   - `GetAll(key)` - Get all values for key
+   - `GetRandom(key)` - Get random value from stored values
+   - `Has(key)` - Check if key exists
+   - `Clone()` - Create copy of parameters
+   - Enables resource reuse within same session (e.g., created product ID)
+
+5. **SessionSimulator Configuration**
+   - `concurrentSessions` - Maximum concurrent sessions (default: 100)
+   - `sessionDuration` - Session duration range (default: 30s-5m)
+   - `behaviors` - List of user behaviors with weights
+   - `replaceExpired` - Auto-replace expired sessions (default: true)
+
+6. **SessionSimulator Methods**
+   - `CreateSession(behavior)` - Create new session
+   - `GetSession(id)` - Get session by ID
+   - `GetActiveSession()` - Get any active session
+   - `GetRandomActiveSession()` - Get random active session
+   - `GetOrCreateSession()` - Get active or create new
+   - `EndSession(id)` - End and remove session
+   - `CleanExpiredSessions()` - Remove expired sessions
+   - `RecordAction(id)` - Record action for session
+   - `GetStats()` - Get statistics snapshot
+
+### Configuration Example
+
+```yaml
+session:
+  concurrentSessions: 100
+  sessionDuration:
+    min: 30s
+    max: 5m
+  behaviors:
+    - name: "browse"
+      weight: 70
+      thinkTime:
+        min: 500ms
+        max: 2s
+        distribution: "uniform"
+      actionsPerSession:
+        min: 3
+        max: 10
+    - name: "purchase"
+      weight: 20
+      thinkTime:
+        min: 1s
+        max: 3s
+      actionsPerSession:
+        min: 5
+        max: 15
+    - name: "admin"
+      weight: 10
+      thinkTime:
+        min: 200ms
+        max: 500ms
+      actionsPerSession:
+        min: 10
+        max: 50
+```
+
+=== Verification ===
+
+- All tests pass: `go test ./internal/selector/...`
+- Coverage: 90.7% (exceeds 80% requirement)
+- Race detection: No data races detected (`go test -race`)
+- Build succeeds: `go build ./...`
+- Acceptance criteria verified: 100 concurrent sessions with behavior-conforming simulation
+
+=== Design Decisions ===
+
+1. **Separate session.go file**: Created new file to maintain single responsibility and clean code organization.
+
+2. **SessionParameters as map of slices**: Allows storing multiple values per key, enabling scenarios like "use any previously created product ID".
+
+3. **Weighted behavior selection with binary search**: O(log n) selection for efficient behavior distribution.
+
+4. **crypto/rand for randomness**: Using secure randomness for think time generation and session selection.
+
+5. **Atomic counters for stats**: Using sync/atomic for thread-safe statistics without excessive locking.
+
+6. **Configurable time function**: `SetTimeFunc` allows testing with deterministic time.
+
+=== Next Steps ===
+
+- Consider integrating SessionSimulator into the executor workflow for session-aware load testing
+- Add session-aware endpoint selection (different behaviors select different endpoints)
+- Add metrics export for session statistics (active sessions, behavior distribution, etc.)
