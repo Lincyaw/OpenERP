@@ -204,5 +204,36 @@
       "description": "Click \"Add Root Category\" to create the first category",
       "descriptionSearch": "Try a different search keyword"
     }
+  },
+  "attachments": {
+    "title": "Product Images & Files",
+    "description": "Upload product images and documents. Images are displayed on the product detail page.",
+    "uploadArea": "Upload area",
+    "dragDropHint": "Click or drag files to upload",
+    "allowedTypes": "Supports JPEG, PNG, GIF, WebP, PDF, Word, Excel, Text",
+    "maxSize": "Max file size: {{max}}",
+    "empty": "No attachments yet. Upload images or documents.",
+    "mainImage": "Main",
+    "setAsMain": "Set as main image",
+    "delete": "Delete",
+    "previewImage": "Preview image",
+    "errors": {
+      "invalidType": "File type not allowed",
+      "fileTooLarge": "File size exceeds {{max}}",
+      "initiateError": "Failed to initiate upload",
+      "uploadError": "Failed to upload file",
+      "confirmError": "Failed to confirm upload",
+      "deleteError": "Failed to delete attachment",
+      "setMainError": "Failed to set main image"
+    },
+    "messages": {
+      "uploadSuccess": "File uploaded successfully",
+      "deleteSuccess": "Attachment deleted",
+      "setMainSuccess": "Main image updated"
+    },
+    "confirmDelete": {
+      "title": "Delete Attachment",
+      "content": "Are you sure you want to delete this attachment? This action cannot be undone."
+    }
   }
 }

@@ -40166,3 +40166,107 @@ These issues are in the application layer (ATTACH-BE-005), not the HTTP handler 
 - ATTACH-FE-001: Frontend attachment upload component
 - ATTACH-SEC-001: Fix SVG XSS vulnerability
 - ATTACH-SEC-002: Remove StorageKey from API responses
+
+2026-01-29 - Task ID: ATTACH-FE-001: Frontend Product Attachment Uploader Component
+
+=== Implementation Details ===
+
+1. **frontend/src/features/catalog/ProductAttachmentUploader.tsx** (NEW - 604 lines)
+   - Created complete React component for product attachment management
+   - Core features implemented:
+     - Presigned URL upload flow (initiate → upload to storage → confirm)
+     - Image preview with click-to-enlarge modal
+     - Thumbnail display for uploaded images
+     - Set main image functionality
+     - Delete attachments with confirmation modal
+     - Upload progress bar using XMLHttpRequest
+     - File type validation (JPEG, PNG, GIF, WebP, PDF, Word, Excel, Text, CSV)
+     - File size validation (max 100MB)
+     - Drag and drop support
+     - Keyboard accessibility (Tab, Enter, Space)
+   - Used generated API client hooks:
+     - useListProductAttachments
+     - useInitiateProductAttachmentUpload
+     - useConfirmProductAttachmentUpload
+     - useDeleteProductAttachment
+     - useSetProductAttachmentAsMainImage
+   - React Query integration for cache invalidation
+
+2. **frontend/src/features/catalog/ProductAttachmentUploader.css** (NEW - 205 lines)
+   - Responsive grid layout for attachment thumbnails
+   - Upload zone with drag-and-drop highlighting
+   - Main image badge styling
+   - Progress indicator styling
+   - Dark mode support
+   - Reduced motion support for accessibility
+   - Mobile-first responsive breakpoints
+
+3. **frontend/src/locales/zh-CN/catalog.json** (MODIFIED)
+   - Added "attachments" section with Chinese translations
+   - Error messages for validation failures
+   - Success messages for operations
+   - Delete confirmation dialog text
+
+4. **frontend/src/locales/en-US/catalog.json** (MODIFIED)
+   - Added "attachments" section with English translations
+   - Matching error and success messages
+   - Delete confirmation dialog text
+
+5. **API Client Generation**
+   - Ran `npm run api:generate` to generate TypeScript types and React Query hooks
+   - Generated files include:
+     - src/api/product-attachments/product-attachments.ts
+     - src/api/models/catalogAttachmentResponse.ts
+     - src/api/models/catalogAttachmentListResponse.ts
+     - src/api/models/catalogInitiateUploadResponse.ts
+     - src/api/models/handlerInitiateUploadRequest.ts
+     - src/api/models/handlerInitiateUploadRequestType.ts
+
+=== Key Component Features ===
+
+| Feature | Implementation |
+|---------|---------------|
+| Upload Flow | 3-phase: Initiate → PUT to presigned URL → Confirm |
+| Progress | XMLHttpRequest with upload.progress event |
+| Validation | Client-side file type and size checks |
+| Preview | Modal with full-size image |
+| Main Image | Star icon button to promote image |
+| Delete | Confirmation modal before soft delete |
+| Accessibility | WCAG 2.1 AA compliant (focus, keyboard, ARIA) |
+| Responsive | Grid layout adapts from 1-4+ columns |
+| Dark Mode | CSS custom properties with [data-theme='dark'] |
+
+=== Design Decisions ===
+
+1. **XMLHttpRequest for Upload**: Used XHR instead of fetch() for progress tracking support
+2. **Optimistic Updates**: Immediate UI feedback with progress bar, then confirm with server
+3. **Query Invalidation**: Cache invalidated after each mutation for fresh data
+4. **CSS Custom Properties**: Used design tokens from project's design system
+5. **Semi Design Components**: Used Card, Modal, Progress, Button, Toast, Empty from Semi UI
+6. **Type Safety**: Full TypeScript with generated API types from orval
+
+=== Verification ===
+
+- TypeScript type checking: PASSED (npm run type-check)
+- ESLint: PASSED after auto-fix (npx eslint --fix)
+- Existing test suite: Pre-existing failures unrelated to this task
+- No console.log statements
+- No hardcoded values
+
+=== Files Created/Modified ===
+
+| File | Status | Lines |
+|------|--------|-------|
+| frontend/src/features/catalog/ProductAttachmentUploader.tsx | NEW | 604 |
+| frontend/src/features/catalog/ProductAttachmentUploader.css | NEW | 205 |
+| frontend/src/locales/zh-CN/catalog.json | MODIFIED | +35 |
+| frontend/src/locales/en-US/catalog.json | MODIFIED | +35 |
+| .claude/ralph/plans/prd.json | MODIFIED | passes: true |
+
+=== Next Steps ===
+
+- ATTACH-FE-002: Integrate attachment uploader into ProductForm.tsx
+- ATTACH-INFRA-002: Implement real S3/RustFS ObjectStorageService (currently using stub)
+- ATTACH-TEST-001: Write ProductAttachmentUploader.test.tsx unit tests
+- ATTACH-SEC-001: Fix SVG XSS vulnerability (remove SVG from allowed types)
+- ATTACH-SEC-002: Remove StorageKey from API responses

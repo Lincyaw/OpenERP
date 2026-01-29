@@ -12547,7 +12547,7 @@
       "添加文件类型和大小验证",
       "创建对应 CSS 样式文件"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ATTACH-FE-002",

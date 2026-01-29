@@ -204,5 +204,36 @@
       "description": "点击「新增根分类」按钮创建第一个分类",
       "descriptionSearch": "请尝试其他搜索关键词"
     }
+  },
+  "attachments": {
+    "title": "商品图片与文件",
+    "description": "上传商品图片和文档，图片将展示在商品详情页",
+    "uploadArea": "上传区域",
+    "dragDropHint": "点击或拖拽文件到此处上传",
+    "allowedTypes": "支持 JPEG、PNG、GIF、WebP、PDF、Word、Excel、文本文件",
+    "maxSize": "单个文件最大 {{max}}",
+    "empty": "暂无附件，请上传图片或文档",
+    "mainImage": "主图",
+    "setAsMain": "设为主图",
+    "delete": "删除",
+    "previewImage": "预览图片",
+    "errors": {
+      "invalidType": "不支持的文件类型",
+      "fileTooLarge": "文件大小超过 {{max}}",
+      "initiateError": "创建上传任务失败",
+      "uploadError": "文件上传失败",
+      "confirmError": "确认上传失败",
+      "deleteError": "删除附件失败",
+      "setMainError": "设置主图失败"
+    },
+    "messages": {
+      "uploadSuccess": "文件上传成功",
+      "deleteSuccess": "附件已删除",
+      "setMainSuccess": "主图已更新"
+    },
+    "confirmDelete": {
+      "title": "删除附件",
+      "content": "确定要删除这个附件吗？此操作无法撤销。"
+    }
   }
 }
