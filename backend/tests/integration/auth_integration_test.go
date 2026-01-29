@@ -253,10 +253,21 @@ func TestAuth_LoginFlow(t *testing.T) {
 		// Verify token structure
 		token := data["token"].(map[string]interface{})
 		assert.NotEmpty(t, token["access_token"])
-		assert.NotEmpty(t, token["refresh_token"])
+		// refresh_token is now in httpOnly cookie, not in response body
 		assert.NotEmpty(t, token["access_token_expires_at"])
 		assert.NotEmpty(t, token["refresh_token_expires_at"])
 		assert.Equal(t, "Bearer", token["token_type"])
+
+		// Verify refresh token cookie is set
+		cookies := w.Result().Cookies()
+		var hasRefreshCookie bool
+		for _, cookie := range cookies {
+			if cookie.Name == "refresh_token" && cookie.Value != "" {
+				hasRefreshCookie = true
+				break
+			}
+		}
+		assert.True(t, hasRefreshCookie, "refresh_token cookie should be set")
 
 		// Verify user info
 		userInfo := data["user"].(map[string]interface{})
