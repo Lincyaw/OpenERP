@@ -1,0 +1,387 @@
+/**
+ * DetailPageHeader Styles
+ *
+ * Unified header component for detail pages with responsive design.
+ * Features document number, status badge, metrics, and action buttons.
+ *
+ * Uses design tokens from the design system for consistency.
+ */
+
+/* === Base Header Styles === */
+.detail-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+  padding-bottom: var(--spacing-4);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.detail-page-header--loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+  border-bottom: none;
+}
+
+/* === Top Row Layout === */
+.detail-page-header__top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+  flex-wrap: wrap;
+}
+
+.detail-page-header__left {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  flex: 1;
+  min-width: 0;
+}
+
+/* === Back Button === */
+.detail-page-header__back-btn {
+  flex-shrink: 0;
+  margin-left: calc(-1 * var(--spacing-2));
+}
+
+.detail-page-header__back-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.detail-page-header__back-label {
+  display: inline;
+}
+
+/* === Title Group === */
+.detail-page-header__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  min-width: 0;
+  flex: 1;
+}
+
+.detail-page-header__title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+/* Override Semi Design heading margin with higher specificity */
+.detail-page-header .detail-page-header__title.semi-typography {
+  margin: 0;
+}
+
+.detail-page-header__title {
+  font-size: var(--heading-4-size);
+  font-weight: var(--heading-4-weight);
+  line-height: var(--heading-4-line-height);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+/* === Document Number === */
+.detail-page-header__document-number {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+/* === Status Badge === */
+.detail-page-header__status {
+  flex-shrink: 0;
+}
+
+/* === Actions Container === */
+.detail-page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+}
+
+/* Desktop actions visible by default, hidden on mobile */
+.detail-page-header__actions--desktop {
+  display: flex;
+}
+
+/* Mobile actions hidden by default, visible on mobile */
+.detail-page-header__actions--mobile {
+  display: none;
+}
+
+.detail-page-header__primary-action {
+  min-width: 100px;
+}
+
+.detail-page-header__secondary-action {
+  min-width: 80px;
+}
+
+/* === Metrics Row === */
+.detail-page-header__metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-6);
+  padding: var(--spacing-3) 0;
+}
+
+.detail-page-header__metric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-0-5);
+  min-width: 100px;
+}
+
+.detail-page-header__metric-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+.detail-page-header__metric-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-tight);
+}
+
+/* Metric Value Variants */
+.detail-page-header__metric-value--primary {
+  color: var(--color-primary);
+}
+
+.detail-page-header__metric-value--success {
+  color: var(--color-success);
+}
+
+.detail-page-header__metric-value--warning {
+  color: var(--color-warning-600);
+}
+
+.detail-page-header__metric-value--danger {
+  color: var(--color-danger);
+}
+
+/* === Responsive Design (Mobile First) === */
+
+/* Mobile: Stack layout, collapse actions to dropdown */
+@media (max-width: 767px) {
+  .detail-page-header__top-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .detail-page-header__left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+
+  .detail-page-header__back-btn {
+    margin-left: 0;
+  }
+
+  .detail-page-header__back-label {
+    display: inline;
+  }
+
+  .detail-page-header__title-group {
+    width: 100%;
+  }
+
+  .detail-page-header__title-row {
+    flex-wrap: wrap;
+  }
+
+  .detail-page-header__document-number {
+    font-size: var(--font-size-base);
+  }
+
+  /* Hide desktop actions on mobile */
+  .detail-page-header__actions--desktop {
+    display: none;
+  }
+
+  /* Show mobile actions dropdown */
+  .detail-page-header__actions--mobile {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: var(--spacing-2);
+  }
+
+  .detail-page-header__mobile-primary {
+    flex: 1;
+    max-width: 200px;
+  }
+
+  /* Metrics: 2 columns on mobile */
+  .detail-page-header__metrics {
+    gap: var(--spacing-4);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .detail-page-header__metric {
+    min-width: 0;
+  }
+
+  .detail-page-header__metric-value {
+    font-size: var(--font-size-base);
+  }
+}
+
+/* Tablet (768px+): Horizontal layout */
+@media (min-width: 768px) {
+  .detail-page-header {
+    gap: var(--spacing-3);
+  }
+
+  .detail-page-header__top-row {
+    flex-wrap: nowrap;
+  }
+
+  .detail-page-header__document-number {
+    font-size: var(--font-size-xl);
+  }
+
+  .detail-page-header__metrics {
+    gap: var(--spacing-8);
+  }
+
+  .detail-page-header__metric {
+    min-width: 120px;
+  }
+}
+
+/* Desktop (1024px+): Full layout with all actions visible */
+@media (min-width: 1024px) {
+  .detail-page-header__left {
+    gap: var(--spacing-4);
+  }
+
+  .detail-page-header__title-row {
+    gap: var(--spacing-4);
+  }
+
+  .detail-page-header__document-number {
+    font-size: var(--font-size-2xl);
+  }
+
+  .detail-page-header__metrics {
+    gap: var(--spacing-10);
+  }
+
+  .detail-page-header__metric {
+    min-width: 140px;
+  }
+
+  .detail-page-header__metric-value {
+    font-size: var(--font-size-xl);
+  }
+}
+
+/* === Dark Mode Adjustments === */
+[theme-mode='dark'] .detail-page-header {
+  border-color: var(--color-border-secondary);
+}
+
+[theme-mode='dark'] .detail-page-header__document-number {
+  color: var(--color-text-primary);
+}
+
+[theme-mode='dark'] .detail-page-header__metric-value {
+  color: var(--color-text-primary);
+}
+
+/* === Elder-Friendly Theme === */
+[theme-mode='elder'] .detail-page-header {
+  gap: var(--spacing-6);
+  padding-bottom: var(--spacing-6);
+  border-bottom-width: 2px;
+}
+
+[theme-mode='elder'] .detail-page-header__title {
+  font-size: var(--font-size-2xl);
+}
+
+[theme-mode='elder'] .detail-page-header__document-number {
+  font-size: var(--font-size-2xl);
+}
+
+[theme-mode='elder'] .detail-page-header__status .semi-tag {
+  font-size: var(--font-size-base);
+  padding: var(--spacing-2) var(--spacing-3);
+}
+
+[theme-mode='elder'] .detail-page-header__metrics {
+  gap: var(--spacing-8);
+}
+
+[theme-mode='elder'] .detail-page-header__metric-label {
+  font-size: var(--font-size-sm);
+}
+
+[theme-mode='elder'] .detail-page-header__metric-value {
+  font-size: var(--font-size-2xl);
+}
+
+[theme-mode='elder'] .detail-page-header__back-btn,
+[theme-mode='elder'] .detail-page-header__primary-action,
+[theme-mode='elder'] .detail-page-header__secondary-action {
+  min-height: 44px;
+  font-size: var(--font-size-base);
+}
+
+/* === High Contrast Mode === */
+@media (prefers-contrast: high) {
+  .detail-page-header {
+    border-bottom-width: 2px;
+    border-color: var(--color-border-primary);
+  }
+
+  .detail-page-header__document-number {
+    text-decoration: underline;
+  }
+
+  .detail-page-header__status .semi-tag {
+    border: 2px solid currentColor;
+  }
+}
+
+/* === Reduced Motion === */
+@media (prefers-reduced-motion: reduce) {
+  .detail-page-header,
+  .detail-page-header__back-btn,
+  .detail-page-header__primary-action,
+  .detail-page-header__secondary-action {
+    transition: none;
+  }
+}
+
+/* === Print Styles === */
+@media print {
+  .detail-page-header__actions,
+  .detail-page-header__back-btn {
+    display: none !important;
+  }
+
+  .detail-page-header {
+    border-bottom: 1px solid #000;
+    padding-bottom: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
+  }
+
+  .detail-page-header__document-number {
+    font-size: var(--font-size-lg);
+  }
+}

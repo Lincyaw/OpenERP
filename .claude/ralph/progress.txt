@@ -37246,3 +37246,100 @@ import { KPICard, PageSummary } from '@/components/common'
 - Consider migrating existing summary sections in Receivables, Payables pages to use these components
 - Add unit tests for KPICard and PageSummary components
 - Potential enhancement: Add skeleton loading variant for KPICard
+
+2026-01-29 - UX-003: Create DetailPageHeader component - Unified detail page header design
+
+=== Implementation Details ===
+Created a reusable DetailPageHeader component for unifying detail page headers across the application:
+
+1. DetailPageHeader Component (frontend/src/components/common/DetailPageHeader.tsx):
+   - Props: title, documentNumber, status, metrics[], primaryAction, secondaryActions[], onBack, backLabel, showBack, loading, className, style, titleSuffix
+   - Document number prominently displayed with monospace font
+   - Status badge with 6 color variants: default, primary, success, warning, danger, info
+   - Key metrics row with optional color-coded variants
+   - Primary action button with secondary actions displayed inline on desktop
+   - Mobile-responsive action dropdown combining all actions
+   - Loading state with aria-busy and aria-live for accessibility
+
+2. TypeScript Interfaces Exported:
+   - DetailPageHeaderProps
+   - DetailPageHeaderStatus
+   - DetailPageHeaderStatusVariant
+   - DetailPageHeaderMetric
+   - DetailPageHeaderAction
+
+3. Style File (frontend/src/components/common/DetailPageHeader.css):
+   - Responsive layout: horizontal on desktop, stacked on mobile
+   - Back button always visible
+   - Actions collapse to dropdown on mobile (<768px)
+   - Uses project design tokens (--spacing-*, --color-*, --font-*)
+   - BEM naming convention throughout
+   - Dark mode and elder-friendly theme support
+   - Reduced motion, high contrast media query support
+   - Print styles (hide actions and back button)
+
+4. Exports added to components/common/index.ts:
+   - DetailPageHeader and all related TypeScript types
+
+=== Accessibility Features (WCAG 2.1 AA) ===
+- role="list" and role="listitem" for metrics section
+- aria-label on interactive elements (buttons, dropdown triggers)
+- aria-busy="true" and aria-live="polite" on loading state
+- Focus-visible outline styling for keyboard navigation
+- prefers-reduced-motion: disable animations
+- prefers-contrast: high contrast borders and styling
+- Elder theme: larger text, spacing, and touch targets (44px min height)
+- Screen reader friendly loading indicator
+
+=== Code Review Fixes Applied ===
+- Removed redundant onKeyDown handler (Button already handles Enter/Space)
+- Removed duplicate secondary actions display (was showing both buttons AND dropdown)
+- Removed CSS !important by using higher specificity selector
+- Added aria-busy and aria-live to loading state for screen reader support
+- Removed unused IconMore import
+
+=== Verification ===
+- TypeScript type checking: PASSED
+- ESLint: PASSED (no errors, no warnings for new files)
+- All design tokens from project design system used
+- BEM naming convention followed
+- Mobile-first responsive design implemented
+
+=== Files Created ===
+- frontend/src/components/common/DetailPageHeader.tsx (370 lines)
+- frontend/src/components/common/DetailPageHeader.css (380 lines)
+
+=== Files Modified ===
+- frontend/src/components/common/index.ts (added DetailPageHeader exports)
+
+=== Usage Example ===
+```tsx
+import { DetailPageHeader } from '@/components/common'
+
+<DetailPageHeader
+  title="Sales Order Detail"
+  documentNumber="SO-2024-0001"
+  status={{ label: 'Confirmed', variant: 'success' }}
+  metrics={[
+    { label: 'Total Amount', value: '¥12,500.00', variant: 'primary' },
+    { label: 'Items', value: '5' },
+  ]}
+  primaryAction={{
+    key: 'ship',
+    label: 'Ship Order',
+    icon: <IconSend />,
+    type: 'primary',
+    onClick: handleShip,
+  }}
+  secondaryActions={[
+    { key: 'print', label: 'Print', icon: <IconPrint />, onClick: handlePrint },
+    { key: 'cancel', label: 'Cancel', type: 'danger', onClick: handleCancel },
+  ]}
+  onBack={() => navigate('/trade/sales')}
+/>
+```
+
+=== Next Steps ===
+- Consider migrating existing detail pages (SalesOrderDetail, PurchaseOrderDetail, etc.) to use this component
+- Add unit tests for DetailPageHeader component (80% coverage requirement)
+- Potential enhancement: Add breadcrumb support option

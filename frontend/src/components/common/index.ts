@@ -27,3 +27,11 @@ export {
   type PageSummaryGap,
   type PageSummaryTitleAs,
 } from './PageSummary'
+export {
+  DetailPageHeader,
+  type DetailPageHeaderProps,
+  type DetailPageHeaderStatus,
+  type DetailPageHeaderStatusVariant,
+  type DetailPageHeaderMetric,
+  type DetailPageHeaderAction,
+} from './DetailPageHeader'
