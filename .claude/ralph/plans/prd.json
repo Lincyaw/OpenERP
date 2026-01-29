@@ -11539,7 +11539,7 @@
       "- [ ] Import logged in audit trail",
       "- [ ] Unit tests for validation and import"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPORT-BE-003",

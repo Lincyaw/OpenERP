@@ -39564,3 +39564,90 @@ GetSession endpoint verifies tenant ownership to prevent cross-tenant data acces
 - Add rate limiting middleware for import endpoints
 - Consider Redis-based session store for production multi-instance deployments
 
+
+## 2026-01-29 - IMPORT-BE-002: Product Import Service Implementation
+
+### Task ID: IMPORT-BE-002
+### Status: COMPLETED
+
+=== Implementation Details ===
+
+#### Files Created:
+1. `backend/internal/application/import/product_import_service.go`
+   - ProductImportService with full validation and import logic
+   - ConflictMode enum (skip, update, fail)
+   - Auto-generated SKU with timestamp-based sequence (PRD-YYYYMMDD-NNNNNN)
+   - Category lookup and barcode uniqueness validation
+   - Domain event publishing after import
+
+2. `backend/internal/application/import/product_import_service_test.go`
+   - Comprehensive unit tests with 70.6% coverage
+   - Tests for validation rules, conflict modes, SKU generation
+   - Mock implementations for ProductRepository, CategoryRepository, EventPublisher
+
+3. `backend/internal/interfaces/http/handler/product_import_handler.go`
+   - ValidateProducts endpoint (POST /api/v1/import/products/validate)
+   - ImportProducts endpoint (POST /api/v1/import/products)
+   - Background cleanup goroutine for expired session data
+   - Proper file seek error handling
+
+4. `backend/internal/interfaces/http/dto/import_dto.go`
+   - ProductImportValidateRequest
+   - ProductImportRequest
+   - ProductImportResponse
+   - ProductImportValidateResponse
+
+#### Key Features Implemented:
+- Validation rules for all product fields (name, sku, barcode, category_code, prices, etc.)
+- Reference validation for category_code
+- Uniqueness validation for sku and barcode
+- Auto-SKU generation with timestamp-based sequence to avoid collisions after restart
+- Conflict handling modes (skip existing, update existing, fail on conflict)
+- Warning generation (e.g., selling_price < purchase_price)
+- Domain event publishing (ProductCreated, ProductUpdated)
+- Proper JSON validation using encoding/json
+- Memory-safe validation row storage with TTL cleanup
+
+=== Code Review Fixes ===
+
+Addressed issues from code-reviewer agent:
+- Fixed JSON validation to properly parse JSON objects
+- Added logging for event publishing errors
+- Fixed SKU generation to use timestamp-based sequence for restart resilience
+- Implemented proper cleanup goroutine for valid rows store
+- Added file.Seek error handling
+- Limited warnings collection to prevent memory issues
+- Optimized error row lookup from O(n*m) to O(n+m)
+
+=== Verification ===
+
+- All unit tests passing (70.6% coverage)
+- Go build ./internal/... passes
+- No linting errors
+- Code review completed and issues addressed
+
+=== API Endpoints ===
+
+```
+POST /api/v1/import/products/validate
+  - Validates product CSV file
+  - Returns validation results, errors, warnings, and preview
+
+POST /api/v1/import/products
+  - Imports products from validated CSV
+  - Body: { "validation_id": "uuid", "conflict_mode": "skip|update|fail" }
+  - Returns import results (imported, updated, skipped, error counts)
+```
+
+=== Notes ===
+
+- The main.go has a pre-existing build error unrelated to this task
+- Test coverage is at 70.6% which is acceptable for application services
+- max_stock_level validation rule exists but is not used in import logic (matches spec)
+
+=== Next Steps ===
+
+- IMPORT-BE-003: Customer Import Service (similar pattern)
+- IMPORT-BE-004: Supplier Import Service
+- IMPORT-FE-001: Frontend import UI
+
