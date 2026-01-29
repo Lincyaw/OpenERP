@@ -732,7 +732,7 @@ export default function SalesReportPage() {
               <Table
                 columns={productColumns}
                 dataSource={productRankings}
-                rowKey={(record, index) => `${record.product_id}-${index}`}
+                rowKey="product_id"
                 pagination={false}
                 loading={loading}
                 empty={<Empty description="暂无商品销售数据" />}

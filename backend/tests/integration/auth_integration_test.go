@@ -587,15 +587,28 @@ func TestAuth_TokenRefresh(t *testing.T) {
 	json.Unmarshal(loginResp.Body.Bytes(), &loginData)
 	data := loginData["data"].(map[string]interface{})
 	token := data["token"].(map[string]interface{})
-	initialRefreshToken := token["refresh_token"].(string)
 	initialAccessToken := token["access_token"].(string)
 
-	t.Run("valid_refresh_token_returns_new_tokens", func(t *testing.T) {
-		reqBody := map[string]interface{}{
-			"refresh_token": initialRefreshToken,
+	// Extract refresh token from httpOnly cookie
+	cookies := loginResp.Result().Cookies()
+	var initialRefreshToken string
+	for _, cookie := range cookies {
+		if cookie.Name == "refresh_token" {
+			initialRefreshToken = cookie.Value
+			break
 		}
+	}
+	require.NotEmpty(t, initialRefreshToken, "refresh_token cookie should be set")
 
-		w := ts.Request(http.MethodPost, "/api/v1/auth/refresh", reqBody)
+	t.Run("valid_refresh_token_returns_new_tokens", func(t *testing.T) {
+		// Create request with refresh token cookie
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/refresh", nil)
+		req.AddCookie(&http.Cookie{
+			Name:  "refresh_token",
+			Value: initialRefreshToken,
+		})
+		w := httptest.NewRecorder()
+		ts.Engine.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
@@ -607,9 +620,8 @@ func TestAuth_TokenRefresh(t *testing.T) {
 		respData := resp["data"].(map[string]interface{})
 		newToken := respData["token"].(map[string]interface{})
 
-		// New tokens should be returned
+		// New access token should be returned
 		assert.NotEmpty(t, newToken["access_token"])
-		assert.NotEmpty(t, newToken["refresh_token"])
 
 		// New access token should be different from initial
 		assert.NotEqual(t, initialAccessToken, newToken["access_token"])
@@ -654,9 +666,16 @@ func TestAuth_TokenRefresh(t *testing.T) {
 		loginResp := ts.Request(http.MethodPost, "/api/v1/auth/login", loginReq)
 		require.Equal(t, http.StatusOK, loginResp.Code)
 
-		var loginData map[string]interface{}
-		json.Unmarshal(loginResp.Body.Bytes(), &loginData)
-		refreshToken := loginData["data"].(map[string]interface{})["token"].(map[string]interface{})["refresh_token"].(string)
+		// Extract refresh token from httpOnly cookie
+		cookies := loginResp.Result().Cookies()
+		var refreshToken string
+		for _, cookie := range cookies {
+			if cookie.Name == "refresh_token" {
+				refreshToken = cookie.Value
+				break
+			}
+		}
+		require.NotEmpty(t, refreshToken, "refresh_token cookie should be set")
 
 		// Deactivate user
 		err := deactivateUser.Deactivate()
@@ -664,12 +683,14 @@ func TestAuth_TokenRefresh(t *testing.T) {
 		err = ts.UserRepo.Update(context.Background(), deactivateUser)
 		require.NoError(t, err)
 
-		// Try to refresh
-		reqBody := map[string]interface{}{
-			"refresh_token": refreshToken,
-		}
-
-		w := ts.Request(http.MethodPost, "/api/v1/auth/refresh", reqBody)
+		// Try to refresh with cookie
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/refresh", nil)
+		req.AddCookie(&http.Cookie{
+			Name:  "refresh_token",
+			Value: refreshToken,
+		})
+		w := httptest.NewRecorder()
+		ts.Engine.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
 
@@ -695,8 +716,18 @@ func TestAuth_TokenRefresh(t *testing.T) {
 
 		var loginData map[string]interface{}
 		json.Unmarshal(loginResp.Body.Bytes(), &loginData)
-		refreshToken := loginData["data"].(map[string]interface{})["token"].(map[string]interface{})["refresh_token"].(string)
 		accessToken := loginData["data"].(map[string]interface{})["token"].(map[string]interface{})["access_token"].(string)
+
+		// Extract refresh token from httpOnly cookie
+		cookies := loginResp.Result().Cookies()
+		var refreshToken string
+		for _, cookie := range cookies {
+			if cookie.Name == "refresh_token" {
+				refreshToken = cookie.Value
+				break
+			}
+		}
+		require.NotEmpty(t, refreshToken, "refresh_token cookie should be set")
 
 		// Verify initial permission - should have product:read
 		w := ts.Request(http.MethodGet, "/api/v1/protected/products", nil, accessToken)
@@ -712,10 +743,13 @@ func TestAuth_TokenRefresh(t *testing.T) {
 		require.NoError(t, err)
 
 		// Refresh token - should get new permissions
-		reqBody := map[string]interface{}{
-			"refresh_token": refreshToken,
-		}
-		refreshResp := ts.Request(http.MethodPost, "/api/v1/auth/refresh", reqBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/refresh", nil)
+		req.AddCookie(&http.Cookie{
+			Name:  "refresh_token",
+			Value: refreshToken,
+		})
+		refreshResp := httptest.NewRecorder()
+		ts.Engine.ServeHTTP(refreshResp, req)
 		require.Equal(t, http.StatusOK, refreshResp.Code)
 
 		var refreshData map[string]interface{}
