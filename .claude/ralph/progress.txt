@@ -39759,3 +39759,92 @@ POST /api/v1/import/customers
 - IMPORT-BE-004: Supplier Import Service (similar pattern)
 - IMPORT-FE-001: Frontend import wizard UI
 - Wire up handlers to router
+
+2025-01-29 - ATTACH-BE-001 & ATTACH-BE-002: Product Attachment Domain Entity and Events
+
+=== Implementation Details ===
+
+Created complete ProductAttachment domain entity with business logic:
+
+1. **backend/internal/domain/catalog/product_attachment.go**
+   - AttachmentType enum (main_image/gallery_image/document/other)
+   - AttachmentStatus enum (pending/active/deleted)
+   - ProductAttachment entity with TenantAggregateRoot embedding
+   - NewProductAttachment factory function with comprehensive validation:
+     - Tenant ID and Product ID validation (no nil UUIDs)
+     - File name validation (255 char max, no control chars, no path separators)
+     - File size validation (1 byte - 100MB)
+     - Content type validation (must be type/subtype format)
+     - Storage key validation (path traversal prevention, relative paths only)
+   - Business methods: Confirm(), Delete(), SetAsMainImage(), SetAsGalleryImage()
+   - Helper methods: SetSortOrder(), SetThumbnailKey()
+   - State predicates: IsPending(), IsActive(), IsDeleted(), IsMainImage(), IsImage()
+
+2. **backend/internal/domain/catalog/product_attachment_events.go**
+   - ProductAttachmentCreatedEvent
+   - ProductAttachmentConfirmedEvent
+   - ProductAttachmentDeletedEvent
+   - ProductAttachmentTypeChangedEvent
+
+3. **backend/internal/domain/catalog/product_attachment_repository.go**
+   - ProductAttachmentReader interface (FindByID, FindByIDs)
+   - ProductAttachmentFinder interface (FindByProduct, FindMainImage, FindByType, etc.)
+   - ProductAttachmentWriter interface (Save, SaveBatch, Delete, DeleteByProduct)
+   - ProductAttachmentRepository composite interface
+
+4. **backend/internal/domain/catalog/product_attachment_test.go**
+   - Comprehensive unit tests (100% coverage on all entity methods)
+   - Security test cases:
+     - Path traversal in storage keys
+     - Control characters in file names
+     - Invalid MIME type formats
+     - Zero UUID rejection
+
+=== Security Improvements (from code review) ===
+
+Addressed critical security issues identified during review:
+- Added UUID validation for tenantID and productID
+- Added path traversal prevention in storage key validation
+- Added MIME type format validation
+- Added dangerous character validation in file names
+- Made SetAsMainImage() consistent with SetAsGalleryImage() (only image types allowed)
+- Exported MaxAttachmentFileSize constant for visibility
+
+=== Test Coverage ===
+
+- product_attachment.go: 100% on all methods
+- product_attachment_events.go: 100% on all constructors
+- Comprehensive validation edge case testing
+
+=== Design Decisions ===
+
+1. **Separate aggregate**: ProductAttachment is its own aggregate root (not embedded in Product) because:
+   - Files have independent lifecycle (upload → confirm → delete)
+   - Supports concurrent uploads without locking Product
+   - Enables efficient queries (FindMainImage, FindByType)
+
+2. **Two-phase upload**: Uses pending → active status to support presigned URL upload flow
+   - Create record with pending status (get presigned URL)
+   - Confirm after successful upload to S3/RustFS
+
+3. **Soft delete**: Uses deleted status rather than physical deletion
+   - Allows for recovery
+   - Maintains audit trail
+   - Physical cleanup handled by background job
+
+4. **Consistent type transitions**: SetAsMainImage() and SetAsGalleryImage() both only allow image types
+   - Prevents logical inconsistency
+   - Documents should not be converted to images
+
+=== Verification ===
+
+- All unit tests passing (100% coverage on entity code)
+- Go build ./... passes
+- Code review issues addressed
+- No linting errors
+
+=== Next Steps ===
+
+- ATTACH-BE-003: Database migration for product_attachments table
+- ATTACH-BE-004: Persistence layer implementation
+- ATTACH-INFRA-002: S3 storage interface implementation

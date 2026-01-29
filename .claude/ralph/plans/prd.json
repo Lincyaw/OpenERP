@@ -12444,7 +12444,7 @@
       "实现 Confirm(), Delete(), SetAsMainImage() 等方法",
       "创建 product_attachment_repository.go 仓储接口"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ATTACH-BE-002",
@@ -12458,7 +12458,7 @@
       "实现 ProductAttachmentConfirmedEvent",
       "实现 ProductAttachmentDeletedEvent"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ATTACH-BE-003",
