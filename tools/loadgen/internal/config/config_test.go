@@ -780,3 +780,153 @@ endpoints:
 		assert.True(t, *cfg.Assertions.ExitOnFailure) // Default applied
 	})
 }
+
+func TestLoadFromBytes_EndpointSchedule(t *testing.T) {
+	t.Run("valid time-based schedule", func(t *testing.T) {
+		yaml := `
+name: "Schedule Test"
+target:
+  baseURL: "http://localhost:8080"
+endpoints:
+  - name: "sales.order.create"
+    path: "/trade/sales-orders"
+    method: "POST"
+    weight: 10
+    schedule:
+      - time: "09:00-12:00"
+        weight: 20
+      - time: "12:00-14:00"
+        weight: 5
+      - time: "14:00-18:00"
+        weight: 15
+`
+		cfg, err := LoadFromBytes([]byte(yaml))
+		require.NoError(t, err)
+		require.Len(t, cfg.Endpoints, 1)
+		require.Len(t, cfg.Endpoints[0].Schedule, 3)
+
+		assert.Equal(t, "09:00-12:00", cfg.Endpoints[0].Schedule[0].Time)
+		assert.Equal(t, 20, cfg.Endpoints[0].Schedule[0].Weight)
+		assert.Equal(t, "12:00-14:00", cfg.Endpoints[0].Schedule[1].Time)
+		assert.Equal(t, 5, cfg.Endpoints[0].Schedule[1].Weight)
+		assert.Equal(t, "14:00-18:00", cfg.Endpoints[0].Schedule[2].Time)
+		assert.Equal(t, 15, cfg.Endpoints[0].Schedule[2].Weight)
+	})
+
+	t.Run("schedule with cron expression", func(t *testing.T) {
+		yaml := `
+name: "Cron Schedule Test"
+target:
+  baseURL: "http://localhost:8080"
+endpoints:
+  - name: "weekday.endpoint"
+    path: "/api/data"
+    method: "GET"
+    schedule:
+      - cron: "* 9-17 * * 1-5"
+        weight: 30
+`
+		cfg, err := LoadFromBytes([]byte(yaml))
+		require.NoError(t, err)
+		require.Len(t, cfg.Endpoints[0].Schedule, 1)
+		assert.Equal(t, "* 9-17 * * 1-5", cfg.Endpoints[0].Schedule[0].Cron)
+		assert.Equal(t, 30, cfg.Endpoints[0].Schedule[0].Weight)
+	})
+
+	t.Run("schedule with modifier", func(t *testing.T) {
+		yaml := `
+name: "Modifier Schedule Test"
+target:
+  baseURL: "http://localhost:8080"
+endpoints:
+  - name: "peak.endpoint"
+    path: "/api/data"
+    method: "POST"
+    schedule:
+      - time: "09:00-12:00"
+        modifier: 2.0
+`
+		cfg, err := LoadFromBytes([]byte(yaml))
+		require.NoError(t, err)
+		require.Len(t, cfg.Endpoints[0].Schedule, 1)
+		assert.Equal(t, 2.0, cfg.Endpoints[0].Schedule[0].Modifier)
+	})
+}
+
+func TestValidate_InvalidSchedule(t *testing.T) {
+	t.Run("rejects negative weight in schedule", func(t *testing.T) {
+		yaml := `
+name: "Invalid Schedule Test"
+target:
+  baseURL: "http://localhost:8080"
+endpoints:
+  - name: "test"
+    path: "/test"
+    method: "GET"
+    schedule:
+      - time: "09:00-12:00"
+        weight: -1
+`
+		_, err := LoadFromBytes([]byte(yaml))
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "schedule")
+	})
+
+	t.Run("rejects schedule without time or cron", func(t *testing.T) {
+		yaml := `
+name: "Invalid Schedule Test"
+target:
+  baseURL: "http://localhost:8080"
+endpoints:
+  - name: "test"
+    path: "/test"
+    method: "GET"
+    schedule:
+      - weight: 20
+`
+		_, err := LoadFromBytes([]byte(yaml))
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "schedule")
+	})
+}
+
+func TestScheduleWeightConfig_Validate(t *testing.T) {
+	t.Run("valid time range", func(t *testing.T) {
+		s := ScheduleWeightConfig{
+			Time:   "09:00-12:00",
+			Weight: 20,
+		}
+		assert.NoError(t, s.Validate())
+	})
+
+	t.Run("valid cron", func(t *testing.T) {
+		s := ScheduleWeightConfig{
+			Cron:   "* 9-17 * * 1-5",
+			Weight: 30,
+		}
+		assert.NoError(t, s.Validate())
+	})
+
+	t.Run("invalid negative weight", func(t *testing.T) {
+		s := ScheduleWeightConfig{
+			Time:   "09:00-12:00",
+			Weight: -1,
+		}
+		assert.Error(t, s.Validate())
+	})
+
+	t.Run("invalid missing time and cron", func(t *testing.T) {
+		s := ScheduleWeightConfig{
+			Weight: 20,
+		}
+		assert.Error(t, s.Validate())
+	})
+
+	t.Run("zero weight is valid", func(t *testing.T) {
+		s := ScheduleWeightConfig{
+			Time:   "09:00-12:00",
+			Weight: 0,
+		}
+		assert.NoError(t, s.Validate())
+	})
+}

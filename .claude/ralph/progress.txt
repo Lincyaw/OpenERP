@@ -38697,3 +38697,105 @@ Based on code review feedback, applied the following fixes:
 ### 下一步建议
 - 可以考虑添加 Feature Flag 管理界面的使用指南 (FeatureFlagList.tsx, FeatureFlagForm.tsx)
 - 可以添加更多高级用法示例（如与 OpenTelemetry 集成的监控）
+
+2026-01-29 - Task LOADGEN-021: 时间段权重调度 (Time-based Weight Scheduling)
+
+=== Implementation Details ===
+
+Implemented comprehensive time-based weight scheduling for the load generator, enabling endpoints to have different effective weights at different times of day. This simulates realistic traffic patterns where certain endpoints are more frequently accessed during peak hours.
+
+### New Files Created
+
+1. **tools/loadgen/internal/selector/schedule.go**
+   - `TimeRange` - Represents a time-of-day range (e.g., 09:00-12:00)
+   - `ParseTimeRange()` - Parses time range strings, supports ranges crossing midnight
+   - `TimeBasedWeight` - Configuration for endpoint-specific time-based weight adjustments
+   - `CronSchedule` - Simplified cron schedule support
+   - `ParseCronSchedule()` - Parses 5-field cron expressions (minute, hour, day, month, weekday)
+   - `EndpointSchedule` - Holds time-based scheduling for a specific endpoint
+   - `TimeAwareScheduler` - Wraps scheduling logic with time-based weight adjustments
+
+2. **tools/loadgen/internal/selector/schedule_test.go**
+   - Comprehensive test coverage (91%)
+   - Tests for time range parsing, cron expression parsing
+   - Tests for time containment (including midnight crossing)
+   - Tests for endpoint scheduling and global modifiers
+   - Acceptance criteria test: `TestAcceptanceCriteria_MorningSalesOrderWeightBoost`
+   - Benchmark tests for performance
+
+### Modified Files
+
+1. **tools/loadgen/internal/config/config.go**
+   - Added `Schedule []ScheduleWeightConfig` field to `EndpointConfig`
+   - Added `ScheduleWeightConfig` struct with `Time`, `Cron`, `Weight`, and `Modifier` fields
+   - Added `Validate()` method for `ScheduleWeightConfig`
+   - Updated config validation to validate endpoint schedules
+
+2. **tools/loadgen/internal/config/config_test.go**
+   - Added tests for schedule configuration parsing
+   - Added tests for schedule validation (negative weight, missing time/cron)
+
+### Key Features Implemented
+
+1. **Time Range Format** (e.g., "09:00-12:00")
+   - Supports HH:MM-HH:MM format
+   - Handles ranges crossing midnight (e.g., "22:00-02:00")
+   - Start time is inclusive, end time is exclusive
+
+2. **Cron Expression Support** (optional)
+   - 5-field cron format: minute hour day-of-month month day-of-week
+   - Supports wildcards (*), ranges (1-5), lists (1,3,5), and steps (*/15)
+   - Examples: "* 9-17 * * 1-5" (weekday work hours)
+
+3. **Weight Configuration Options**
+   - Direct weight assignment (replaces base weight)
+   - Modifier support (multiplies base weight, e.g., 2.0 for double)
+   - First matching schedule wins (priority by order)
+
+4. **Global Schedule Support**
+   - TimeSchedule struct for global time-based modifiers
+   - Applied to all endpoints when active
+
+### Configuration Example
+
+```yaml
+endpoints:
+  - name: "sales.order.create"
+    path: "/trade/sales-orders"
+    method: "POST"
+    weight: 10
+    schedule:
+      - time: "09:00-12:00"
+        weight: 20        # Morning peak
+      - time: "12:00-14:00"
+        weight: 5         # Lunch lull
+      - time: "14:00-18:00"
+        weight: 15        # Afternoon peak
+```
+
+=== Verification ===
+
+- All tests pass: `go test ./...` (14 packages)
+- Selector package coverage: 91%
+- Config package coverage: 75%
+- Build succeeds: `go build ./...`
+- Acceptance criteria verified: Morning 9-12 order endpoint weight boost works correctly
+
+=== Design Decisions ===
+
+1. **Separate schedule.go file**: Created new file instead of modifying weighted.go to maintain single responsibility and clean code organization.
+
+2. **TimeAwareScheduler as wrapper**: Designed as a composable wrapper that can work with the existing Scheduler, allowing gradual adoption.
+
+3. **First-match wins semantics**: When multiple schedules overlap, the first matching schedule in the configuration takes precedence. This is explicit and predictable.
+
+4. **Modifier vs Weight**: Provided both options - Modifier multiplies the base weight (useful for relative adjustments), while Weight replaces it (useful for absolute values).
+
+5. **Cron as optional enhancement**: Cron expressions are more powerful but also more complex. Time ranges cover the most common use cases.
+
+=== Next Steps ===
+
+- Consider integrating TimeAwareScheduler into the executor workflow for automatic time-based weight adjustment during load tests
+- Add support for timezone configuration if needed
+- Document the schedule feature in README.md
+

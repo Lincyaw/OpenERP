@@ -247,8 +247,52 @@ type EndpointConfig struct {
 	// Timeout is the endpoint-specific timeout (overrides target timeout).
 	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty"`
 
+	// Schedule defines time-based weight adjustments for this endpoint.
+	// When a schedule matches the current time, the endpoint's effective weight
+	// is adjusted according to the schedule configuration.
+	Schedule []ScheduleWeightConfig `yaml:"schedule,omitempty" json:"schedule,omitempty"`
+
 	// Disabled indicates whether this endpoint is disabled.
 	Disabled bool `yaml:"disabled,omitempty" json:"disabled,omitempty"`
+}
+
+// ScheduleWeightConfig defines time-based weight adjustments for an endpoint.
+// This allows endpoints to have different weights at different times of day.
+type ScheduleWeightConfig struct {
+	// Time is the time range in format "HH:MM-HH:MM" (e.g., "09:00-12:00").
+	// The time range is inclusive of the start time and exclusive of the end time.
+	// Supports crossing midnight (e.g., "22:00-02:00").
+	Time string `yaml:"time,omitempty" json:"time,omitempty"`
+
+	// Cron is an optional cron expression for more complex schedules.
+	// When set, it overrides the Time field.
+	// Format: "minute hour day-of-month month day-of-week"
+	// Examples:
+	//   - "* 9-17 * * 1-5" - weekday work hours
+	//   - "0 9 * * *" - 9:00am every day
+	//   - "*/15 * * * *" - every 15 minutes
+	Cron string `yaml:"cron,omitempty" json:"cron,omitempty"`
+
+	// Weight is the endpoint weight during this time period.
+	// This replaces the base weight when the time condition matches.
+	// Must be non-negative.
+	Weight int `yaml:"weight" json:"weight"`
+
+	// Modifier is an alternative to Weight that applies a multiplier to the base weight.
+	// For example, Modifier: 2.0 doubles the weight, Modifier: 0.5 halves it.
+	// If Modifier > 0, it takes precedence over Weight.
+	Modifier float64 `yaml:"modifier,omitempty" json:"modifier,omitempty"`
+}
+
+// Validate validates the ScheduleWeightConfig.
+func (s *ScheduleWeightConfig) Validate() error {
+	if s.Weight < 0 {
+		return fmt.Errorf("schedule weight must be non-negative, got %d", s.Weight)
+	}
+	if s.Time == "" && s.Cron == "" {
+		return fmt.Errorf("schedule must have either time or cron specified")
+	}
+	return nil
 }
 
 // ParameterConfig configures a single parameter.
@@ -573,6 +617,13 @@ func (c *Config) Validate() error {
 		}
 		if ep.Method == "" {
 			return fmt.Errorf("%w: endpoint[%d].method is required", ErrInvalidConfig, i)
+		}
+
+		// Validate endpoint schedules
+		for j, sched := range ep.Schedule {
+			if err := sched.Validate(); err != nil {
+				return fmt.Errorf("%w: endpoint[%d].schedule[%d]: %v", ErrInvalidConfig, i, j, err)
+			}
 		}
 	}
 
