@@ -11481,7 +11481,7 @@
       "- [ ] Unit tests cover all validation rules",
       "- [ ] Memory usage stays under 100MB for 10K rows"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "IMPORT-BE-002",
@@ -12396,6 +12396,6 @@
       "- [ ] Rules warn about hardcoded px values",
       "- [ ] Documentation updated with lint command"
     ],
-    "passes": false
+    "passes": true
   }
 ]

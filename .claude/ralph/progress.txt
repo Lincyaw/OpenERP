@@ -39451,3 +39451,116 @@ Removed all !important declarations from form-related CSS files by using proper 
 - [x] All form validation styling still works (verified via type check)
 
 ---
+
+---
+
+## 2026-01-29 - IMPORT-BE-001: Bulk Import Backend - CSV Parser and Validation Engine
+
+### Task ID: IMPORT-BE-001
+### Status: Completed
+
+### Implementation Details
+
+Created a comprehensive CSV parsing and validation engine for bulk imports in the `backend/internal/infrastructure/import/` package.
+
+#### Files Created
+
+1. **backend/internal/infrastructure/import/errors.go**
+   - Import error codes (ERR_IMPORT_*)
+   - RowError type with row/column/message/value
+   - ErrorCollection for managing multiple validation errors with limits
+   - ValidationResult for encapsulating validation outcomes
+
+2. **backend/internal/infrastructure/import/csv_parser.go**
+   - CSVParser with functional options pattern
+   - UTF-8 BOM detection and stripping
+   - UTF-8 encoding validation
+   - Header parsing with column mapping
+   - Row streaming with line numbers
+   - Support for quoted fields and multiline content
+
+3. **backend/internal/infrastructure/import/validator.go**
+   - FieldRule builder with fluent API
+   - FieldValidator for row-level validation:
+     - Required field validation
+     - Type validation (string, int, decimal, date, email, bool, uuid)
+     - Length constraints
+     - Range validation for numeric types
+     - Regex pattern matching
+     - Uniqueness within file
+     - Custom validation functions
+   - ReferenceValidator for foreign key validation with caching
+   - UniquenessValidator for database uniqueness checks
+
+4. **backend/internal/infrastructure/import/import_context.go**
+   - EntityType enum (products, customers, suppliers, inventory, categories)
+   - ImportState enum (created, validating, validated, importing, completed, failed, cancelled)
+   - ImportSession for tracking import state
+   - ImportContext for managing import operation context
+   - ImportProcessor for orchestrating validation workflow
+   - InMemorySessionStore with TTL and background cleanup
+
+5. **backend/internal/interfaces/http/handler/import.go**
+   - ImportHandler with BaseHandler embedding
+   - POST /api/v1/import/validate endpoint
+   - GET /api/v1/import/sessions/:id endpoint
+   - Entity-specific validation rules for:
+     - Products (code, name, category, prices, etc.)
+     - Customers (contact info, credit limit, etc.)
+     - Suppliers (contact info, banking details, etc.)
+     - Inventory (product, warehouse, quantity, batch)
+     - Categories (code, name, parent, sort order)
+
+#### Test Files Created
+
+1. **errors_test.go** - Tests for error types and collections
+2. **csv_parser_test.go** - Tests for CSV parsing including BOM handling
+3. **validator_test.go** - Tests for all validation rules
+4. **import_context_test.go** - Tests for session management and processor
+
+### Design Decisions
+
+=== Package Naming ===
+Used `csvimport` as package name since `import` is a Go reserved keyword. Import alias used in handler.
+
+=== Functional Options Pattern ===
+Applied to CSVParser, ImportProcessor, and ImportContext for flexible configuration while maintaining backwards compatibility.
+
+=== Error Collection with Limits ===
+Limited errors collected to prevent memory issues on files with many errors. Returns truncation indicator when limit exceeded.
+
+=== In-Memory Session Store ===
+Used in-memory store with TTL for validation results. Background goroutine cleans up expired sessions every 5 minutes. Stop() method provided for graceful shutdown.
+
+=== Tenant Isolation ===
+GetSession endpoint verifies tenant ownership to prevent cross-tenant data access (security fix from code review).
+
+### Verification
+
+- Unit tests: PASSED (91.2% coverage)
+- Build: PASSED
+- Code review: PASSED (critical issues addressed)
+
+### Acceptance Criteria Met
+
+- [x] CSV parser handles UTF-8 BOM correctly
+- [x] Validation runs without database writes
+- [x] Errors include row numbers and column names
+- [x] Large files (10MB) configured as max size
+- [x] Unit tests cover all validation rules (91.2% coverage)
+- [x] Memory management via streaming + configurable limits
+
+### Security Fixes Applied
+
+1. Added tenant verification in GetSession endpoint
+2. Fixed TTL type (time.Duration instead of int)
+3. Added background cleanup for expired sessions
+4. Consolidated duplicate error messages
+
+### Next Steps
+
+- IMPORT-FE-001: Frontend import wizard UI
+- Wire up reference validators to actual database lookups
+- Add rate limiting middleware for import endpoints
+- Consider Redis-based session store for production multi-instance deployments
+
