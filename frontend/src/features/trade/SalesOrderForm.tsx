@@ -1,11 +1,16 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { z } from 'zod'
 import { Card, Typography, Button, Input, Select, Toast, Space } from '@douyinfe/semi-ui-19'
-import { IconPlus, IconSearch } from '@douyinfe/semi-icons'
+import { IconPlus, IconSearch, IconEdit, IconSend } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
+import { FormSection } from '@/components/common/form'
 import { OrderItemsTable, OrderSummary, type ProductOption } from '@/components/common/order'
-import { createSalesOrder, updateSalesOrder } from '@/api/sales-orders/sales-orders'
+import {
+  createSalesOrder,
+  updateSalesOrder,
+  confirmSalesOrder,
+} from '@/api/sales-orders/sales-orders'
 import { listCustomers } from '@/api/customers/customers'
 import { listProducts } from '@/api/products/products'
 import { listWarehouses } from '@/api/warehouses/warehouses'
@@ -54,7 +59,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
   // Product fetching will use listProducts directly
   const isEditMode = Boolean(orderId)
 
-  // Form validation schema
+  // Form validation schema - full validation for confirm submit
   const orderFormSchema = useMemo(
     () =>
       z.object({
@@ -72,6 +77,34 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
               unit: z.string().min(1),
               unit_price: z.number().positive(t('orderForm.validation.priceRequired')),
               quantity: z.number().positive(t('orderForm.validation.quantityRequired')),
+            })
+          )
+          .min(1, t('orderForm.validation.itemsRequired')),
+      }),
+    [t]
+  )
+
+  // Draft validation schema - relaxed validation for items
+  const draftFormSchema = useMemo(
+    () =>
+      z.object({
+        customer_id: z.string().min(1, t('orderForm.validation.customerRequired')),
+        customer_name: z.string().min(1, t('orderForm.validation.customerRequired')),
+        warehouse_id: z.string().optional(),
+        discount: z.number().min(0).max(100),
+        remark: z.string().max(500).optional(),
+        items: z
+          .array(
+            z.object({
+              key: z.string(),
+              product_id: z.string().optional(),
+              product_code: z.string().optional(),
+              product_name: z.string().optional(),
+              unit: z.string().optional(),
+              unit_price: z.number().optional(),
+              quantity: z.number().optional(),
+              amount: z.number().optional(),
+              remark: z.string().optional(),
             })
           )
           .min(1, t('orderForm.validation.itemsRequired')),
@@ -97,6 +130,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
     formData,
     setFormData,
     errors,
+    setErrors,
     isSubmitting,
     setIsSubmitting,
     clearError,
@@ -339,10 +373,26 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
     [setFormData]
   )
 
-  // Handle form submission
-  const handleSubmit = useCallback(async () => {
-    if (!validateForm()) {
-      Toast.error(t('orderForm.validation.itemsRequired'))
+  // Validate form with draft schema (relaxed validation)
+  const validateDraft = useCallback((): boolean => {
+    const result = draftFormSchema.safeParse(formData)
+    if (!result.success) {
+      const newErrors: Record<string, string> = {}
+      result.error.issues.forEach((issue) => {
+        const path = issue.path.join('.')
+        newErrors[path] = issue.message
+      })
+      setErrors(newErrors)
+      return false
+    }
+    setErrors({})
+    return true
+  }, [formData, draftFormSchema, setErrors])
+
+  // Handle save as draft (create or update without confirming)
+  const handleSaveDraft = useCallback(async () => {
+    if (!validateDraft()) {
+      Toast.error(t('orderForm.validation.customerRequired'))
       return
     }
 
@@ -371,7 +421,7 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
               t('orderForm.messages.updateError')
           )
         }
-        Toast.success(t('orderForm.messages.updateSuccess'))
+        Toast.success(t('orderForm.messages.saveDraftSuccess'))
       } else {
         const response = await createSalesOrder({
           customer_id: formData.customer_id,
@@ -387,15 +437,119 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
               t('orderForm.messages.createError')
           )
         }
-        Toast.success(t('orderForm.messages.createSuccess'))
+        Toast.success(t('orderForm.messages.saveDraftSuccess'))
       }
-      // Reset form state before navigation to prevent stale data if navigation fails
       if (!isEditMode) {
         resetForm()
       }
       navigate('/trade/sales')
     } catch (error) {
-      Toast.error(error instanceof Error ? error.message : t('orderForm.messages.createError'))
+      Toast.error(error instanceof Error ? error.message : t('orderForm.messages.saveDraftError'))
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [formData, isEditMode, orderId, navigate, validateDraft, t, setIsSubmitting, resetForm])
+
+  // Handle confirm and submit (full validation + create/update + confirm)
+  const handleConfirmSubmit = useCallback(async () => {
+    if (!validateForm()) {
+      Toast.error(t('orderForm.validation.itemsRequired'))
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const validItems = formData.items.filter((item) => item.product_id)
+      const itemsPayload: HandlerCreateSalesOrderItemInput[] = validItems.map((item) => ({
+        product_id: item.product_id,
+        product_code: item.product_code,
+        product_name: item.product_name,
+        unit: item.unit,
+        unit_price: item.unit_price,
+        quantity: item.quantity,
+        remark: item.remark || undefined,
+      }))
+
+      let orderIdToConfirm = orderId
+      let orderCreated = false
+
+      if (isEditMode && orderId) {
+        // Update existing draft order
+        const response = await updateSalesOrder(orderId, {
+          warehouse_id: formData.warehouse_id,
+          discount: formData.discount,
+          remark: formData.remark || undefined,
+        })
+        if (response.status !== 200 || !response.data.success) {
+          throw new Error(
+            (response.data.error as { message?: string })?.message ||
+              t('orderForm.messages.updateError')
+          )
+        }
+      } else {
+        // Create new order first
+        const response = await createSalesOrder({
+          customer_id: formData.customer_id,
+          customer_name: formData.customer_name,
+          warehouse_id: formData.warehouse_id,
+          discount: formData.discount,
+          remark: formData.remark || undefined,
+          items: itemsPayload,
+        })
+        if (response.status !== 201 || !response.data.success) {
+          throw new Error(
+            (response.data.error as { message?: string })?.message ||
+              t('orderForm.messages.createError')
+          )
+        }
+        orderIdToConfirm = response.data.data?.id
+        orderCreated = true
+      }
+
+      // Confirm the order
+      if (orderIdToConfirm) {
+        try {
+          const confirmResponse = await confirmSalesOrder(orderIdToConfirm, {
+            warehouse_id: formData.warehouse_id,
+          })
+          if (confirmResponse.status !== 200 || !confirmResponse.data.success) {
+            // Order was created but confirmation failed - inform user
+            if (orderCreated) {
+              Toast.warning(t('orderForm.messages.orderCreatedNotConfirmed'))
+              if (!isEditMode) {
+                resetForm()
+              }
+              navigate('/trade/sales')
+              return
+            }
+            throw new Error(
+              (confirmResponse.data.error as { message?: string })?.message ||
+                t('orderForm.messages.confirmSubmitError')
+            )
+          }
+        } catch (confirmError) {
+          // If order was just created and confirmation fails, inform user
+          if (orderCreated) {
+            Toast.warning(t('orderForm.messages.orderCreatedNotConfirmed'))
+            if (!isEditMode) {
+              resetForm()
+            }
+            navigate('/trade/sales')
+            return
+          }
+          throw confirmError
+        }
+      }
+
+      Toast.success(t('orderForm.messages.confirmSubmitSuccess'))
+      if (!isEditMode) {
+        resetForm()
+      }
+      navigate('/trade/sales')
+    } catch (error) {
+      Toast.error(
+        error instanceof Error ? error.message : t('orderForm.messages.confirmSubmitError')
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -444,10 +598,11 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
         </div>
 
         {/* Basic Information Section */}
-        <div className="form-section">
-          <Title heading={5} className="section-title">
-            {t('orderForm.basicInfo.title')}
-          </Title>
+        <FormSection
+          title={t('orderForm.basicInfo.title')}
+          subtitle={t('orderForm.basicInfo.subtitle')}
+          required
+        >
           <div className="form-row">
             <div className="form-field">
               <label className="form-label required">{t('orderForm.basicInfo.customer')}</label>
@@ -496,14 +651,16 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
               />
             </div>
           </div>
-        </div>
+        </FormSection>
 
         {/* Order Items Section */}
-        <div className="form-section">
+        <FormSection
+          title={t('orderForm.items.title')}
+          subtitle={t('orderForm.items.subtitle')}
+          required
+        >
           <div className="section-header">
-            <Title heading={5} className="section-title">
-              {t('orderForm.items.title')}
-            </Title>
+            <div />
             <Button icon={<IconPlus />} theme="light" onClick={addItem}>
               {t('orderForm.items.addProduct')}
             </Button>
@@ -527,22 +684,21 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
             orderType="sales"
             className="items-table"
           />
-        </div>
+        </FormSection>
 
         {/* Summary Section */}
-        <div className="form-section summary-section">
+        <FormSection title={t('orderForm.summary.title')}>
           <OrderSummary
             calculations={calculations}
             discount={formData.discount}
             onDiscountChange={handleDiscountChange}
             t={t}
           />
-        </div>
+        </FormSection>
 
         {/* Remark Section */}
-        <div className="form-section">
+        <FormSection title={t('orderForm.remark.title')} subtitle={t('orderForm.remark.subtitle')}>
           <div className="form-field">
-            <label className="form-label">{t('orderForm.basicInfo.remark')}</label>
             <Input
               value={formData.remark}
               onChange={handleRemarkChange}
@@ -551,21 +707,31 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
               showClear
             />
           </div>
-        </div>
+        </FormSection>
 
-        {/* Form Actions */}
+        {/* Form Actions - Dual Save Buttons */}
         <div className="form-actions">
           <Space>
             <Button onClick={handleCancel} disabled={isSubmitting}>
               {t('orderForm.actions.cancel')}
             </Button>
             <Button
-              type="primary"
-              onClick={handleSubmit}
+              icon={<IconEdit />}
+              onClick={handleSaveDraft}
               loading={isSubmitting}
               disabled={isSubmitting}
             >
-              {isEditMode ? t('orderForm.actions.save') : t('orderForm.actions.create')}
+              {t('orderForm.actions.saveDraft')}
+            </Button>
+            <Button
+              type="primary"
+              theme="solid"
+              icon={<IconSend />}
+              onClick={handleConfirmSubmit}
+              loading={isSubmitting}
+              disabled={isSubmitting}
+            >
+              {t('orderForm.actions.confirmSubmit')}
             </Button>
           </Space>
         </div>

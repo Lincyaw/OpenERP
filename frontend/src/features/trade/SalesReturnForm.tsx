@@ -18,6 +18,7 @@ import { IconSearch } from '@douyinfe/semi-icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Container } from '@/components/common/layout'
+import { FormSection } from '@/components/common/form'
 import { createSalesReturn } from '@/api/sales-returns/sales-returns'
 import { listSalesOrders, getSalesOrderById } from '@/api/sales-orders/sales-orders'
 import { listWarehouses } from '@/api/warehouses/warehouses'
@@ -640,10 +641,7 @@ export function SalesReturnForm() {
         </div>
 
         {/* Order Selection Section */}
-        <div className="form-section">
-          <Title heading={5} className="section-title">
-            {t('salesReturnForm.selectOrder.title')}
-          </Title>
+        <FormSection title={t('salesReturnForm.selectOrder.title')} required>
           <div className="form-row">
             <div className="form-field">
               <label className="form-label required">
@@ -698,14 +696,11 @@ export function SalesReturnForm() {
               />
             </div>
           </div>
-        </div>
+        </FormSection>
 
         {/* Order Info Section */}
         {selectedOrder && (
-          <div className="form-section order-info-section">
-            <Title heading={5} className="section-title">
-              {t('salesReturnForm.orderInfo.title')}
-            </Title>
+          <FormSection title={t('salesReturnForm.orderInfo.title')} className="order-info-section">
             <Descriptions
               data={[
                 {
@@ -731,16 +726,14 @@ export function SalesReturnForm() {
               ]}
               row
             />
-          </div>
+          </FormSection>
         )}
 
         {/* Return Items Section */}
         {formData.items.length > 0 && (
-          <div className="form-section">
+          <FormSection title={t('salesReturnForm.items.title')} required>
             <div className="section-header">
-              <Title heading={5} className="section-title">
-                {t('salesReturnForm.items.title')}
-              </Title>
+              <div />
               <Space>
                 <Button theme="light" size="small" onClick={handleSelectAll}>
                   {t('salesReturnForm.items.selectAll')}
@@ -765,12 +758,12 @@ export function SalesReturnForm() {
               loading={orderLoading}
               empty={<Empty description={t('salesReturnForm.items.empty')} />}
             />
-          </div>
+          </FormSection>
         )}
 
         {/* Summary Section */}
         {calculations.itemCount > 0 && (
-          <div className="form-section summary-section">
+          <FormSection className="summary-section">
             <div className="summary-totals">
               <div className="summary-item">
                 <Text type="tertiary">{t('salesReturnForm.summary.itemCount')}</Text>
@@ -789,13 +782,12 @@ export function SalesReturnForm() {
                 </Text>
               </div>
             </div>
-          </div>
+          </FormSection>
         )}
 
         {/* Reason Section */}
-        <div className="form-section">
+        <FormSection title={t('salesReturnForm.reason.label')} required>
           <div className="form-field">
-            <label className="form-label required">{t('salesReturnForm.reason.label')}</label>
             <Input
               value={formData.reason}
               onChange={handleReasonChange}
@@ -820,7 +812,7 @@ export function SalesReturnForm() {
               showClear
             />
           </div>
-        </div>
+        </FormSection>
 
         {/* Form Actions */}
         <div className="form-actions">

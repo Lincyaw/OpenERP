@@ -38571,3 +38571,64 @@ scroll 宽度从 1500px 减少到 1000px
 ### 下一步建议
 - 考虑添加列自定义功能，让用户可以选择显示哪些列
 - 考虑移动端响应式优化，在小屏幕上只显示最核心的 3-4 列
+
+2025-01-29 - Task UX-009: Apply FormSection to forms and add dual save buttons
+
+=== Implementation Details ===
+- Updated SalesOrderForm with FormSection component for better organization:
+  - Basic Information section with subtitle
+  - Order Items section with subtitle
+  - Order Summary section
+  - Remark section with subtitle
+- Added dual save buttons to sales orders:
+  - "Save Draft" (保存草稿) - saves without confirming, uses relaxed validation
+  - "Confirm & Submit" (确认提交) - saves and confirms, uses full validation
+- Updated PurchaseOrderForm with same improvements
+- Updated SalesReturnForm with FormSection for consistent UX
+- Updated PurchaseReturnForm with FormSection for consistent UX
+- Added i18n translations for new button labels and section subtitles (zh-CN & en-US)
+- Implemented differentiated validation:
+  - Draft validation: only required fields (customer/supplier, at least one item)
+  - Full validation: complete validation including item details
+
+=== Files Modified ===
+- frontend/src/features/trade/SalesOrderForm.tsx
+- frontend/src/features/trade/PurchaseOrderForm.tsx
+- frontend/src/features/trade/SalesReturnForm.tsx
+- frontend/src/features/trade/PurchaseReturnForm.tsx
+- frontend/src/locales/zh-CN/trade.json
+- frontend/src/locales/en-US/trade.json
+
+=== Verification ===
+- TypeScript type check: PASSED
+- ESLint: PASSED (no errors in trade forms)
+- Build: PASSED
+
+=== Design Decisions ===
+1. Dual save buttons use icons (IconEdit for draft, IconSend for confirm) for visual clarity
+2. FormSection with required prop shows visual indicator for mandatory sections
+3. Return forms don't have dual save (they only create in draft status), only FormSection applied
+4. Confirm API requires warehouse_id in body, passed from form data
+
+=== Next Steps ===
+- UX-010: Add batch operations and export functionality
+
+=== Code Review Fixes Applied ===
+Based on code review feedback, applied the following fixes:
+
+1. CRITICAL: Race condition in confirm submit flow
+   - Added proper error handling for partial success case
+   - If order is created but confirmation fails, shows warning toast and navigates to list
+   - User can manually confirm the draft order from the list
+
+2. HIGH: Draft validation schema using z.any()
+   - Replaced z.any() with proper partial schema that validates structure
+   - Maintains type safety while allowing optional values for items
+
+3. HIGH: Missing error display for draft validation
+   - Updated validateDraft to properly set errors state
+   - Field-level errors now display when draft validation fails
+   - Added setErrors to destructured values from useOrderForm hook
+
+4. Added missing i18n translation:
+   - orderCreatedNotConfirmed: "Order created but confirmation failed, please confirm manually from the list"

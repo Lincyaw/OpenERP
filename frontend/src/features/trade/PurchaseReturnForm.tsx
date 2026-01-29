@@ -17,6 +17,7 @@ import {
 import { IconSearch } from '@douyinfe/semi-icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
+import { FormSection } from '@/components/common/form'
 import { createPurchaseReturn } from '@/api/purchase-returns/purchase-returns'
 import { listPurchaseOrders, getPurchaseOrderById } from '@/api/purchase-orders/purchase-orders'
 import { listWarehouses } from '@/api/warehouses/warehouses'
@@ -663,10 +664,7 @@ export function PurchaseReturnForm() {
         </div>
 
         {/* Order Selection Section */}
-        <div className="form-section">
-          <Title heading={5} className="section-title">
-            选择原订单
-          </Title>
+        <FormSection title="选择原订单" required>
           <div className="form-row">
             <div className="form-field">
               <label className="form-label required">原采购订单</label>
@@ -719,14 +717,11 @@ export function PurchaseReturnForm() {
               />
             </div>
           </div>
-        </div>
+        </FormSection>
 
         {/* Order Info Section */}
         {selectedOrder && (
-          <div className="form-section order-info-section">
-            <Title heading={5} className="section-title">
-              订单信息
-            </Title>
+          <FormSection title="订单信息" className="order-info-section">
             <Descriptions
               data={[
                 { key: '订单号', value: selectedOrder.order_number || '-' },
@@ -747,16 +742,14 @@ export function PurchaseReturnForm() {
               ]}
               row
             />
-          </div>
+          </FormSection>
         )}
 
         {/* Return Items Section */}
         {formData.items.length > 0 && (
-          <div className="form-section">
+          <FormSection title="选择退货商品" required>
             <div className="section-header">
-              <Title heading={5} className="section-title">
-                选择退货商品
-              </Title>
+              <div />
               <Space>
                 <Button theme="light" size="small" onClick={handleSelectAll}>
                   全选
@@ -782,19 +775,19 @@ export function PurchaseReturnForm() {
               empty={<Empty description="暂无可退货商品" />}
               scroll={{ x: 1300 }}
             />
-          </div>
+          </FormSection>
         )}
 
         {/* No items message for orders without received goods */}
         {selectedOrder && formData.items.length === 0 && !orderLoading && (
-          <div className="form-section">
+          <FormSection>
             <Empty description="该订单暂无可退货商品（只有已收货的商品才能退货）" />
-          </div>
+          </FormSection>
         )}
 
         {/* Summary Section */}
         {calculations.itemCount > 0 && (
-          <div className="form-section summary-section">
+          <FormSection className="summary-section">
             <div className="summary-totals">
               <div className="summary-item">
                 <Text type="tertiary">退货商品数：</Text>
@@ -811,13 +804,12 @@ export function PurchaseReturnForm() {
                 </Text>
               </div>
             </div>
-          </div>
+          </FormSection>
         )}
 
         {/* Reason Section */}
-        <div className="form-section">
+        <FormSection title="退货原因" required>
           <div className="form-field">
-            <label className="form-label required">退货原因</label>
             <Input
               value={formData.reason}
               onChange={handleReasonChange}
@@ -842,7 +834,7 @@ export function PurchaseReturnForm() {
               showClear
             />
           </div>
-        </div>
+        </FormSection>
 
         {/* Form Actions */}
         <div className="form-actions">

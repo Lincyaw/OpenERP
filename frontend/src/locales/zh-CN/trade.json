@@ -228,6 +228,7 @@
     "back": "返回",
     "basicInfo": {
       "title": "基本信息",
+      "subtitle": "填写订单的基本信息",
       "customer": "客户",
       "customerPlaceholder": "请选择客户",
       "supplier": "供应商",
@@ -240,6 +241,7 @@
     },
     "items": {
       "title": "商品明细",
+      "subtitle": "添加订单商品并设置数量和价格",
       "addProduct": "添加商品",
       "columns": {
         "product": "商品",
@@ -257,16 +259,23 @@
       "empty": "请添加商品"
     },
     "summary": {
+      "title": "订单汇总",
       "itemCount": "商品数量",
       "itemCountUnit": "种",
       "subtotal": "小计",
       "discount": "折扣",
       "payableAmount": "应付金额"
     },
+    "remark": {
+      "title": "备注信息",
+      "subtitle": "添加订单的附加说明（可选）"
+    },
     "actions": {
       "cancel": "取消",
       "create": "创建订单",
-      "save": "保存"
+      "save": "保存",
+      "saveDraft": "保存草稿",
+      "confirmSubmit": "确认提交"
     },
     "validation": {
       "customerRequired": "请选择客户",
@@ -281,6 +290,11 @@
       "createError": "创建订单失败",
       "updateSuccess": "订单更新成功",
       "updateError": "更新订单失败",
+      "saveDraftSuccess": "草稿保存成功",
+      "saveDraftError": "保存草稿失败",
+      "confirmSubmitSuccess": "订单已确认提交",
+      "confirmSubmitError": "确认提交失败",
+      "orderCreatedNotConfirmed": "订单已创建但确认失败，请在列表中手动确认",
       "fetchCustomersError": "获取客户列表失败",
       "fetchSuppliersError": "获取供应商列表失败",
       "fetchWarehousesError": "获取仓库列表失败",

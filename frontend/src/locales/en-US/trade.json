@@ -228,6 +228,7 @@
     "back": "Back",
     "basicInfo": {
       "title": "Basic Information",
+      "subtitle": "Enter the order's basic information",
       "customer": "Customer",
       "customerPlaceholder": "Select customer",
       "supplier": "Supplier",
@@ -240,6 +241,7 @@
     },
     "items": {
       "title": "Order Items",
+      "subtitle": "Add products and set quantities and prices",
       "addProduct": "Add Product",
       "columns": {
         "product": "Product",
@@ -257,16 +259,23 @@
       "empty": "Please add products"
     },
     "summary": {
+      "title": "Order Summary",
       "itemCount": "Item Count",
       "itemCountUnit": "types",
       "subtotal": "Subtotal",
       "discount": "Discount",
       "payableAmount": "Payable Amount"
     },
+    "remark": {
+      "title": "Remarks",
+      "subtitle": "Add additional notes for the order (optional)"
+    },
     "actions": {
       "cancel": "Cancel",
       "create": "Create Order",
-      "save": "Save"
+      "save": "Save",
+      "saveDraft": "Save Draft",
+      "confirmSubmit": "Confirm & Submit"
     },
     "validation": {
       "customerRequired": "Please select a customer",
@@ -281,6 +290,11 @@
       "createError": "Failed to create order",
       "updateSuccess": "Order updated successfully",
       "updateError": "Failed to update order",
+      "saveDraftSuccess": "Draft saved successfully",
+      "saveDraftError": "Failed to save draft",
+      "confirmSubmitSuccess": "Order confirmed and submitted",
+      "confirmSubmitError": "Failed to confirm and submit",
+      "orderCreatedNotConfirmed": "Order created but confirmation failed, please confirm manually from the list",
       "fetchCustomersError": "Failed to fetch customer list",
       "fetchSuppliersError": "Failed to fetch supplier list",
       "fetchWarehousesError": "Failed to fetch warehouse list",
