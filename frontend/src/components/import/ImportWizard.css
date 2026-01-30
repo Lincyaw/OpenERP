@@ -1,5 +1,8 @@
+/* ImportWizard - Mobile First Styles */
+
 .import-wizard-modal {
   max-height: 90vh;
+  max-width: 95vw;
 }
 
 .import-wizard-modal .semi-modal-body {
@@ -13,33 +16,52 @@
   gap: var(--spacing-6);
 }
 
+/* Steps - Mobile base */
 .import-wizard-steps {
-  padding: 0 var(--spacing-4);
+  padding: 0;
 }
 
+.import-wizard-steps .semi-steps-item-title {
+  display: none;
+}
+
+.import-wizard-steps .semi-steps-item {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Content - Mobile base */
 .import-wizard-content {
-  min-height: 300px;
-  padding: var(--spacing-2);
+  min-height: 200px;
+  padding: 0;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
+/* Small screens and up (min-width: 480px) - show step titles */
+@media (min-width: 480px) {
+  .import-wizard-steps .semi-steps-item-title {
+    display: block;
+    font-size: var(--font-size-xs, 12px);
+    white-space: nowrap;
+  }
+}
+
+/* Tablet and up (min-width: 768px) */
+@media (min-width: 768px) {
   .import-wizard-modal {
-    width: 95vw !important;
-    max-width: 95vw !important;
+    width: 800px;
   }
 
   .import-wizard-steps {
-    padding: 0;
+    padding: 0 var(--spacing-4);
   }
 
   .import-wizard-steps .semi-steps-item-title {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm, 14px);
   }
 
   .import-wizard-content {
-    min-height: 200px;
-    padding: 0;
+    min-height: 300px;
+    padding: var(--spacing-2);
   }
 }
 

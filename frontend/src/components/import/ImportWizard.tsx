@@ -342,7 +342,6 @@ export function ImportWizard({
       onCancel={handleClose}
       title={t('import.wizard.title', { entity: entityDisplayName })}
       footer={null}
-      width={720}
       centered
       closable={!validating && !importing}
       maskClosable={!validating && !importing}

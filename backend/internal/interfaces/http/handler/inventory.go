@@ -12,16 +12,18 @@ import (
 
 // parseDateTime parses a datetime string in various formats
 func parseDateTime(s string) (time.Time, error) {
-	// Try RFC3339 first
+	// Try RFC3339 first (includes timezone info)
 	if t, err := time.Parse(time.RFC3339, s); err == nil {
 		return t, nil
 	}
-	// Try ISO date format
-	if t, err := time.Parse("2006-01-02", s); err == nil {
+	// Try ISO date format - use local timezone to avoid UTC midnight issue
+	// This ensures dates like "2026-01-29" display as 2026-01-29 00:00 local time,
+	// not 2026-01-29 08:00 when converted from UTC to UTC+8
+	if t, err := time.ParseInLocation("2006-01-02", s, time.Local); err == nil {
 		return t, nil
 	}
-	// Try datetime without timezone
-	if t, err := time.Parse("2006-01-02 15:04:05", s); err == nil {
+	// Try datetime without timezone - use local timezone
+	if t, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local); err == nil {
 		return t, nil
 	}
 	// Default to RFC3339 parsing error

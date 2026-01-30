@@ -254,15 +254,26 @@ export function parseError(error: unknown): ErrorDetails {
       error.message.includes('ECONNREFUSED') ||
       error.message.includes('ETIMEDOUT')
 
-    const type = isNetworkError ? ErrorType.NETWORK : ErrorType.UNKNOWN
+    if (isNetworkError) {
+      return {
+        type: ErrorType.NETWORK,
+        message: getErrorMessage(ErrorType.NETWORK),
+        technicalMessage: error.message,
+        suggestion: getErrorSuggestion(ErrorType.NETWORK),
+        canRetry: true,
+        showContactSupport: false,
+      }
+    }
 
+    // For custom thrown errors (e.g., business logic errors), use the error message directly
+    // This preserves user-friendly messages that were explicitly thrown
     return {
-      type,
-      message: getErrorMessage(type),
+      type: ErrorType.VALIDATION,
+      message: error.message,
       technicalMessage: error.message,
-      suggestion: getErrorSuggestion(type),
-      canRetry: isRetryable(type),
-      showContactSupport: shouldShowContactSupport(type),
+      suggestion: undefined,
+      canRetry: false,
+      showContactSupport: false,
     }
   }
 

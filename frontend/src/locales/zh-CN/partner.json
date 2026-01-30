@@ -1,6 +1,9 @@
 {
   "customers": {
     "title": "客户管理",
+    "tip": {
+      "description": "管理所有客户信息。客户等级影响折扣和信用额度。有未结清账款或关联订单的客户无法删除。"
+    },
     "searchPlaceholder": "搜索客户名称、编码、电话、邮箱...",
     "addCustomer": "新增客户",
     "editCustomer": "编辑客户",
@@ -131,6 +134,9 @@
   },
   "suppliers": {
     "title": "供应商管理",
+    "tip": {
+      "description": "管理所有供应商信息。建议为供应商设置账期和付款方式，以便自动生成应付账款。有未结清账款的供应商无法删除。"
+    },
     "searchPlaceholder": "搜索供应商名称、编码、电话、邮箱...",
     "addSupplier": "新增供应商",
     "editSupplier": "编辑供应商",
@@ -265,6 +271,9 @@
   },
   "warehouses": {
     "title": "仓库管理",
+    "tip": {
+      "description": "管理所有仓库和库位信息。每个仓库需要设置负责人和地址，仓库一旦有库存记录后无法删除，只能禁用。"
+    },
     "searchPlaceholder": "搜索仓库名称、编码...",
     "addWarehouse": "新增仓库",
     "editWarehouse": "编辑仓库",

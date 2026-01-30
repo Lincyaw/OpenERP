@@ -1,5 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, Typography, Tag, Toast, Select, Space, Spin, Button } from '@douyinfe/semi-ui-19'
+import {
+  Card,
+  Typography,
+  Tag,
+  Toast,
+  Select,
+  Space,
+  Spin,
+  Button,
+  Banner,
+} from '@douyinfe/semi-ui-19'
 import { IconRefresh, IconPlus } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -364,6 +374,13 @@ export default function StockTakingListPage() {
 
   return (
     <Container size="full" className="stock-taking-list-page">
+      {/* Page Tip Banner */}
+      <Banner
+        type="info"
+        description={t('stockTaking.list.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
+
       <Card className="stock-taking-list-card">
         <div className="stock-taking-list-header">
           <Title heading={4} style={{ margin: 0 }}>

@@ -11,6 +11,7 @@ import {
   DatePicker,
   Descriptions,
   Tooltip,
+  Banner,
 } from '@douyinfe/semi-ui-19'
 import { IconRefresh, IconAlertCircle } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
@@ -450,6 +451,11 @@ export default function PayablesPage() {
 
   return (
     <Container size="full" className="payables-page">
+      <Banner
+        type="info"
+        description={t('payables.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
       {/* Summary Cards */}
       <div className="payables-summary">
         <Spin spinning={summaryLoading}>

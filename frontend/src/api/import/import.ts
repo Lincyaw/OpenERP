@@ -22,16 +22,27 @@ import type {
 import type {
   DtoErrorResponse,
   HandlerAPIResponseCsvimportImportSession,
+  HandlerAPIResponseDtoImportHistoryListResponse,
+  HandlerAPIResponseDtoImportHistoryResponse,
   HandlerAPIResponseHandlerCustomerImportResponse,
   HandlerAPIResponseHandlerCustomerValidationResponse,
+  HandlerAPIResponseHandlerInventoryImportResponse,
+  HandlerAPIResponseHandlerInventoryValidationResponse,
   HandlerAPIResponseHandlerProductImportResponse,
   HandlerAPIResponseHandlerProductValidationResponse,
+  HandlerAPIResponseHandlerSupplierImportResponse,
+  HandlerAPIResponseHandlerSupplierValidationResponse,
   HandlerAPIResponseHandlerValidationResponse,
   ImportCustomersBody,
+  ImportInventoryBody,
   ImportProductsBody,
+  ImportSuppliersBody,
+  ListImportHistoryParams,
   ValidateCustomerImportBodyTwo,
   ValidateImportBodyTwo,
+  ValidateInventoryImportBodyTwo,
   ValidateProductImportBodyTwo,
+  ValidateSupplierImportBodyTwo,
 } from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
@@ -300,6 +311,891 @@ export const useValidateCustomerImport = <TError = DtoErrorResponse, TContext = 
   TContext
 > => {
   return useMutation(getValidateCustomerImportMutationOptions(options), queryClient)
+}
+/**
+ * Returns a paginated list of import histories with optional filtering
+ * @summary List import histories
+ */
+export type listImportHistoryResponse200 = {
+  data: HandlerAPIResponseDtoImportHistoryListResponse
+  status: 200
+}
+
+export type listImportHistoryResponse400 = {
+  data: DtoErrorResponse
+  status: 400
+}
+
+export type listImportHistoryResponse401 = {
+  data: DtoErrorResponse
+  status: 401
+}
+
+export type listImportHistoryResponse500 = {
+  data: DtoErrorResponse
+  status: 500
+}
+
+export type listImportHistoryResponseSuccess = listImportHistoryResponse200 & {
+  headers: Headers
+}
+export type listImportHistoryResponseError = (
+  | listImportHistoryResponse400
+  | listImportHistoryResponse401
+  | listImportHistoryResponse500
+) & {
+  headers: Headers
+}
+
+export type listImportHistoryResponse =
+  | listImportHistoryResponseSuccess
+  | listImportHistoryResponseError
+
+export const getListImportHistoryUrl = (params?: ListImportHistoryParams) => {
+  const normalizedParams = new URLSearchParams()
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  })
+
+  const stringifiedParams = normalizedParams.toString()
+
+  return stringifiedParams.length > 0 ? `/import/history?${stringifiedParams}` : `/import/history`
+}
+
+export const listImportHistory = async (
+  params?: ListImportHistoryParams,
+  options?: RequestInit
+): Promise<listImportHistoryResponse> => {
+  return customInstance<listImportHistoryResponse>(getListImportHistoryUrl(params), {
+    ...options,
+    method: 'GET',
+  })
+}
+
+export const getListImportHistoryQueryKey = (params?: ListImportHistoryParams) => {
+  return [`/import/history`, ...(params ? [params] : [])] as const
+}
+
+export const getListImportHistoryQueryOptions = <
+  TData = Awaited<ReturnType<typeof listImportHistory>>,
+  TError = DtoErrorResponse,
+>(
+  params?: ListImportHistoryParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listImportHistory>>, TError, TData>>
+    request?: SecondParameter<typeof customInstance>
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getListImportHistoryQueryKey(params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listImportHistory>>> = ({ signal }) =>
+    listImportHistory(params, { signal, ...requestOptions })
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listImportHistory>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListImportHistoryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listImportHistory>>
+>
+export type ListImportHistoryQueryError = DtoErrorResponse
+
+export function useListImportHistory<
+  TData = Awaited<ReturnType<typeof listImportHistory>>,
+  TError = DtoErrorResponse,
+>(
+  params: undefined | ListImportHistoryParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listImportHistory>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listImportHistory>>,
+          TError,
+          Awaited<ReturnType<typeof listImportHistory>>
+        >,
+        'initialData'
+      >
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListImportHistory<
+  TData = Awaited<ReturnType<typeof listImportHistory>>,
+  TError = DtoErrorResponse,
+>(
+  params?: ListImportHistoryParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listImportHistory>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listImportHistory>>,
+          TError,
+          Awaited<ReturnType<typeof listImportHistory>>
+        >,
+        'initialData'
+      >
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListImportHistory<
+  TData = Awaited<ReturnType<typeof listImportHistory>>,
+  TError = DtoErrorResponse,
+>(
+  params?: ListImportHistoryParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listImportHistory>>, TError, TData>>
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List import histories
+ */
+
+export function useListImportHistory<
+  TData = Awaited<ReturnType<typeof listImportHistory>>,
+  TError = DtoErrorResponse,
+>(
+  params?: ListImportHistoryParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listImportHistory>>, TError, TData>>
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListImportHistoryQueryOptions(params, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+/**
+ * Deletes an import history record
+ * @summary Delete import history
+ */
+export type deleteImportHistoryResponse204 = {
+  data: void
+  status: 204
+}
+
+export type deleteImportHistoryResponse400 = {
+  data: DtoErrorResponse
+  status: 400
+}
+
+export type deleteImportHistoryResponse401 = {
+  data: DtoErrorResponse
+  status: 401
+}
+
+export type deleteImportHistoryResponse404 = {
+  data: DtoErrorResponse
+  status: 404
+}
+
+export type deleteImportHistoryResponse500 = {
+  data: DtoErrorResponse
+  status: 500
+}
+
+export type deleteImportHistoryResponseSuccess = deleteImportHistoryResponse204 & {
+  headers: Headers
+}
+export type deleteImportHistoryResponseError = (
+  | deleteImportHistoryResponse400
+  | deleteImportHistoryResponse401
+  | deleteImportHistoryResponse404
+  | deleteImportHistoryResponse500
+) & {
+  headers: Headers
+}
+
+export type deleteImportHistoryResponse =
+  | deleteImportHistoryResponseSuccess
+  | deleteImportHistoryResponseError
+
+export const getDeleteImportHistoryUrl = (id: string) => {
+  return `/import/history/${id}`
+}
+
+export const deleteImportHistory = async (
+  id: string,
+  options?: RequestInit
+): Promise<deleteImportHistoryResponse> => {
+  return customInstance<deleteImportHistoryResponse>(getDeleteImportHistoryUrl(id), {
+    ...options,
+    method: 'DELETE',
+  })
+}
+
+export const getDeleteImportHistoryMutationOptions = <
+  TError = DtoErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteImportHistory>>,
+    TError,
+    { id: string },
+    TContext
+  >
+  request?: SecondParameter<typeof customInstance>
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteImportHistory>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ['deleteImportHistory']
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteImportHistory>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {}
+
+    return deleteImportHistory(id, requestOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type DeleteImportHistoryMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteImportHistory>>
+>
+
+export type DeleteImportHistoryMutationError = DtoErrorResponse
+
+/**
+ * @summary Delete import history
+ */
+export const useDeleteImportHistory = <TError = DtoErrorResponse, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteImportHistory>>,
+      TError,
+      { id: string },
+      TContext
+    >
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteImportHistory>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteImportHistoryMutationOptions(options), queryClient)
+}
+/**
+ * Returns detailed information about a specific import operation
+ * @summary Get import history details
+ */
+export type getImportHistoryResponse200 = {
+  data: HandlerAPIResponseDtoImportHistoryResponse
+  status: 200
+}
+
+export type getImportHistoryResponse400 = {
+  data: DtoErrorResponse
+  status: 400
+}
+
+export type getImportHistoryResponse401 = {
+  data: DtoErrorResponse
+  status: 401
+}
+
+export type getImportHistoryResponse404 = {
+  data: DtoErrorResponse
+  status: 404
+}
+
+export type getImportHistoryResponse500 = {
+  data: DtoErrorResponse
+  status: 500
+}
+
+export type getImportHistoryResponseSuccess = getImportHistoryResponse200 & {
+  headers: Headers
+}
+export type getImportHistoryResponseError = (
+  | getImportHistoryResponse400
+  | getImportHistoryResponse401
+  | getImportHistoryResponse404
+  | getImportHistoryResponse500
+) & {
+  headers: Headers
+}
+
+export type getImportHistoryResponse =
+  | getImportHistoryResponseSuccess
+  | getImportHistoryResponseError
+
+export const getGetImportHistoryUrl = (id: string) => {
+  return `/import/history/${id}`
+}
+
+export const getImportHistory = async (
+  id: string,
+  options?: RequestInit
+): Promise<getImportHistoryResponse> => {
+  return customInstance<getImportHistoryResponse>(getGetImportHistoryUrl(id), {
+    ...options,
+    method: 'GET',
+  })
+}
+
+export const getGetImportHistoryQueryKey = (id: string) => {
+  return [`/import/history/${id}`] as const
+}
+
+export const getGetImportHistoryQueryOptions = <
+  TData = Awaited<ReturnType<typeof getImportHistory>>,
+  TError = DtoErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportHistory>>, TError, TData>>
+    request?: SecondParameter<typeof customInstance>
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetImportHistoryQueryKey(id)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportHistory>>> = ({ signal }) =>
+    getImportHistory(id, { signal, ...requestOptions })
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getImportHistory>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetImportHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getImportHistory>>>
+export type GetImportHistoryQueryError = DtoErrorResponse
+
+export function useGetImportHistory<
+  TData = Awaited<ReturnType<typeof getImportHistory>>,
+  TError = DtoErrorResponse,
+>(
+  id: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportHistory>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getImportHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getImportHistory>>
+        >,
+        'initialData'
+      >
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportHistory<
+  TData = Awaited<ReturnType<typeof getImportHistory>>,
+  TError = DtoErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportHistory>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getImportHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getImportHistory>>
+        >,
+        'initialData'
+      >
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportHistory<
+  TData = Awaited<ReturnType<typeof getImportHistory>>,
+  TError = DtoErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportHistory>>, TError, TData>>
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get import history details
+ */
+
+export function useGetImportHistory<
+  TData = Awaited<ReturnType<typeof getImportHistory>>,
+  TError = DtoErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportHistory>>, TError, TData>>
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetImportHistoryQueryOptions(id, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+/**
+ * Downloads error details from an import operation as a CSV file
+ * @summary Download import errors as CSV
+ */
+export type getImportErrorsResponse200 = {
+  data: string
+  status: 200
+}
+
+export type getImportErrorsResponse400 = {
+  data: DtoErrorResponse
+  status: 400
+}
+
+export type getImportErrorsResponse401 = {
+  data: DtoErrorResponse
+  status: 401
+}
+
+export type getImportErrorsResponse404 = {
+  data: DtoErrorResponse
+  status: 404
+}
+
+export type getImportErrorsResponse500 = {
+  data: DtoErrorResponse
+  status: 500
+}
+
+export type getImportErrorsResponseSuccess = getImportErrorsResponse200 & {
+  headers: Headers
+}
+export type getImportErrorsResponseError = (
+  | getImportErrorsResponse400
+  | getImportErrorsResponse401
+  | getImportErrorsResponse404
+  | getImportErrorsResponse500
+) & {
+  headers: Headers
+}
+
+export type getImportErrorsResponse = getImportErrorsResponseSuccess | getImportErrorsResponseError
+
+export const getGetImportErrorsUrl = (id: string) => {
+  return `/import/history/${id}/errors`
+}
+
+export const getImportErrors = async (
+  id: string,
+  options?: RequestInit
+): Promise<getImportErrorsResponse> => {
+  return customInstance<getImportErrorsResponse>(getGetImportErrorsUrl(id), {
+    ...options,
+    method: 'GET',
+  })
+}
+
+export const getGetImportErrorsQueryKey = (id: string) => {
+  return [`/import/history/${id}/errors`] as const
+}
+
+export const getGetImportErrorsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getImportErrors>>,
+  TError = DtoErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportErrors>>, TError, TData>>
+    request?: SecondParameter<typeof customInstance>
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetImportErrorsQueryKey(id)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportErrors>>> = ({ signal }) =>
+    getImportErrors(id, { signal, ...requestOptions })
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getImportErrors>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetImportErrorsQueryResult = NonNullable<Awaited<ReturnType<typeof getImportErrors>>>
+export type GetImportErrorsQueryError = DtoErrorResponse
+
+export function useGetImportErrors<
+  TData = Awaited<ReturnType<typeof getImportErrors>>,
+  TError = DtoErrorResponse,
+>(
+  id: string,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportErrors>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getImportErrors>>,
+          TError,
+          Awaited<ReturnType<typeof getImportErrors>>
+        >,
+        'initialData'
+      >
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportErrors<
+  TData = Awaited<ReturnType<typeof getImportErrors>>,
+  TError = DtoErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportErrors>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getImportErrors>>,
+          TError,
+          Awaited<ReturnType<typeof getImportErrors>>
+        >,
+        'initialData'
+      >
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportErrors<
+  TData = Awaited<ReturnType<typeof getImportErrors>>,
+  TError = DtoErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportErrors>>, TError, TData>>
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Download import errors as CSV
+ */
+
+export function useGetImportErrors<
+  TData = Awaited<ReturnType<typeof getImportErrors>>,
+  TError = DtoErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportErrors>>, TError, TData>>
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetImportErrorsQueryOptions(id, options)
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>
+  }
+
+  return { ...query, queryKey: queryOptions.queryKey }
+}
+
+/**
+ * Imports inventory from a previously validated CSV file. CRITICAL: This is for initial data migration only, not for regular stock operations. Requires admin permission.
+ * @summary Import inventory from validated CSV
+ */
+export type importInventoryResponse200 = {
+  data: HandlerAPIResponseHandlerInventoryImportResponse
+  status: 200
+}
+
+export type importInventoryResponse400 = {
+  data: DtoErrorResponse
+  status: 400
+}
+
+export type importInventoryResponse401 = {
+  data: DtoErrorResponse
+  status: 401
+}
+
+export type importInventoryResponse403 = {
+  data: DtoErrorResponse
+  status: 403
+}
+
+export type importInventoryResponse404 = {
+  data: DtoErrorResponse
+  status: 404
+}
+
+export type importInventoryResponse422 = {
+  data: DtoErrorResponse
+  status: 422
+}
+
+export type importInventoryResponse500 = {
+  data: DtoErrorResponse
+  status: 500
+}
+
+export type importInventoryResponseSuccess = importInventoryResponse200 & {
+  headers: Headers
+}
+export type importInventoryResponseError = (
+  | importInventoryResponse400
+  | importInventoryResponse401
+  | importInventoryResponse403
+  | importInventoryResponse404
+  | importInventoryResponse422
+  | importInventoryResponse500
+) & {
+  headers: Headers
+}
+
+export type importInventoryResponse = importInventoryResponseSuccess | importInventoryResponseError
+
+export const getImportInventoryUrl = () => {
+  return `/import/inventory`
+}
+
+export const importInventory = async (
+  importInventoryBody: ImportInventoryBody,
+  options?: RequestInit
+): Promise<importInventoryResponse> => {
+  return customInstance<importInventoryResponse>(getImportInventoryUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(importInventoryBody),
+  })
+}
+
+export const getImportInventoryMutationOptions = <
+  TError = DtoErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof importInventory>>,
+    TError,
+    { data: ImportInventoryBody },
+    TContext
+  >
+  request?: SecondParameter<typeof customInstance>
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof importInventory>>,
+  TError,
+  { data: ImportInventoryBody },
+  TContext
+> => {
+  const mutationKey = ['importInventory']
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof importInventory>>,
+    { data: ImportInventoryBody }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return importInventory(data, requestOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type ImportInventoryMutationResult = NonNullable<Awaited<ReturnType<typeof importInventory>>>
+export type ImportInventoryMutationBody = ImportInventoryBody
+export type ImportInventoryMutationError = DtoErrorResponse
+
+/**
+ * @summary Import inventory from validated CSV
+ */
+export const useImportInventory = <TError = DtoErrorResponse, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof importInventory>>,
+      TError,
+      { data: ImportInventoryBody },
+      TContext
+    >
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof importInventory>>,
+  TError,
+  { data: ImportInventoryBody },
+  TContext
+> => {
+  return useMutation(getImportInventoryMutationOptions(options), queryClient)
+}
+/**
+ * Validates an inventory CSV file for import without actually importing the data. CRITICAL: This is for initial data migration only, not for regular stock operations.
+ * @summary Validate inventory CSV file for import
+ */
+export type validateInventoryImportResponse200 = {
+  data: HandlerAPIResponseHandlerInventoryValidationResponse
+  status: 200
+}
+
+export type validateInventoryImportResponse400 = {
+  data: DtoErrorResponse
+  status: 400
+}
+
+export type validateInventoryImportResponse401 = {
+  data: DtoErrorResponse
+  status: 401
+}
+
+export type validateInventoryImportResponse413 = {
+  data: DtoErrorResponse
+  status: 413
+}
+
+export type validateInventoryImportResponse415 = {
+  data: DtoErrorResponse
+  status: 415
+}
+
+export type validateInventoryImportResponse422 = {
+  data: DtoErrorResponse
+  status: 422
+}
+
+export type validateInventoryImportResponse500 = {
+  data: DtoErrorResponse
+  status: 500
+}
+
+export type validateInventoryImportResponseSuccess = validateInventoryImportResponse200 & {
+  headers: Headers
+}
+export type validateInventoryImportResponseError = (
+  | validateInventoryImportResponse400
+  | validateInventoryImportResponse401
+  | validateInventoryImportResponse413
+  | validateInventoryImportResponse415
+  | validateInventoryImportResponse422
+  | validateInventoryImportResponse500
+) & {
+  headers: Headers
+}
+
+export type validateInventoryImportResponse =
+  | validateInventoryImportResponseSuccess
+  | validateInventoryImportResponseError
+
+export const getValidateInventoryImportUrl = () => {
+  return `/import/inventory/validate`
+}
+
+export const validateInventoryImport = async (
+  validateInventoryImportBody: unknown | ValidateInventoryImportBodyTwo,
+  options?: RequestInit
+): Promise<validateInventoryImportResponse> => {
+  return customInstance<validateInventoryImportResponse>(getValidateInventoryImportUrl(), {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(validateInventoryImportBody),
+  })
+}
+
+export const getValidateInventoryImportMutationOptions = <
+  TError = DtoErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof validateInventoryImport>>,
+    TError,
+    { data: unknown | ValidateInventoryImportBodyTwo },
+    TContext
+  >
+  request?: SecondParameter<typeof customInstance>
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof validateInventoryImport>>,
+  TError,
+  { data: unknown | ValidateInventoryImportBodyTwo },
+  TContext
+> => {
+  const mutationKey = ['validateInventoryImport']
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof validateInventoryImport>>,
+    { data: unknown | ValidateInventoryImportBodyTwo }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return validateInventoryImport(data, requestOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type ValidateInventoryImportMutationResult = NonNullable<
+  Awaited<ReturnType<typeof validateInventoryImport>>
+>
+export type ValidateInventoryImportMutationBody = unknown | ValidateInventoryImportBodyTwo
+export type ValidateInventoryImportMutationError = DtoErrorResponse
+
+/**
+ * @summary Validate inventory CSV file for import
+ */
+export const useValidateInventoryImport = <TError = DtoErrorResponse, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof validateInventoryImport>>,
+      TError,
+      { data: unknown | ValidateInventoryImportBodyTwo },
+      TContext
+    >
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof validateInventoryImport>>,
+  TError,
+  { data: unknown | ValidateInventoryImportBodyTwo },
+  TContext
+> => {
+  return useMutation(getValidateInventoryImportMutationOptions(options), queryClient)
 }
 /**
  * Imports products from a previously validated CSV file
@@ -727,6 +1623,269 @@ export function useGetImportSession<
   return { ...query, queryKey: queryOptions.queryKey }
 }
 
+/**
+ * Imports suppliers from a previously validated CSV file
+ * @summary Import suppliers from validated CSV
+ */
+export type importSuppliersResponse200 = {
+  data: HandlerAPIResponseHandlerSupplierImportResponse
+  status: 200
+}
+
+export type importSuppliersResponse400 = {
+  data: DtoErrorResponse
+  status: 400
+}
+
+export type importSuppliersResponse401 = {
+  data: DtoErrorResponse
+  status: 401
+}
+
+export type importSuppliersResponse404 = {
+  data: DtoErrorResponse
+  status: 404
+}
+
+export type importSuppliersResponse422 = {
+  data: DtoErrorResponse
+  status: 422
+}
+
+export type importSuppliersResponse500 = {
+  data: DtoErrorResponse
+  status: 500
+}
+
+export type importSuppliersResponseSuccess = importSuppliersResponse200 & {
+  headers: Headers
+}
+export type importSuppliersResponseError = (
+  | importSuppliersResponse400
+  | importSuppliersResponse401
+  | importSuppliersResponse404
+  | importSuppliersResponse422
+  | importSuppliersResponse500
+) & {
+  headers: Headers
+}
+
+export type importSuppliersResponse = importSuppliersResponseSuccess | importSuppliersResponseError
+
+export const getImportSuppliersUrl = () => {
+  return `/import/suppliers`
+}
+
+export const importSuppliers = async (
+  importSuppliersBody: ImportSuppliersBody,
+  options?: RequestInit
+): Promise<importSuppliersResponse> => {
+  return customInstance<importSuppliersResponse>(getImportSuppliersUrl(), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(importSuppliersBody),
+  })
+}
+
+export const getImportSuppliersMutationOptions = <
+  TError = DtoErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof importSuppliers>>,
+    TError,
+    { data: ImportSuppliersBody },
+    TContext
+  >
+  request?: SecondParameter<typeof customInstance>
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof importSuppliers>>,
+  TError,
+  { data: ImportSuppliersBody },
+  TContext
+> => {
+  const mutationKey = ['importSuppliers']
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof importSuppliers>>,
+    { data: ImportSuppliersBody }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return importSuppliers(data, requestOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type ImportSuppliersMutationResult = NonNullable<Awaited<ReturnType<typeof importSuppliers>>>
+export type ImportSuppliersMutationBody = ImportSuppliersBody
+export type ImportSuppliersMutationError = DtoErrorResponse
+
+/**
+ * @summary Import suppliers from validated CSV
+ */
+export const useImportSuppliers = <TError = DtoErrorResponse, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof importSuppliers>>,
+      TError,
+      { data: ImportSuppliersBody },
+      TContext
+    >
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof importSuppliers>>,
+  TError,
+  { data: ImportSuppliersBody },
+  TContext
+> => {
+  return useMutation(getImportSuppliersMutationOptions(options), queryClient)
+}
+/**
+ * Validates a supplier CSV file for import without actually importing the data
+ * @summary Validate supplier CSV file for import
+ */
+export type validateSupplierImportResponse200 = {
+  data: HandlerAPIResponseHandlerSupplierValidationResponse
+  status: 200
+}
+
+export type validateSupplierImportResponse400 = {
+  data: DtoErrorResponse
+  status: 400
+}
+
+export type validateSupplierImportResponse401 = {
+  data: DtoErrorResponse
+  status: 401
+}
+
+export type validateSupplierImportResponse413 = {
+  data: DtoErrorResponse
+  status: 413
+}
+
+export type validateSupplierImportResponse415 = {
+  data: DtoErrorResponse
+  status: 415
+}
+
+export type validateSupplierImportResponse422 = {
+  data: DtoErrorResponse
+  status: 422
+}
+
+export type validateSupplierImportResponse500 = {
+  data: DtoErrorResponse
+  status: 500
+}
+
+export type validateSupplierImportResponseSuccess = validateSupplierImportResponse200 & {
+  headers: Headers
+}
+export type validateSupplierImportResponseError = (
+  | validateSupplierImportResponse400
+  | validateSupplierImportResponse401
+  | validateSupplierImportResponse413
+  | validateSupplierImportResponse415
+  | validateSupplierImportResponse422
+  | validateSupplierImportResponse500
+) & {
+  headers: Headers
+}
+
+export type validateSupplierImportResponse =
+  | validateSupplierImportResponseSuccess
+  | validateSupplierImportResponseError
+
+export const getValidateSupplierImportUrl = () => {
+  return `/import/suppliers/validate`
+}
+
+export const validateSupplierImport = async (
+  validateSupplierImportBody: unknown | ValidateSupplierImportBodyTwo,
+  options?: RequestInit
+): Promise<validateSupplierImportResponse> => {
+  return customInstance<validateSupplierImportResponse>(getValidateSupplierImportUrl(), {
+    ...options,
+    method: 'POST',
+    body: JSON.stringify(validateSupplierImportBody),
+  })
+}
+
+export const getValidateSupplierImportMutationOptions = <
+  TError = DtoErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof validateSupplierImport>>,
+    TError,
+    { data: unknown | ValidateSupplierImportBodyTwo },
+    TContext
+  >
+  request?: SecondParameter<typeof customInstance>
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof validateSupplierImport>>,
+  TError,
+  { data: unknown | ValidateSupplierImportBodyTwo },
+  TContext
+> => {
+  const mutationKey = ['validateSupplierImport']
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof validateSupplierImport>>,
+    { data: unknown | ValidateSupplierImportBodyTwo }
+  > = (props) => {
+    const { data } = props ?? {}
+
+    return validateSupplierImport(data, requestOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type ValidateSupplierImportMutationResult = NonNullable<
+  Awaited<ReturnType<typeof validateSupplierImport>>
+>
+export type ValidateSupplierImportMutationBody = unknown | ValidateSupplierImportBodyTwo
+export type ValidateSupplierImportMutationError = DtoErrorResponse
+
+/**
+ * @summary Validate supplier CSV file for import
+ */
+export const useValidateSupplierImport = <TError = DtoErrorResponse, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof validateSupplierImport>>,
+      TError,
+      { data: unknown | ValidateSupplierImportBodyTwo },
+      TContext
+    >
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof validateSupplierImport>>,
+  TError,
+  { data: unknown | ValidateSupplierImportBodyTwo },
+  TContext
+> => {
+  return useMutation(getValidateSupplierImportMutationOptions(options), queryClient)
+}
 /**
  * Validates a CSV file for import without actually importing the data
  * @summary Validate CSV file for import

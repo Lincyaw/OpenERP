@@ -1,6 +1,9 @@
 {
   "products": {
     "title": "商品管理",
+    "tip": {
+      "description": "管理所有商品信息。新增商品后需要在仓库中录入期初库存才能进行销售。商品编码一旦创建不可修改，请谨慎填写。"
+    },
     "searchPlaceholder": "搜索商品名称、编码、条码...",
     "addProduct": "新增商品",
     "editProduct": "编辑商品",
@@ -123,6 +126,9 @@
   },
   "categories": {
     "title": "商品分类",
+    "tip": {
+      "description": "商品分类支持多层级结构。建议先规划好分类体系再创建商品，分类一旦关联商品后删除会受限。"
+    },
     "searchPlaceholder": "搜索分类名称或编码...",
     "addRootCategory": "新增根分类",
     "addChildCategory": "添加子分类",
@@ -208,6 +214,8 @@
   "attachments": {
     "title": "商品图片与文件",
     "description": "上传商品图片和文档，图片将展示在商品详情页",
+    "images": "图片",
+    "documents": "文档",
     "uploadArea": "上传区域",
     "dragDropHint": "点击或拖拽文件到此处上传",
     "allowedTypes": "支持 JPEG、PNG、GIF、WebP、PDF、Word、Excel、文本文件",

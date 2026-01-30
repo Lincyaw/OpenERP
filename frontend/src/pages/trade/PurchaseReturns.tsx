@@ -8,6 +8,7 @@ import {
   Space,
   Modal,
   Spin,
+  Banner,
   DatePicker,
 } from '@douyinfe/semi-ui-19'
 import { IconPlus, IconRefresh } from '@douyinfe/semi-icons'
@@ -533,6 +534,9 @@ export default function PurchaseReturnsPage() {
     [t, formatCurrency, formatDate, navigate]
   )
 
+  // Helper to normalize status for comparison (backend returns lowercase)
+  const normalizeStatus = (status: string | undefined): string => (status || '').toUpperCase()
+
   // Table row actions
   const tableActions: TableAction<PurchaseReturn>[] = useMemo(
     () => [
@@ -546,50 +550,52 @@ export default function PurchaseReturnsPage() {
         label: t('purchaseReturn.actions.submit'),
         type: 'primary',
         onClick: handleSubmit,
-        hidden: (record) => record.status !== 'DRAFT',
+        hidden: (record) => normalizeStatus(record.status) !== 'DRAFT',
       },
       {
         key: 'approve',
         label: t('purchaseReturn.actions.approve'),
         type: 'primary',
         onClick: handleApprove,
-        hidden: (record) => record.status !== 'PENDING',
+        hidden: (record) => normalizeStatus(record.status) !== 'PENDING',
       },
       {
         key: 'reject',
         label: t('purchaseReturn.actions.reject'),
         type: 'warning',
         onClick: handleReject,
-        hidden: (record) => record.status !== 'PENDING',
+        hidden: (record) => normalizeStatus(record.status) !== 'PENDING',
       },
       {
         key: 'ship',
         label: t('purchaseReturn.actions.ship'),
         type: 'primary',
         onClick: handleShip,
-        hidden: (record) => record.status !== 'APPROVED',
+        hidden: (record) => normalizeStatus(record.status) !== 'APPROVED',
       },
       {
         key: 'complete',
         label: t('purchaseReturn.actions.complete'),
         type: 'primary',
         onClick: handleComplete,
-        hidden: (record) => record.status !== 'SHIPPED',
+        hidden: (record) => normalizeStatus(record.status) !== 'SHIPPED',
       },
       {
         key: 'cancel',
         label: t('purchaseReturn.actions.cancel'),
         type: 'warning',
         onClick: handleCancel,
-        hidden: (record) =>
-          record.status !== 'DRAFT' && record.status !== 'PENDING' && record.status !== 'APPROVED',
+        hidden: (record) => {
+          const status = normalizeStatus(record.status)
+          return status !== 'DRAFT' && status !== 'PENDING' && status !== 'APPROVED'
+        },
       },
       {
         key: 'delete',
         label: t('purchaseReturn.actions.delete'),
         type: 'danger',
         onClick: handleDelete,
-        hidden: (record) => record.status !== 'DRAFT',
+        hidden: (record) => normalizeStatus(record.status) !== 'DRAFT',
       },
     ],
     [
@@ -607,6 +613,11 @@ export default function PurchaseReturnsPage() {
 
   return (
     <Container size="full" className="purchase-returns-page">
+      <Banner
+        type="info"
+        description={t('purchaseReturn.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
       <Card className="purchase-returns-card">
         <div className="purchase-returns-header">
           <Title heading={4} style={{ margin: 0 }}>

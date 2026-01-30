@@ -11,6 +11,7 @@ import {
   Button,
   Modal,
   Form,
+  Banner,
 } from '@douyinfe/semi-ui-19'
 import { IconRefresh, IconAlertTriangle } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
@@ -475,6 +476,11 @@ export default function StockAlertsPage() {
 
   return (
     <Container size="full" className="stock-alerts-page">
+      <Banner
+        type="info"
+        description={t('alerts.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
       <Card className="stock-alerts-card">
         <div className="stock-alerts-header">
           <div>

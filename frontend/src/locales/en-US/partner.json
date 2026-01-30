@@ -1,6 +1,9 @@
 {
   "customers": {
     "title": "Customer Management",
+    "tip": {
+      "description": "Manage all customer information. Customer levels affect discounts and credit limits. Customers with outstanding balances or associated orders cannot be deleted."
+    },
     "searchPlaceholder": "Search by name, code, phone, email...",
     "addCustomer": "Add Customer",
     "editCustomer": "Edit Customer",
@@ -131,6 +134,9 @@
   },
   "suppliers": {
     "title": "Supplier Management",
+    "tip": {
+      "description": "Manage all supplier information. Set payment terms and methods for automatic payables generation. Suppliers with outstanding balances cannot be deleted."
+    },
     "searchPlaceholder": "Search by name, code, phone, email...",
     "addSupplier": "Add Supplier",
     "editSupplier": "Edit Supplier",
@@ -265,6 +271,9 @@
   },
   "warehouses": {
     "title": "Warehouse Management",
+    "tip": {
+      "description": "Manage all warehouses and locations. Each warehouse needs a manager and address. Warehouses with inventory records cannot be deleted, only disabled."
+    },
     "searchPlaceholder": "Search by name or code...",
     "addWarehouse": "Add Warehouse",
     "editWarehouse": "Edit Warehouse",

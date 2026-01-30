@@ -11,6 +11,7 @@ import {
   DatePicker,
   Descriptions,
   Tooltip,
+  Banner,
 } from '@douyinfe/semi-ui-19'
 import { IconRefresh, IconAlertCircle } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
@@ -452,6 +453,11 @@ export default function ReceivablesPage() {
 
   return (
     <Container size="full" className="receivables-page">
+      <Banner
+        type="info"
+        description={t('receivables.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
       {/* Summary Cards */}
       <div className="receivables-summary">
         <Spin spinning={summaryLoading}>

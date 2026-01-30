@@ -205,7 +205,7 @@ span_profiles_enabled = true
 # S3-compatible endpoint URL (without protocol for SDK auto-detection)
 # Development: http://localhost:9000 (RustFS)
 # Production: s3.amazonaws.com or your S3-compatible endpoint
-endpoint = "http://localhost:9000"
+endpoint = "http://10.10.10.146:9000"
 
 # AWS region (required even for non-AWS S3-compatible storage)
 region = "us-east-1"

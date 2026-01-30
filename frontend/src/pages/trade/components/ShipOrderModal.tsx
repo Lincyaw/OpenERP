@@ -169,7 +169,6 @@ export default function ShipOrderModal({
       confirmLoading={submitting || loading}
       maskClosable={false}
       className="ship-order-modal"
-      width={520}
     >
       <div className="ship-order-modal-content">
         {/* Order summary */}

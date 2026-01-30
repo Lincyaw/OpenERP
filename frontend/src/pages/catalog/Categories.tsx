@@ -8,6 +8,7 @@ import {
   Modal,
   Spin,
   Form,
+  Banner,
   Button,
   Tree,
   Empty,
@@ -614,6 +615,11 @@ export default function CategoriesPage() {
 
   return (
     <Container size="full" className="categories-page">
+      <Banner
+        type="info"
+        description={t('categories.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
       <Card className="categories-card">
         <div className="categories-header">
           <div className="categories-header-left">

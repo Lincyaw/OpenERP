@@ -1,6 +1,9 @@
 {
   "salesOrder": {
     "title": "Sales Orders",
+    "tip": {
+      "description": "Manage sales order workflow: Draft → Confirm (lock stock) → Ship (deduct stock) → Complete. Confirmation auto-generates receivables, shipping reduces inventory."
+    },
     "searchPlaceholder": "Search order number...",
     "newOrder": "New Order",
     "refresh": "Refresh",
@@ -85,6 +88,9 @@
   },
   "purchaseOrder": {
     "title": "Purchase Orders",
+    "tip": {
+      "description": "Manage purchase order workflow: Draft → Confirm → Receive (inbound) → Complete. Confirmation auto-generates payables, receiving increases inventory with weighted average cost."
+    },
     "searchPlaceholder": "Search order number...",
     "newOrder": "New Order",
     "refresh": "Refresh",
@@ -382,6 +388,9 @@
   },
   "salesReturn": {
     "title": "Sales Returns",
+    "tip": {
+      "description": "Process customer returns. Returns must be linked to original sales orders. After approval, inventory is restored and receivables are reduced."
+    },
     "searchPlaceholder": "Search return number...",
     "newReturn": "New Return",
     "refresh": "Refresh",
@@ -593,6 +602,9 @@
   },
   "purchaseReturn": {
     "title": "Purchase Returns",
+    "tip": {
+      "description": "Process returns to suppliers. Returns must be linked to original purchase orders. After confirmation, inventory is deducted and payables are reduced."
+    },
     "searchPlaceholder": "Search return number...",
     "newReturn": "New Return",
     "refresh": "Refresh",

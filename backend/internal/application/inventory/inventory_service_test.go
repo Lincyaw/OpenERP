@@ -495,7 +495,7 @@ func TestInventoryService_List(t *testing.T) {
 	})
 
 	t.Run("with warehouse filter", func(t *testing.T) {
-		filter := InventoryListFilter{WarehouseID: &warehouseID}
+		filter := InventoryListFilter{WarehouseID: warehouseID.String()}
 		invRepo.On("FindAllForTenant", ctx, tenantID, mock.AnythingOfType("shared.Filter")).Return(items, nil).Once()
 		invRepo.On("CountForTenant", ctx, tenantID, mock.AnythingOfType("shared.Filter")).Return(int64(2), nil).Once()
 

@@ -143,7 +143,12 @@ dev-backend: ## Run backend locally (requires database)
 
 dev-frontend: ## Run frontend locally
 	@echo "$(CYAN)Starting frontend at http://localhost:$${FRONTEND_PORT:-3000}$(NC)"
-	@cd frontend && VITE_API_BASE_URL="http://localhost:$${BACKEND_PORT:-8080}/api/v1" npm run dev -- --host --port $${FRONTEND_PORT:-3000}
+	@cd frontend &&  npm run dev -- --host --port $${FRONTEND_PORT:-3000}
+
+gen:
+	$(MAKE) -C backend docs
+	@cd frontend && npx orval
+
 
 # =============================================================================
 # Database Management

@@ -10,6 +10,7 @@ import {
   Spin,
   DatePicker,
   Descriptions,
+  Banner,
 } from '@douyinfe/semi-ui-19'
 import { IconRefresh } from '@douyinfe/semi-icons'
 import { DataTable, TableToolbar, useTableState, type DataTableColumn } from '@/components/common'
@@ -58,15 +59,18 @@ function formatCurrency(amount?: number): string {
 }
 
 /**
- * Format date for display
+ * Format datetime for display (including hours and minutes)
  */
-function formatDate(dateStr?: string): string {
+function formatDateTime(dateStr?: string): string {
   if (!dateStr) return '-'
   const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
+  return date.toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
   })
 }
 
@@ -284,11 +288,11 @@ export default function CashFlowPage() {
   const tableColumns: DataTableColumn<CashFlowRow>[] = useMemo(
     () => [
       {
-        title: t('cashFlow.columns.transactionDate'),
+        title: t('cashFlow.columns.transactionTime'),
         dataIndex: 'date',
-        width: 110,
+        width: 150,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => formatDateTime(date as string | undefined),
       },
       {
         title: t('cashFlow.columns.referenceNo'),
@@ -351,6 +355,11 @@ export default function CashFlowPage() {
 
   return (
     <Container size="full" className="cashflow-page">
+      <Banner
+        type="info"
+        description={t('cashFlow.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
       {/* Summary Cards */}
       <div className="cashflow-summary">
         <Spin spinning={summaryLoading}>

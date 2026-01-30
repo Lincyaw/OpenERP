@@ -9,8 +9,11 @@ import (
 )
 
 // ProductAttachmentModel is the persistence model for the ProductAttachment domain entity.
+// Note: This model uses a custom embedded struct instead of TenantAggregateModel
+// because the product_attachments table doesn't have a created_by column (uses uploaded_by instead).
 type ProductAttachmentModel struct {
-	TenantAggregateModel
+	AggregateModel
+	TenantID     uuid.UUID                `gorm:"type:uuid;not null;index"`
 	ProductID    uuid.UUID                `gorm:"type:uuid;not null;index"`
 	Type         catalog.AttachmentType   `gorm:"type:varchar(20);not null"`
 	Status       catalog.AttachmentStatus `gorm:"type:varchar(20);not null;default:'pending'"`
@@ -41,7 +44,7 @@ func (m *ProductAttachmentModel) ToDomain() *catalog.ProductAttachment {
 				Version: m.Version,
 			},
 			TenantID:  m.TenantID,
-			CreatedBy: m.CreatedBy,
+			CreatedBy: nil, // product_attachments uses uploaded_by instead of created_by
 		},
 		ProductID:    m.ProductID,
 		Type:         m.Type,
@@ -58,7 +61,8 @@ func (m *ProductAttachmentModel) ToDomain() *catalog.ProductAttachment {
 
 // FromDomain populates the persistence model from a domain ProductAttachment entity.
 func (m *ProductAttachmentModel) FromDomain(a *catalog.ProductAttachment) {
-	m.FromDomainTenantAggregateRoot(a.TenantAggregateRoot)
+	m.FromDomainAggregateRoot(a.BaseAggregateRoot)
+	m.TenantID = a.TenantID
 	m.ProductID = a.ProductID
 	m.Type = a.Type
 	m.Status = a.Status

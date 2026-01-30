@@ -19,8 +19,8 @@ CREATE TABLE account_receivables (
     source_id UUID NOT NULL,
     source_number VARCHAR(50) NOT NULL,
 
-    -- Amount tracking
-    total_amount DECIMAL(18, 4) NOT NULL CHECK (total_amount > 0),
+    -- Amount tracking (total_amount allows NULL/0 for cancelled/reversed records)
+    total_amount DECIMAL(18, 4) CHECK (total_amount IS NULL OR total_amount >= 0),
     paid_amount DECIMAL(18, 4) NOT NULL DEFAULT 0 CHECK (paid_amount >= 0),
     outstanding_amount DECIMAL(18, 4) NOT NULL CHECK (outstanding_amount >= 0),
 
@@ -49,7 +49,12 @@ CREATE TABLE account_receivables (
     CONSTRAINT uq_receivable_tenant_number UNIQUE (tenant_id, receivable_number),
     CONSTRAINT chk_receivable_status CHECK (status IN ('PENDING', 'PARTIAL', 'PAID', 'REVERSED', 'CANCELLED')),
     CONSTRAINT chk_receivable_source_type CHECK (source_type IN ('SALES_ORDER', 'SALES_RETURN', 'MANUAL')),
-    CONSTRAINT chk_receivable_amounts CHECK (paid_amount <= total_amount AND outstanding_amount = total_amount - paid_amount),
+    -- For cancelled/reversed records: outstanding must be 0
+    -- For active records: amounts must balance correctly
+    CONSTRAINT chk_receivable_amounts CHECK (
+        (status IN ('CANCELLED', 'REVERSED') AND outstanding_amount = 0) OR
+        (status NOT IN ('CANCELLED', 'REVERSED') AND paid_amount <= total_amount AND outstanding_amount = total_amount - paid_amount)
+    ),
 
     -- Foreign keys
     CONSTRAINT fk_receivable_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE RESTRICT,

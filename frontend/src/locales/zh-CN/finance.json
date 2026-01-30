@@ -1,6 +1,9 @@
 {
   "cashFlow": {
     "title": "收支流水",
+    "tip": {
+      "description": "汇总展示所有资金流动记录，包括收款、付款、费用、其他收入等。可用于核对现金和银行账户余额。"
+    },
     "searchPlaceholder": "搜索单据编号、描述...",
     "refresh": "刷新",
     "summary": {
@@ -31,7 +34,7 @@
       "PAYMENT": "付款"
     },
     "columns": {
-      "transactionDate": "交易日期",
+      "transactionTime": "交易时间",
       "referenceNo": "单据编号",
       "direction": "收支方向",
       "type": "类型",
@@ -45,6 +48,9 @@
   },
   "receivables": {
     "title": "应收账款",
+    "tip": {
+      "description": "查看所有待收款项。应收账款由销售订单自动生成，收到客户付款后需在「收款管理」中录入并核销。逾期账款会标红提醒。"
+    },
     "searchPlaceholder": "搜索单据编号、客户名称...",
     "refresh": "刷新",
     "summary": {
@@ -101,6 +107,9 @@
   },
   "payables": {
     "title": "应付账款",
+    "tip": {
+      "description": "查看所有待付款项。应付账款由采购订单自动生成，向供应商付款后需在「付款管理」中录入并核销。注意按时付款以维护供应商关系。"
+    },
     "searchPlaceholder": "搜索单据编号、供应商名称...",
     "refresh": "刷新",
     "summary": {
@@ -253,6 +262,9 @@
   },
   "expenses": {
     "title": "费用管理",
+    "tip": {
+      "description": "记录日常经营费用（房租、水电、工资等）。费用需提交审批后才计入支出，用于计算利润和现金流。"
+    },
     "searchPlaceholder": "搜索费用编号、描述...",
     "newExpense": "新增费用",
     "refresh": "刷新",
@@ -384,6 +396,9 @@
   },
   "otherIncomes": {
     "title": "其他收入管理",
+    "tip": {
+      "description": "记录销售以外的其他收入（利息、补贴、废品变卖等）。收入需提交审批后才计入收入，用于计算利润和现金流。"
+    },
     "searchPlaceholder": "搜索收入编号、描述...",
     "newIncome": "新增收入",
     "refresh": "刷新",

@@ -13,9 +13,7 @@ export interface CatalogAttachmentResponse {
   product_id?: string
   sort_order?: number
   status?: string
-  storage_key?: string
   tenant_id?: string
-  thumbnail_key?: string
   thumbnail_url?: string
   type?: string
   updated_at?: string

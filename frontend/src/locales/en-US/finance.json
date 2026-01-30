@@ -1,6 +1,9 @@
 {
   "cashFlow": {
     "title": "Cash Flow",
+    "tip": {
+      "description": "Overview of all fund movements including receipts, payments, expenses, and other income. Use this to reconcile cash and bank account balances."
+    },
     "searchPlaceholder": "Search document number, description...",
     "refresh": "Refresh",
     "summary": {
@@ -31,7 +34,7 @@
       "PAYMENT": "Payment"
     },
     "columns": {
-      "transactionDate": "Transaction Date",
+      "transactionTime": "Transaction Time",
       "referenceNo": "Reference No.",
       "direction": "Direction",
       "type": "Type",
@@ -45,6 +48,9 @@
   },
   "receivables": {
     "title": "Accounts Receivable",
+    "tip": {
+      "description": "View all pending payments. Receivables are auto-generated from sales orders. Record customer payments in Receipt Management to reconcile. Overdue items are highlighted."
+    },
     "searchPlaceholder": "Search document number, customer name...",
     "refresh": "Refresh",
     "summary": {
@@ -101,6 +107,9 @@
   },
   "payables": {
     "title": "Accounts Payable",
+    "tip": {
+      "description": "View all pending payments. Payables are auto-generated from purchase orders. Record supplier payments in Payment Management to reconcile. Pay on time to maintain supplier relationships."
+    },
     "searchPlaceholder": "Search document number, supplier name...",
     "refresh": "Refresh",
     "summary": {

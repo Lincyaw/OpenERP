@@ -1,7 +1,7 @@
-/* Recharge Modal Styles */
+/* RechargeModal - Mobile First Styles */
 
 .recharge-modal {
-  max-width: 480px;
+  max-width: 95vw;
 }
 
 .recharge-modal-content {
@@ -82,10 +82,9 @@
   color: var(--semi-color-primary);
 }
 
-/* Responsive */
-@media (max-width: 480px) {
+/* Tablet and up (min-width: 480px) */
+@media (min-width: 480px) {
   .recharge-modal {
-    max-width: 100%;
-    margin: var(--spacing-4);
+    width: 480px;
   }
 }

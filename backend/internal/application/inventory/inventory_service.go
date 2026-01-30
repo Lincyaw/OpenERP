@@ -279,11 +279,19 @@ func (s *InventoryService) List(ctx context.Context, tenantID uuid.UUID, filter 
 	}
 
 	// Add specific filters
-	if filter.WarehouseID != nil {
-		domainFilter.Filters["warehouse_id"] = *filter.WarehouseID
+	if filter.WarehouseID != "" {
+		warehouseID, err := uuid.Parse(filter.WarehouseID)
+		if err != nil {
+			return nil, 0, errors.New("invalid warehouse_id format")
+		}
+		domainFilter.Filters["warehouse_id"] = warehouseID
 	}
-	if filter.ProductID != nil {
-		domainFilter.Filters["product_id"] = *filter.ProductID
+	if filter.ProductID != "" {
+		productID, err := uuid.Parse(filter.ProductID)
+		if err != nil {
+			return nil, 0, errors.New("invalid product_id format")
+		}
+		domainFilter.Filters["product_id"] = productID
 	}
 	if filter.BelowMinimum != nil && *filter.BelowMinimum {
 		domainFilter.Filters["below_minimum"] = true
@@ -319,13 +327,13 @@ func (s *InventoryService) List(ctx context.Context, tenantID uuid.UUID, filter 
 
 // ListByWarehouse retrieves inventory items for a specific warehouse
 func (s *InventoryService) ListByWarehouse(ctx context.Context, tenantID, warehouseID uuid.UUID, filter InventoryListFilter) ([]InventoryListItemResponse, int64, error) {
-	filter.WarehouseID = &warehouseID
+	filter.WarehouseID = warehouseID.String()
 	return s.List(ctx, tenantID, filter)
 }
 
 // ListByProduct retrieves inventory items for a specific product (across all warehouses)
 func (s *InventoryService) ListByProduct(ctx context.Context, tenantID, productID uuid.UUID, filter InventoryListFilter) ([]InventoryListItemResponse, int64, error) {
-	filter.ProductID = &productID
+	filter.ProductID = productID.String()
 	return s.List(ctx, tenantID, filter)
 }
 
@@ -1249,11 +1257,19 @@ func (s *InventoryService) ListTransactions(ctx context.Context, tenantID uuid.U
 	}
 
 	// Add specific filters
-	if filter.WarehouseID != nil {
-		domainFilter.Filters["warehouse_id"] = *filter.WarehouseID
+	if filter.WarehouseID != "" {
+		warehouseID, err := uuid.Parse(filter.WarehouseID)
+		if err != nil {
+			return nil, 0, errors.New("invalid warehouse_id format")
+		}
+		domainFilter.Filters["warehouse_id"] = warehouseID
 	}
-	if filter.ProductID != nil {
-		domainFilter.Filters["product_id"] = *filter.ProductID
+	if filter.ProductID != "" {
+		productID, err := uuid.Parse(filter.ProductID)
+		if err != nil {
+			return nil, 0, errors.New("invalid product_id format")
+		}
+		domainFilter.Filters["product_id"] = productID
 	}
 	if filter.TransactionType != "" {
 		domainFilter.Filters["transaction_type"] = filter.TransactionType

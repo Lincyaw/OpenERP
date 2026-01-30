@@ -110,6 +110,10 @@
   "adjust": {
     "title": "Stock Adjustment",
     "back": "Back",
+    "tip": {
+      "title": "Quick adjustment for single product",
+      "description": "Use this to quickly correct a single product's stock quantity. Changes take effect immediately without approval. For batch counting of an entire warehouse with variance reports, use \"Stock Taking\" instead."
+    },
     "selection": {
       "title": "Select Inventory",
       "description": "Select warehouse and product to adjust",
@@ -171,6 +175,10 @@
   "stockTaking": {
     "list": {
       "title": "Stock Taking Management",
+      "tip": {
+        "title": "Batch warehouse counting with approval workflow",
+        "description": "Use for periodic (monthly/quarterly) comprehensive warehouse counting. Supports batch quantity entry, automatic variance calculation, and generates reports with approval workflow. For quick single product corrections, use \"Stock Adjustment\" instead."
+      },
       "newStockTaking": "New Stock Taking",
       "searchPlaceholder": "Search stock taking number...",
       "refresh": "Refresh",

@@ -1,3 +1,9 @@
+/* ShipOrderModal - Mobile First Styles */
+
+.ship-order-modal {
+  max-width: 95vw;
+}
+
 .ship-order-modal .ship-order-modal-content {
   display: flex;
   flex-direction: column;
@@ -10,8 +16,9 @@
   font-size: var(--font-size-sm);
 }
 
+/* Mobile base styles */
 .ship-order-modal .order-summary-section {
-  padding: var(--page-padding-mobile);
+  padding: var(--spacing-3);
   background-color: var(--color-fill-0);
   border-radius: var(--radius-md);
 }
@@ -21,7 +28,7 @@
 }
 
 .ship-order-modal .warehouse-selection-section {
-  padding: var(--page-padding-mobile);
+  padding: var(--spacing-3);
   background-color: var(--color-fill-0);
   border-radius: var(--radius-md);
 }
@@ -44,15 +51,14 @@
   border: 1px solid var(--color-warning-light-hover);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
+/* Tablet and up (min-width: 768px) */
+@media (min-width: 768px) {
   .ship-order-modal {
-    width: 90vw !important;
-    max-width: 520px;
+    width: 520px;
   }
 
   .ship-order-modal .order-summary-section,
   .ship-order-modal .warehouse-selection-section {
-    padding: var(--spacing-3);
+    padding: var(--page-padding-mobile);
   }
 }

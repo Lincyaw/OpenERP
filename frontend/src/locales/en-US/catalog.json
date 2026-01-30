@@ -1,6 +1,9 @@
 {
   "products": {
     "title": "Products",
+    "tip": {
+      "description": "Manage all product information. New products need initial stock entry in warehouses before they can be sold. Product codes cannot be modified once created."
+    },
     "searchPlaceholder": "Search by name, code, barcode...",
     "addProduct": "Add Product",
     "editProduct": "Edit Product",
@@ -123,6 +126,9 @@
   },
   "categories": {
     "title": "Categories",
+    "tip": {
+      "description": "Product categories support multi-level hierarchy. Plan your category structure before creating products. Categories with associated products cannot be deleted."
+    },
     "searchPlaceholder": "Search by name or code...",
     "addRootCategory": "Add Root Category",
     "addChildCategory": "Add Child Category",
@@ -208,6 +214,8 @@
   "attachments": {
     "title": "Product Images & Files",
     "description": "Upload product images and documents. Images are displayed on the product detail page.",
+    "images": "Images",
+    "documents": "Documents",
     "uploadArea": "Upload area",
     "dragDropHint": "Click or drag files to upload",
     "allowedTypes": "Supports JPEG, PNG, GIF, WebP, PDF, Word, Excel, Text",

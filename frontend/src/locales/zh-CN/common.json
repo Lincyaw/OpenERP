@@ -31,7 +31,8 @@
     "switchToDark": "切换到暗色模式",
     "switchToLight": "切换到亮色模式",
     "moreActions": "更多操作",
-    "cancelSelection": "取消选择"
+    "cancelSelection": "取消选择",
+    "toggleMenu": "切换菜单"
   },
   "status": {
     "enabled": "已启用",

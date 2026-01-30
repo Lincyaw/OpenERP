@@ -1,6 +1,9 @@
 {
   "salesOrder": {
     "title": "销售订单",
+    "tip": {
+      "description": "管理销售订单全流程：草稿→确认（锁定库存）→发货（扣减库存）→完成。确认后会自动生成应收账款，发货后库存将减少。"
+    },
     "searchPlaceholder": "搜索订单编号...",
     "newOrder": "新建订单",
     "refresh": "刷新",
@@ -85,6 +88,9 @@
   },
   "purchaseOrder": {
     "title": "采购订单",
+    "tip": {
+      "description": "管理采购订单全流程：草稿→确认→收货（入库）→完成。确认后会自动生成应付账款，收货后库存将增加，成本会按加权平均法计算。"
+    },
     "searchPlaceholder": "搜索订单编号...",
     "newOrder": "新建订单",
     "refresh": "刷新",
@@ -382,6 +388,9 @@
   },
   "salesReturn": {
     "title": "销售退货",
+    "tip": {
+      "description": "处理客户退货。退货需关联原销售订单，审批通过后库存自动入库，并冲减应收账款。"
+    },
     "searchPlaceholder": "搜索退货单号...",
     "newReturn": "新建退货",
     "refresh": "刷新",
@@ -593,6 +602,9 @@
   },
   "purchaseReturn": {
     "title": "采购退货",
+    "tip": {
+      "description": "处理向供应商退货。退货需关联原采购订单，确认后库存自动出库，并冲减应付账款。"
+    },
     "searchPlaceholder": "搜索退货单号...",
     "newReturn": "新建退货",
     "refresh": "刷新",

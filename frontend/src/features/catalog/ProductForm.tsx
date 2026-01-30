@@ -114,7 +114,7 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
   )
 
   // Fetch categories for select
-  const { data: categoriesResponse } = useListCategories({ status: 'active', page_size: 1000 })
+  const { data: categoriesResponse } = useListCategories({ status: 'active', page_size: 20 })
   const categoryOptions = useMemo(() => {
     const categories =
       (categoriesResponse?.data?.data as Array<{ id?: string; name?: string }>) || []

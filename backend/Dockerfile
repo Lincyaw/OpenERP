@@ -19,10 +19,13 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /app/bin/
 # Runtime stage
 FROM debian:trixie-slim
 
-# Change to China mirrors
-RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || \
-    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list || true && \
-    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list || true
+# Change to China mirrors (Debian Trixie uses DEB822 format in sources.list.d)
+RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+        sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources; \
+    elif [ -f /etc/apt/sources.list ]; then \
+        sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+        sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list; \
+    fi
 
 # Install runtime dependencies including Chromium and Chinese fonts
 RUN apt-get update && apt-get install -y --no-install-recommends \

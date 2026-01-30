@@ -119,13 +119,7 @@ export function ErrorTable({
   )
 
   if (errors.length === 0) {
-    return (
-      <Empty
-        image={<Empty.Image />}
-        description={t('import.errors.noErrors')}
-        className="error-table-empty"
-      />
-    )
+    return <Empty description={t('import.errors.noErrors')} className="error-table-empty" />
   }
 
   return (
@@ -152,8 +146,8 @@ export function ErrorTable({
       <Table
         columns={columns}
         dataSource={displayedErrors}
-        rowKey={(record: CsvimportRowError, index?: number) =>
-          `${record.row}-${record.column}-${index}`
+        rowKey={(record?: CsvimportRowError, index?: number) =>
+          `${record?.row ?? ''}-${record?.column ?? ''}-${index ?? 0}`
         }
         pagination={
           displayedErrors.length > 10

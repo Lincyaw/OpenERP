@@ -1,13 +1,12 @@
 import { useMemo } from 'react'
 import { Typography, Card, Button, Progress, Empty } from '@douyinfe/semi-ui-19'
 import {
-  IconCheckCircle,
-  IconCrossCircle,
   IconPlusCircle,
   IconClose,
   IconTickCircle,
   IconMinusCircle,
   IconRefresh2,
+  IconCrossCircleStroked,
 } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
 import type { ResultsStepProps } from './types'
@@ -34,11 +33,11 @@ export function ResultsStep({ result, onImportMore, onClose }: ResultsStepProps)
   const StatusIcon = useMemo(() => {
     switch (importStatus) {
       case 'success':
-        return <IconCheckCircle size="extra-large" className="results-status-icon--success" />
+        return <IconTickCircle size="extra-large" className="results-status-icon--success" />
       case 'partial':
         return <IconTickCircle size="extra-large" className="results-status-icon--warning" />
       case 'error':
-        return <IconCrossCircle size="extra-large" className="results-status-icon--error" />
+        return <IconCrossCircleStroked size="extra-large" className="results-status-icon--error" />
       default:
         return null
     }
@@ -119,7 +118,7 @@ export function ResultsStep({ result, onImportMore, onClose }: ResultsStepProps)
 
         <Card className="results-stat-card results-stat-card--errors">
           <div className="results-stat-content">
-            <IconCrossCircle className="results-stat-icon" />
+            <IconCrossCircleStroked className="results-stat-icon" />
             <div className="results-stat-value">
               <Title heading={2}>{result.errorRows}</Title>
               <Text type="secondary">{t('import.results.errors')}</Text>

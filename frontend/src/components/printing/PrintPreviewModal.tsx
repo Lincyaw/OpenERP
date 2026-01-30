@@ -33,6 +33,7 @@ import { IconPrint, IconMinus, IconPlus, IconDownload, IconRefresh } from '@douy
 import { usePrint, ZOOM_LEVELS } from '@/hooks/usePrint'
 import { Row, Spacer } from '@/components/common/layout/Flex'
 import type { CSSProperties } from 'react'
+import './PrintPreviewModal.css'
 
 const { Text } = Typography
 
@@ -234,69 +235,38 @@ export function PrintPreviewModal({
   // Modal title
   const modalTitle = title || `打印预览 - ${documentNumber}`
 
-  // Styles
-  const previewContainerStyle: CSSProperties = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    padding: 'var(--spacing-4)',
-    backgroundColor: 'var(--color-neutral-100)',
-    minHeight: '500px',
-    maxHeight: 'calc(90vh - 200px)',
-    overflow: 'auto',
-    borderRadius: 'var(--spacing-1)',
-  }
-
-  const iframeWrapperStyle: CSSProperties = {
-    backgroundColor: 'white',
-    boxShadow: 'var(--shadow-lg)',
-    transition: 'width 0.2s ease, height 0.2s ease',
-  }
-
+  // Iframe style (dynamic based on paper size and zoom)
   const iframeStyle: CSSProperties = {
     width: `${iframeDimensions.width}mm`,
     height: `${iframeDimensions.height}mm`,
-    border: 'none',
-    display: 'block',
-  }
-
-  const toolbarStyle: CSSProperties = {
-    padding: 'var(--spacing-3) var(--spacing-4)',
-    borderBottom: '1px solid var(--color-border-primary)',
-    backgroundColor: 'var(--color-bg-container)',
-  }
-
-  const footerStyle: CSSProperties = {
-    padding: 'var(--spacing-3) var(--spacing-4)',
-    borderTop: '1px solid var(--color-border-primary)',
   }
 
   return (
     <Modal
       visible={visible}
       onCancel={onClose}
-      width={900}
-      style={{ top: 20 }}
+      width="auto"
+      style={{ top: 20, maxWidth: '95vw', minWidth: 320 }}
       title={modalTitle}
       footer={null}
       closeOnEsc
+      className="print-preview-modal"
     >
       {/* Toolbar */}
-      <div style={toolbarStyle}>
-        <Row align="center" gap="md">
+      <div className="print-preview-toolbar">
+        <Row align="center" gap="md" wrap="wrap">
           {/* Template selector */}
           {templates.length > 0 && (
             <Select
               value={selectedTemplateId || undefined}
               onChange={handleTemplateChange}
-              style={{ width: 280 }}
               placeholder="选择模板"
               optionList={templateOptions}
             />
           )}
 
           {/* Zoom controls */}
-          <Space>
+          <Space className="toolbar-actions">
             <Button
               icon={<IconMinus />}
               type="tertiary"
@@ -331,27 +301,27 @@ export function PrintPreviewModal({
       </div>
 
       {/* Preview area */}
-      <div style={previewContainerStyle}>
+      <div className="print-preview-container">
         {isLoading ? (
-          <div
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 400 }}
-          >
+          <div className="print-preview-loading">
             <Spin size="large" tip="加载预览中..." />
           </div>
         ) : error ? (
-          <div style={{ textAlign: 'center', padding: 'var(--spacing-8)' }}>
-            <Text type="danger">{error}</Text>
-            <br />
-            <Button
-              type="primary"
-              onClick={() => loadPreview()}
-              style={{ marginTop: 'var(--spacing-4)' }}
-            >
-              重试
-            </Button>
+          <div className="print-preview-error">
+            <div>
+              <Text type="danger">{error}</Text>
+              <br />
+              <Button
+                type="primary"
+                onClick={() => loadPreview()}
+                style={{ marginTop: 'var(--spacing-4)' }}
+              >
+                重试
+              </Button>
+            </div>
           </div>
         ) : preview ? (
-          <div style={iframeWrapperStyle}>
+          <div className="print-preview-iframe-wrapper">
             <iframe
               ref={iframeRef}
               srcDoc={iframeSrcDoc}
@@ -361,17 +331,17 @@ export function PrintPreviewModal({
             />
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: 'var(--spacing-8)' }}>
+          <div className="print-preview-empty">
             <Text type="tertiary">暂无预览内容</Text>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <div style={footerStyle}>
-        <Row align="center" gap="md">
+      <div className="print-preview-footer">
+        <Row align="center" gap="md" wrap="wrap">
           {/* Copies input */}
-          <Space>
+          <Space className="copies-input">
             <Text>打印份数:</Text>
             <InputNumber
               value={copies}
@@ -385,7 +355,7 @@ export function PrintPreviewModal({
           <Spacer />
 
           {/* Action buttons */}
-          <Space>
+          <Space className="footer-actions">
             <Button onClick={onClose}>取消</Button>
             <Button
               icon={<IconDownload />}

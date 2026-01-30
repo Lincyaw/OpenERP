@@ -59,6 +59,11 @@ if [ -n "$STAGED_FRONTEND_FILES" ]; then
         exit 1
     fi
 
+    if ! npm run build; then
+        echo "❌ Frontend build failed"
+        exit 1
+    fi
+
     cd ..
     
     # Note: TypeScript build check is skipped here as it will be done during docker build

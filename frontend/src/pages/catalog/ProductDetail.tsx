@@ -10,6 +10,7 @@ import {
   type DetailPageHeaderStatus,
   type DetailPageHeaderMetric,
 } from '@/components/common'
+import { ProductAttachmentViewer } from '@/features/catalog'
 import { useFormatters } from '@/hooks/useFormatters'
 import {
   getProductById,
@@ -454,6 +455,9 @@ export default function ProductDetailPage() {
       <Card className="info-card" title={t('productDetail.timestamps')}>
         {renderTimestamps()}
       </Card>
+
+      {/* Product Attachments */}
+      <ProductAttachmentViewer productId={product.id!} />
     </Container>
   )
 }

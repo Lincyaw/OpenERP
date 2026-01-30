@@ -123,7 +123,7 @@ SELECT
 FROM (
     SELECT UNNEST(ARRAY['product', 'category', 'customer', 'supplier', 'warehouse', 'inventory',
                         'sales_order', 'purchase_order', 'sales_return', 'purchase_return',
-                        'receivable', 'payable', 'receipt', 'payment', 'expense', 'income',
+                        'account_receivable', 'account_payable', 'receipt', 'payment', 'expense', 'income',
                         'report', 'user', 'role', 'tenant']) AS resource
 ) r
 CROSS JOIN (
@@ -136,7 +136,10 @@ INSERT INTO role_permissions (role_id, tenant_id, code, resource, action, descri
 VALUES
     ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'inventory:adjust', 'inventory', 'adjust', 'Admin permission for inventory:adjust'),
     ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'inventory:lock', 'inventory', 'lock', 'Admin permission for inventory:lock'),
-    ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'inventory:unlock', 'inventory', 'unlock', 'Admin permission for inventory:unlock')
+    ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'inventory:unlock', 'inventory', 'unlock', 'Admin permission for inventory:unlock'),
+    -- Finance reconcile permissions
+    ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'account_receivable:reconcile', 'account_receivable', 'reconcile', 'Admin permission for account_receivable:reconcile'),
+    ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'account_payable:reconcile', 'account_payable', 'reconcile', 'Admin permission for account_payable:reconcile')
 ON CONFLICT DO NOTHING;
 
 -- Assign admin role to the default admin user

@@ -235,7 +235,7 @@ services:
   # OpenTelemetry Collector (Observability mode)
   # ---------------------------------------------------------------------------
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:${OTEL_COLLECTOR_VERSION:-0.96.0}
+    image: otel/opentelemetry-collector-contrib:${OTEL_COLLECTOR_VERSION:-0.144.0}
     container_name: erp-otel-collector
     restart: unless-stopped
     command:

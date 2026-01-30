@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"regexp"
@@ -12,16 +13,23 @@ import (
 	"github.com/google/uuid"
 )
 
+// PDFStorage interface for serving PDF files
+type PDFStorage interface {
+	Get(ctx context.Context, path string) (io.ReadCloser, error)
+}
+
 // PrintHandler handles print-related API endpoints
 type PrintHandler struct {
 	BaseHandler
 	printService *printingapp.PrintService
+	pdfStorage   PDFStorage
 }
 
 // NewPrintHandler creates a new PrintHandler
-func NewPrintHandler(printService *printingapp.PrintService) *PrintHandler {
+func NewPrintHandler(printService *printingapp.PrintService, pdfStorage PDFStorage) *PrintHandler {
 	return &PrintHandler{
 		printService: printService,
+		pdfStorage:   pdfStorage,
 	}
 }
 
@@ -553,9 +561,7 @@ func (h *PrintHandler) GetPaperSizes(c *gin.Context) {
 //	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/prints/{tenant_id}/{year}/{month}/{filename} [get]
-func (h *PrintHandler) ServePDF(c *gin.Context, storage interface {
-	Get(ctx interface{}, path string) (io.ReadCloser, error)
-}) {
+func (h *PrintHandler) ServePDF(c *gin.Context) {
 	// Validate tenant access
 	tenantID, err := getTenantID(c)
 	if err != nil {
@@ -605,7 +611,7 @@ func (h *PrintHandler) ServePDF(c *gin.Context, storage interface {
 	path := pathTenantID + "/" + year + "/" + month + "/" + filename
 
 	// Get file from storage
-	file, err := storage.Get(c.Request.Context(), path)
+	file, err := h.pdfStorage.Get(c.Request.Context(), path)
 	if err != nil {
 		h.NotFound(c, "PDF file not found")
 		return

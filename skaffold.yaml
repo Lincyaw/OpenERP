@@ -1,0 +1,30 @@
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: erp-system
+
+build:
+  artifacts:
+    - image: pair-diag-cn-guangzhou.cr.volces.com/pair/erp-backend
+      context: backend
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: cmd/**/*.go
+            dest: /app
+          - src: internal/**/*.go
+            dest: /app
+    
+    - image: pair-diag-cn-guangzhou.cr.volces.com/pair/erp-frontend
+      context: frontend
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: src/**/*
+            dest: /app/src
+
+  local:
+    push: true
+

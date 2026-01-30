@@ -352,9 +352,21 @@ func main() {
 	productUnitService := catalogapp.NewProductUnitService(productRepo, productUnitRepo)
 	categoryService := catalogapp.NewCategoryService(categoryRepo, productRepo)
 
-	// Object storage service (using stub implementation until S3/RustFS is configured)
-	// TODO: Replace with real S3/RustFS implementation (ATTACH-INFRA-002)
-	objectStorageService := infraStorage.NewStubObjectStorage()
+	// Object storage service (S3-compatible, works with RustFS/MinIO)
+	objectStorageService, err := infraStorage.NewS3ObjectStorage(&cfg.Storage, infraStorage.WithLogger(log))
+	if err != nil {
+		log.Fatal("Failed to initialize object storage", zap.Error(err))
+	}
+
+	// Ensure storage bucket exists
+	if err := objectStorageService.EnsureBucket(context.Background()); err != nil {
+		log.Warn("Failed to ensure storage bucket exists", zap.Error(err),
+			zap.String("bucket", cfg.Storage.Bucket),
+			zap.String("note", "File uploads may fail until bucket is created"))
+	} else {
+		log.Info("Object storage initialized", zap.String("bucket", cfg.Storage.Bucket))
+	}
+
 	attachmentService := catalogapp.NewAttachmentService(productAttachmentRepo, productRepo, objectStorageService)
 
 	customerService := partnerapp.NewCustomerService(customerRepo)
@@ -716,7 +728,7 @@ func main() {
 	financeHandler := handler.NewFinanceHandler(financeService)
 	outboxHandler := handler.NewOutboxHandler(outboxService)
 	featureFlagHandler := handler.NewFeatureFlagHandler(flagService, evaluationService, overrideService)
-	printHandler := handler.NewPrintHandler(printService)
+	printHandler := handler.NewPrintHandler(printService, pdfStorage)
 
 	// Initialize Feature Flag SSE handler for real-time updates
 	// This creates a Redis Pub/Sub subscriber that broadcasts flag updates to connected SSE clients
@@ -1387,6 +1399,10 @@ func main() {
 
 	// Setup routes
 	r.Setup()
+
+	// Register PDF file serving route (outside the router system for direct file access)
+	// This needs authentication to validate tenant access
+	engine.GET("/api/v1/prints/:tenant_id/:year/:month/:filename", printJWTMiddleware, printHandler.ServePDF)
 
 	// Also keep a simple ping at root API level for basic health checks
 	engine.GET("/api/v1/ping", func(c *gin.Context) {

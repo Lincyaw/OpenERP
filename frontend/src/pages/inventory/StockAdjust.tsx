@@ -9,6 +9,7 @@ import {
   Button,
   Descriptions,
   Tag,
+  Banner,
 } from '@douyinfe/semi-ui-19'
 import { IconArrowLeft } from '@douyinfe/semi-icons'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -172,7 +173,7 @@ export default function StockAdjustPage() {
     } finally {
       setLoadingWarehouses(false)
     }
-  }, [])
+  }, [t])
 
   // Fetch products
   const fetchProducts = useCallback(async () => {
@@ -294,6 +295,13 @@ export default function StockAdjustPage() {
           </Title>
         </div>
       </div>
+
+      {/* Page Tip Banner */}
+      <Banner
+        type="info"
+        description={t('adjust.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
 
       <Card className="stock-adjust-card">
         <Form onSubmit={handleFormSubmit(onSubmit)} isSubmitting={isSubmitting}>

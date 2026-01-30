@@ -211,6 +211,7 @@ func (r *GormSalesReturnRepository) SaveWithLock(ctx context.Context, sr *trade.
 		}
 
 		// Check version matches
+		fmt.Printf("[DEBUG] SaveWithLock: id=%s, entity.Version=%d, db.Version=%d\n", sr.ID, sr.Version, currentVersion)
 		if currentVersion != sr.Version {
 			return shared.NewDomainError("CONCURRENT_MODIFICATION", "The return has been modified by another user")
 		}

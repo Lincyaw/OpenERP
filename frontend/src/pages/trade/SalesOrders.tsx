@@ -8,6 +8,7 @@ import {
   Space,
   Modal,
   Spin,
+  Banner,
   DatePicker,
   Button,
 } from '@douyinfe/semi-ui-19'
@@ -785,6 +786,11 @@ export default function SalesOrdersPage() {
 
   return (
     <Container size="full" className="sales-orders-page">
+      <Banner
+        type="info"
+        description={t('salesOrder.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
       <Card className="sales-orders-card">
         <div className="sales-orders-header">
           <Title heading={4} style={{ margin: 0 }}>

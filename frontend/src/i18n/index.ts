@@ -124,22 +124,6 @@ i18n
     interpolation: {
       // React already handles XSS
       escapeValue: false,
-      // Format function for custom formatting
-      format: (value, format, lng) => {
-        if (format === 'number' && typeof value === 'number') {
-          return new Intl.NumberFormat(lng).format(value)
-        }
-        if (format === 'currency' && typeof value === 'number') {
-          return new Intl.NumberFormat(lng, {
-            style: 'currency',
-            currency: lng === 'zh-CN' ? 'CNY' : 'USD',
-          }).format(value)
-        }
-        if (format === 'date' && value instanceof Date) {
-          return new Intl.DateTimeFormat(lng).format(value)
-        }
-        return String(value)
-      },
     },
 
     // React specific options

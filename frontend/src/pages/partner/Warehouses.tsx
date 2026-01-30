@@ -1,5 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, Typography, Tag, Toast, Select, Space, Modal, Spin } from '@douyinfe/semi-ui-19'
+import {
+  Card,
+  Typography,
+  Tag,
+  Toast,
+  Select,
+  Space,
+  Modal,
+  Spin,
+  Banner,
+} from '@douyinfe/semi-ui-19'
 import { IconPlus, IconRefresh, IconStar } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -491,6 +501,11 @@ export default function WarehousesPage() {
 
   return (
     <Container size="full" className="warehouses-page">
+      <Banner
+        type="info"
+        description={t('warehouses.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
       <Card className="warehouses-card">
         <div className="warehouses-header">
           <Title heading={4} style={{ margin: 0 }}>

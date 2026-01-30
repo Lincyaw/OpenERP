@@ -8,6 +8,7 @@ import {
   Space,
   Modal,
   Spin,
+  Banner,
   DatePicker,
 } from '@douyinfe/semi-ui-19'
 import { IconPlus, IconRefresh, IconTickCircle } from '@douyinfe/semi-icons'
@@ -511,6 +512,9 @@ export default function SalesReturnsPage() {
     [t, formatCurrency, formatDate, navigate]
   )
 
+  // Helper to normalize status for comparison (backend returns lowercase)
+  const normalizeStatus = (status: string | undefined): string => (status || '').toUpperCase()
+
   // Table row actions
   const tableActions: TableAction<SalesReturn>[] = useMemo(
     () => [
@@ -524,53 +528,57 @@ export default function SalesReturnsPage() {
         label: t('salesReturn.actions.submit'),
         type: 'primary',
         onClick: handleSubmit,
-        hidden: (record) => record.status !== 'DRAFT',
+        hidden: (record) => normalizeStatus(record.status) !== 'DRAFT',
       },
       {
         key: 'approve',
         label: t('salesReturn.actions.approve'),
         type: 'primary',
         onClick: handleApprove,
-        hidden: (record) => record.status !== 'PENDING',
+        hidden: (record) => normalizeStatus(record.status) !== 'PENDING',
       },
       {
         key: 'reject',
         label: t('salesReturn.actions.reject'),
         type: 'warning',
         onClick: handleReject,
-        hidden: (record) => record.status !== 'PENDING',
+        hidden: (record) => normalizeStatus(record.status) !== 'PENDING',
       },
       {
         key: 'receive',
         label: t('salesReturn.actions.receive'),
         type: 'primary',
         onClick: handleReceive,
-        hidden: (record) => record.status !== 'APPROVED',
+        hidden: (record) => normalizeStatus(record.status) !== 'APPROVED',
       },
       {
         key: 'complete',
         label: t('salesReturn.actions.complete'),
         type: 'primary',
         onClick: handleComplete,
-        hidden: (record) => record.status !== 'RECEIVING',
+        hidden: (record) => normalizeStatus(record.status) !== 'RECEIVING',
       },
       {
         key: 'cancel',
         label: t('salesReturn.actions.cancel'),
         type: 'warning',
         onClick: handleCancel,
-        hidden: (record) =>
-          record.status !== 'DRAFT' &&
-          record.status !== 'PENDING' &&
-          record.status !== 'APPROVED' &&
-          record.status !== 'RECEIVING',
+        hidden: (record) => {
+          const status = normalizeStatus(record.status)
+          return (
+            status !== 'DRAFT' &&
+            status !== 'PENDING' &&
+            status !== 'APPROVED' &&
+            status !== 'RECEIVING'
+          )
+        },
       },
       {
         key: 'delete',
         label: t('salesReturn.actions.delete'),
         type: 'danger',
         onClick: handleDelete,
-        hidden: (record) => record.status !== 'DRAFT',
+        hidden: (record) => normalizeStatus(record.status) !== 'DRAFT',
       },
     ],
     [
@@ -588,6 +596,11 @@ export default function SalesReturnsPage() {
 
   return (
     <Container size="full" className="sales-returns-page">
+      <Banner
+        type="info"
+        description={t('salesReturn.tip.description')}
+        style={{ marginBottom: 'var(--spacing-4)' }}
+      />
       <Card className="sales-returns-card">
         <div className="sales-returns-header">
           <Title heading={4} style={{ margin: 0 }}>

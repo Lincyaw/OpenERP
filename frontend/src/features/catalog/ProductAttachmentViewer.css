@@ -1,0 +1,206 @@
+.attachment-viewer-card {
+  margin-top: var(--spacing-4);
+}
+
+.attachment-viewer-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-8);
+}
+
+.attachment-viewer-empty {
+  padding: var(--spacing-6);
+}
+
+.attachment-viewer-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.attachment-viewer-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.attachment-viewer-section-title {
+  margin: 0;
+  color: var(--semi-color-text-0);
+}
+
+.attachment-viewer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--spacing-3);
+}
+
+.attachment-viewer-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  cursor: pointer;
+  border-radius: var(--semi-border-radius-medium);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.attachment-viewer-item:hover {
+  transform: translateY(-2px);
+}
+
+.attachment-viewer-item:focus {
+  outline: 2px solid var(--semi-color-primary);
+  outline-offset: 2px;
+}
+
+.attachment-viewer-item.main-image .attachment-viewer-thumbnail {
+  border: 2px solid var(--semi-color-warning);
+}
+
+.attachment-viewer-thumbnail {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--semi-border-radius-medium);
+  overflow: hidden;
+  background: var(--semi-color-fill-0);
+  border: 1px solid var(--semi-color-border);
+}
+
+.attachment-viewer-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.attachment-viewer-main-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  background: var(--semi-color-warning);
+  color: white;
+  font-size: 10px;
+  border-radius: var(--semi-border-radius-small);
+}
+
+.attachment-viewer-main-badge svg {
+  width: 10px;
+  height: 10px;
+}
+
+.attachment-viewer-name {
+  text-align: center;
+  max-width: 100%;
+}
+
+.attachment-viewer-documents {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.attachment-viewer-document {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  background: var(--semi-color-fill-0);
+  border: 1px solid var(--semi-color-border);
+  border-radius: var(--semi-border-radius-medium);
+  text-decoration: none;
+  color: inherit;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.attachment-viewer-document:hover {
+  background: var(--semi-color-fill-1);
+  border-color: var(--semi-color-primary);
+}
+
+.attachment-viewer-document-icon {
+  flex-shrink: 0;
+  color: var(--semi-color-primary);
+}
+
+.attachment-viewer-document-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.attachment-viewer-document-name {
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .attachment-viewer-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+}
+
+/* Preview modal */
+.attachment-preview-modal .semi-modal-content {
+  background: transparent;
+  box-shadow: none;
+}
+
+.attachment-preview-modal .semi-modal-body {
+  padding: 0;
+}
+
+.attachment-preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.attachment-preview-image {
+  max-width: 90vw;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: var(--semi-border-radius-medium);
+}
+
+.attachment-preview-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.attachment-preview-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--semi-color-text-0);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.attachment-preview-nav-btn:hover {
+  background: white;
+}
+
+.attachment-preview-counter {
+  color: white;
+  font-size: 14px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}

@@ -45,10 +45,12 @@ CREATE INDEX IF NOT EXISTS idx_print_templates_status ON print_templates(status)
 CREATE INDEX IF NOT EXISTS idx_print_templates_is_default ON print_templates(tenant_id, document_type, is_default) WHERE is_default = TRUE;
 
 -- Create print_jobs table
+-- Note: template_id does NOT have FK constraint because templates are loaded from filesystem
+-- via TemplateStore which generates stable UUIDs that don't match database template IDs
 CREATE TABLE IF NOT EXISTS print_jobs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    template_id UUID NOT NULL REFERENCES print_templates(id) ON DELETE RESTRICT,
+    template_id UUID NOT NULL,  -- No FK: templates are filesystem-based via TemplateStore
     document_type VARCHAR(50) NOT NULL,
     document_id UUID NOT NULL,
     document_number VARCHAR(100) NOT NULL,

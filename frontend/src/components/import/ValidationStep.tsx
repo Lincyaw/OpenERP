@@ -12,11 +12,10 @@ import {
   Collapse,
 } from '@douyinfe/semi-ui-19'
 import {
-  IconCheckCircle,
   IconAlertTriangle,
   IconRefresh,
   IconTickCircle,
-  IconCrossCircle,
+  IconCrossCircleStroked,
 } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
 import type { ValidationStepProps } from './types'
@@ -51,11 +50,13 @@ export function ValidationStep({
   const StatusIcon = useMemo(() => {
     switch (validationStatus) {
       case 'success':
-        return <IconCheckCircle size="extra-large" className="validation-status-icon--success" />
+        return <IconTickCircle size="extra-large" className="validation-status-icon--success" />
       case 'warning':
         return <IconAlertTriangle size="extra-large" className="validation-status-icon--warning" />
       case 'error':
-        return <IconCrossCircle size="extra-large" className="validation-status-icon--error" />
+        return (
+          <IconCrossCircleStroked size="extra-large" className="validation-status-icon--error" />
+        )
       default:
         return null
     }
@@ -92,7 +93,7 @@ export function ValidationStep({
   if (error) {
     return (
       <div className="validation-step validation-step--error">
-        <IconCrossCircle size="extra-large" className="validation-status-icon--error" />
+        <IconCrossCircleStroked size="extra-large" className="validation-status-icon--error" />
         <Title heading={5}>{t('import.validation.failed')}</Title>
         <Text type="danger">{error}</Text>
         <Button icon={<IconRefresh />} onClick={onRetry}>
@@ -152,7 +153,7 @@ export function ValidationStep({
           <div className="validation-stat validation-stat--error">
             <Text type="secondary">{t('import.validation.errorRows')}</Text>
             <Title heading={3} className="validation-stat-value--error">
-              <IconCrossCircle /> {result.errorRows}
+              <IconCrossCircleStroked /> {result.errorRows}
             </Title>
           </div>
           <div className="validation-stat">
@@ -207,7 +208,9 @@ export function ValidationStep({
             <Table
               columns={previewColumns}
               dataSource={result.preview}
-              rowKey={(_: Record<string, unknown>, index?: number) => `preview-${index}`}
+              rowKey={(_record?: Record<string, unknown>, index?: number) =>
+                `preview-${index ?? 0}`
+              }
               pagination={false}
               size="small"
               scroll={{ x: 'max-content' }}
@@ -223,7 +226,7 @@ export function ValidationStep({
           <Collapse.Panel
             header={
               <Space>
-                <IconCrossCircle style={{ color: 'var(--color-danger)' }} />
+                <IconCrossCircleStroked style={{ color: 'var(--color-danger)' }} />
                 <Text type="danger">
                   {t('import.validation.errors', { count: result.errorRows })}
                 </Text>

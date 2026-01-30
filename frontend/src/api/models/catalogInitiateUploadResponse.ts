@@ -7,6 +7,5 @@
 export interface CatalogInitiateUploadResponse {
   attachment_id?: string
   expires_at?: string
-  storage_key?: string
   upload_url?: string
 }

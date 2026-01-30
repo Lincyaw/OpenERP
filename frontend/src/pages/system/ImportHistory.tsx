@@ -43,6 +43,7 @@ interface ImportHistoryRecord {
   created_at: string
   duration_ms?: number
   error_report_url?: string
+  [key: string]: unknown
 }
 
 // Status tag color mapping
@@ -61,6 +62,24 @@ const ENTITY_TYPE_COLORS: Record<string, string> = {
   suppliers: 'indigo',
   inventory: 'teal',
   categories: 'pink',
+}
+
+// Entity type translation key map
+const ENTITY_TYPE_TRANSLATIONS: Record<string, string> = {
+  products: 'import.entityTypes.products',
+  customers: 'import.entityTypes.customers',
+  suppliers: 'import.entityTypes.suppliers',
+  inventory: 'import.entityTypes.inventory',
+  categories: 'import.entityTypes.categories',
+}
+
+// Status translation key map
+const STATUS_TRANSLATIONS: Record<string, string> = {
+  pending: 'importHistory.status.pending',
+  processing: 'importHistory.status.processing',
+  completed: 'importHistory.status.completed',
+  partial: 'importHistory.status.partial',
+  failed: 'importHistory.status.failed',
 }
 
 // Template URLs for each entity type
@@ -242,8 +261,16 @@ export default function ImportHistoryPage() {
         render: (entityType: unknown) => {
           const type = entityType as string | undefined
           if (!type) return '-'
+          const translationKey = ENTITY_TYPE_TRANSLATIONS[type] || 'import.entityTypes.products'
           return (
-            <Tag color={ENTITY_TYPE_COLORS[type] || 'grey'}>{t(`import.entityTypes.${type}`)}</Tag>
+            <Tag
+              color={
+                (ENTITY_TYPE_COLORS[type] as 'cyan' | 'purple' | 'indigo' | 'teal' | 'pink') ||
+                'grey'
+              }
+            >
+              {t(translationKey as 'import.entityTypes.products')}
+            </Tag>
           )
         },
       },
@@ -264,9 +291,10 @@ export default function ImportHistoryPage() {
         render: (status: unknown) => {
           const statusValue = status as string | undefined
           if (!statusValue) return '-'
+          const translationKey = STATUS_TRANSLATIONS[statusValue] || 'importHistory.status.pending'
           return (
             <Tag color={STATUS_TAG_COLORS[statusValue]}>
-              {t(`importHistory.status.${statusValue}`)}
+              {t(translationKey as 'importHistory.status.pending')}
             </Tag>
           )
         },
@@ -345,7 +373,6 @@ export default function ImportHistoryPage() {
   // Empty state component
   const renderEmpty = () => (
     <Empty
-      image={<Empty.IllustrationNoContent />}
       title={t('importHistory.empty.title')}
       description={t('importHistory.empty.description')}
     />

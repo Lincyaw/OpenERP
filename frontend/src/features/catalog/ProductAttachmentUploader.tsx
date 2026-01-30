@@ -37,6 +37,23 @@ const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_DOCUMENT_TYPES]
 /** Max file size: 100MB */
 const MAX_FILE_SIZE = 100 * 1024 * 1024
 
+/**
+ * Generate a unique ID compatible with all browsers
+ * Falls back to a custom implementation when crypto.randomUUID is not available
+ * (e.g., in non-secure contexts like HTTP)
+ */
+function generateUniqueId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  // Fallback for non-secure contexts
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
+
 interface UploadingFile {
   id: string
   file: File
@@ -128,7 +145,7 @@ export function ProductAttachmentUploader({
    */
   const uploadFile = useCallback(
     async (file: File) => {
-      const fileId = crypto.randomUUID()
+      const fileId = generateUniqueId()
       const isImage = ALLOWED_IMAGE_TYPES.includes(file.type)
 
       // Add to uploading list

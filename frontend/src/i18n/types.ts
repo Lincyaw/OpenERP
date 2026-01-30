@@ -207,6 +207,185 @@ export interface CommonTranslations {
   'nav.settings': string
   'nav.profile': string
   'nav.notifications': string
+  'nav.stockAlerts': string
+  'nav.paymentSettings': string
+  'nav.platformConfig': string
+  'nav.platformSync': string
+  'nav.productMappings': string
+  'nav.importHistory': string
+
+  // Errors namespace
+  'errors.network.message': string
+  'errors.network.suggestion': string
+  'errors.auth.message': string
+  'errors.auth.suggestion': string
+  'errors.permission.message': string
+  'errors.permission.suggestion': string
+  'errors.validation.message': string
+  'errors.validation.suggestion': string
+  'errors.not_found.message': string
+  'errors.not_found.suggestion': string
+  'errors.conflict.message': string
+  'errors.conflict.suggestion': string
+  'errors.rate_limit.message': string
+  'errors.rate_limit.suggestion': string
+  'errors.server.message': string
+  'errors.server.suggestion': string
+  'errors.unknown.message': string
+  'errors.unknown.suggestion': string
+  'errors.contactSupport': string
+  'errors.codes.INVALID_STATUS': string
+  'errors.codes.INVALID_TRANSITION': string
+  'errors.codes.INVALID_QUANTITY': string
+  'errors.codes.INVALID_COST': string
+  'errors.codes.INVALID_WAREHOUSE': string
+  'errors.codes.INVALID_PRODUCT': string
+  'errors.codes.INVALID_REASON': string
+  'errors.codes.INVALID_APPROVER': string
+  'errors.codes.INVALID_CREATOR': string
+  'errors.codes.INVALID_SOURCE': string
+  'errors.codes.INSUFFICIENT_STOCK': string
+  'errors.codes.DUPLICATE_PRODUCT': string
+  'errors.codes.ITEM_NOT_FOUND': string
+  'errors.codes.LOCK_NOT_FOUND': string
+  'errors.codes.NO_ITEMS': string
+  'errors.codes.INCOMPLETE_COUNT': string
+  'errors.codes.HAS_LOCKED_STOCK': string
+  'errors.codes.HAS_UNSAVED_CHANGES': string
+  'errors.codes.NOT_COUNTING_STATUS': string
+  'errors.codes.BATCH_NOT_FOUND': string
+  'errors.codes.ORDER_NOT_FOUND': string
+  'errors.codes.CUSTOMER_NOT_FOUND': string
+  'errors.codes.SUPPLIER_NOT_FOUND': string
+  'errors.codes.ALREADY_CONFIRMED': string
+  'errors.codes.ALREADY_CANCELLED': string
+  'errors.codes.ALREADY_COMPLETED': string
+  'errors.codes.CANNOT_DELETE': string
+  'errors.codes.CANNOT_CANCEL': string
+  'errors.codes.EXCEED_REMAINING': string
+  'errors.codes.NEGATIVE_QUANTITY': string
+  'errors.codes.ORDER_NOT_CONFIRMED': string
+  'errors.codes.ORDER_ALREADY_SHIPPED': string
+  'errors.codes.ORDER_ALREADY_RECEIVED': string
+  'errors.codes.PAYMENT_EXCEED_AMOUNT': string
+  'errors.codes.RECEIPT_EXCEED_AMOUNT': string
+
+  // Import namespace
+  'import.wizard.title': string
+  'import.steps.upload': string
+  'import.steps.validate': string
+  'import.steps.import': string
+  'import.steps.results': string
+  'import.entityTypes.products': string
+  'import.entityTypes.customers': string
+  'import.entityTypes.suppliers': string
+  'import.entityTypes.inventory': string
+  'import.entityTypes.categories': string
+  'import.upload.title': string
+  'import.upload.description': string
+  'import.upload.selectFile': string
+  'import.upload.dropzone': string
+  'import.upload.dragDropText': string
+  'import.upload.orClickText': string
+  'import.upload.fileRequirements': string
+  'import.upload.removeFile': string
+  'import.upload.templateHint': string
+  'import.upload.downloadTemplate': string
+  'import.validation.validating': string
+  'import.validation.validatingHint': string
+  'import.validation.failed': string
+  'import.validation.retry': string
+  'import.validation.noResult': string
+  'import.validation.allValid': string
+  'import.validation.someErrors': string
+  'import.validation.allInvalid': string
+  'import.validation.summary': string
+  'import.validation.totalRows': string
+  'import.validation.validRows': string
+  'import.validation.errorRows': string
+  'import.validation.validRate': string
+  'import.validation.warnings': string
+  'import.validation.moreWarnings': string
+  'import.validation.preview': string
+  'import.validation.errors': string
+  'import.validation.reupload': string
+  'import.validation.proceed': string
+  'import.conflictMode.title': string
+  'import.conflictMode.description': string
+  'import.conflictMode.skip': string
+  'import.conflictMode.skipDescription': string
+  'import.conflictMode.update': string
+  'import.conflictMode.updateDescription': string
+  'import.conflictMode.fail': string
+  'import.conflictMode.failDescription': string
+  'import.import.title': string
+  'import.import.description': string
+  'import.import.warning': string
+  'import.import.readyToImport': string
+  'import.import.rows': string
+  'import.import.startImport': string
+  'import.import.importing': string
+  'import.results.noResult': string
+  'import.results.success': string
+  'import.results.partial': string
+  'import.results.failed': string
+  'import.results.summary': string
+  'import.results.imported': string
+  'import.results.updated': string
+  'import.results.skipped': string
+  'import.results.errors': string
+  'import.results.successRate': string
+  'import.results.processedTotal': string
+  'import.results.importMore': string
+  'import.results.close': string
+  'import.errors.title': string
+  'import.errors.noErrors': string
+  'import.errors.row': string
+  'import.errors.column': string
+  'import.errors.value': string
+  'import.errors.message': string
+  'import.errors.code': string
+  'import.errors.export': string
+  'import.errors.truncated': string
+  'import.errors.fileTooLarge': string
+  'import.errors.invalidFileType': string
+  'import.errors.unsupportedEntity': string
+  'import.errors.validationFailed': string
+  'import.errors.importFailed': string
+  'import.errors.noValidRows': string
+  'import.errors.noValidation': string
+  'import.messages.importSuccess': string
+
+  // Import History namespace
+  'importHistory.title': string
+  'importHistory.description': string
+  'importHistory.tip': string
+  'importHistory.downloadTemplates': string
+  'importHistory.columns.id': string
+  'importHistory.columns.entityType': string
+  'importHistory.columns.filename': string
+  'importHistory.columns.status': string
+  'importHistory.columns.totalRows': string
+  'importHistory.columns.successRows': string
+  'importHistory.columns.errorRows': string
+  'importHistory.columns.createdBy': string
+  'importHistory.columns.createdAt': string
+  'importHistory.columns.duration': string
+  'importHistory.status.pending': string
+  'importHistory.status.processing': string
+  'importHistory.status.completed': string
+  'importHistory.status.partial': string
+  'importHistory.status.failed': string
+  'importHistory.filters.allEntities': string
+  'importHistory.filters.allStatus': string
+  'importHistory.filters.dateRange': string
+  'importHistory.actions.viewDetails': string
+  'importHistory.actions.downloadErrors': string
+  'importHistory.actions.retry': string
+  'importHistory.messages.fetchError': string
+  'importHistory.messages.noHistory': string
+  'importHistory.empty.title': string
+  'importHistory.empty.description': string
 }
 
 /**
@@ -321,6 +500,7 @@ export interface AuthTranslations {
 export interface CatalogTranslations {
   // Products
   'products.title': string
+  'products.tip.description': string
   'products.searchPlaceholder': string
   'products.addProduct': string
   'products.editProduct': string
@@ -406,6 +586,7 @@ export interface CatalogTranslations {
   'products.form.sortOrderHelper': string
   // Categories
   'categories.title': string
+  'categories.tip.description': string
   'categories.searchPlaceholder': string
   'categories.addRootCategory': string
   'categories.addChildCategory': string
@@ -495,6 +676,8 @@ export interface CatalogTranslations {
   // Attachments
   'attachments.title': string
   'attachments.description': string
+  'attachments.images': string
+  'attachments.documents': string
   'attachments.uploadArea': string
   'attachments.dragDropHint': string
   'attachments.allowedTypes': string

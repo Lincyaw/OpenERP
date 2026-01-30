@@ -48,17 +48,17 @@ type InventoryListItemResponse struct {
 
 // InventoryListFilter represents filter options for inventory list
 type InventoryListFilter struct {
-	Search       string     `form:"search"`
-	WarehouseID  *uuid.UUID `form:"warehouse_id"`
-	ProductID    *uuid.UUID `form:"product_id"`
-	BelowMinimum *bool      `form:"below_minimum"`
-	HasStock     *bool      `form:"has_stock"`
-	MinQuantity  *float64   `form:"min_quantity"`
-	MaxQuantity  *float64   `form:"max_quantity"`
-	Page         int        `form:"page" binding:"omitempty,min=1"`
-	PageSize     int        `form:"page_size" binding:"omitempty,min=1,max=500"`
-	OrderBy      string     `form:"order_by"`
-	OrderDir     string     `form:"order_dir" binding:"omitempty,oneof=asc desc"`
+	Search       string   `form:"search"`
+	WarehouseID  string   `form:"warehouse_id"`
+	ProductID    string   `form:"product_id"`
+	BelowMinimum *bool    `form:"below_minimum"`
+	HasStock     *bool    `form:"has_stock"`
+	MinQuantity  *float64 `form:"min_quantity"`
+	MaxQuantity  *float64 `form:"max_quantity"`
+	Page         int      `form:"page" binding:"omitempty,min=1"`
+	PageSize     int      `form:"page_size" binding:"omitempty,min=1,max=500"`
+	OrderBy      string   `form:"order_by"`
+	OrderDir     string   `form:"order_dir" binding:"omitempty,oneof=asc desc"`
 }
 
 // IncreaseStockRequest represents a request to increase stock
@@ -189,8 +189,8 @@ type TransactionResponse struct {
 
 // TransactionListFilter represents filter options for transaction list
 type TransactionListFilter struct {
-	WarehouseID     *uuid.UUID `form:"warehouse_id"`
-	ProductID       *uuid.UUID `form:"product_id"`
+	WarehouseID     string     `form:"warehouse_id"`
+	ProductID       string     `form:"product_id"`
 	TransactionType string     `form:"transaction_type"`
 	SourceType      string     `form:"source_type"`
 	SourceID        string     `form:"source_id"`
