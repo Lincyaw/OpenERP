@@ -76,14 +76,14 @@ services:
       RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?RUSTFS_ACCESS_KEY is required}
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?RUSTFS_SECRET_KEY is required}
       RUSTFS_REGION: ${RUSTFS_REGION:-us-east-1}
-      # Server domains for presigned URL signature validation (comma-separated)
-      RUSTFS_SERVER_DOMAINS: ${RUSTFS_SERVER_DOMAINS:-erp.aoyangfang.top}
+      # External address for presigned URL signature validation (like MinIO's MINIO_SERVER_URL)
+      RUSTFS_EXTERNAL_ADDRESS: ${RUSTFS_EXTERNAL_ADDRESS:-http://erp.aoyangfang.top}
     volumes:
       - rustfs_data:/data
     networks:
       - erp-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -126,7 +126,31 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        aws --endpoint-url http://rustfs:9000 s3 mb s3://${ERP_STORAGE_BUCKET:-erp-attachments} 2>/dev/null || echo "Bucket already exists"
+        BUCKET="${ERP_STORAGE_BUCKET:-erp-attachments}"
+        ENDPOINT="http://rustfs:9000"
+        REGION="us-east-1"
+
+        # Create bucket
+        aws --endpoint-url $$ENDPOINT --region $$REGION s3 mb s3://$$BUCKET 2>/dev/null || echo "Bucket already exists"
+
+        # Create bucket policy file (public read-only, presigned URLs for upload)
+        cat > /tmp/policy.json << 'POLICY'
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["s3:GetObject"],
+              "Resource": ["arn:aws:s3:::erp-attachments/*"]
+            }
+          ]
+        }
+        POLICY
+
+        # Apply bucket policy
+        aws --endpoint-url $$ENDPOINT --region $$REGION s3api put-bucket-policy --bucket $$BUCKET --policy file:///tmp/policy.json
+        echo "Bucket $$BUCKET initialized with public read policy"
     profiles:
       - migrate
 
