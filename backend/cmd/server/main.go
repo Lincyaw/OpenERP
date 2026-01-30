@@ -489,7 +489,7 @@ func main() {
 	}
 	pdfStorage, err := infraPrinting.NewFileSystemStorage(&infraPrinting.FileSystemStorageConfig{
 		BasePath: "./storage/prints",
-		BaseURL:  "/api/v1/prints",
+		BaseURL:  "/prints",
 		Logger:   log,
 	})
 	if err != nil {

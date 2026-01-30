@@ -79,7 +79,7 @@ func NewFileSystemStorage(config *FileSystemStorageConfig) (*FileSystemStorage, 
 		config.BasePath = "/data/prints"
 	}
 	if config.BaseURL == "" {
-		config.BaseURL = "/api/v1/prints"
+		config.BaseURL = "/prints"
 	}
 
 	// Ensure base directory exists

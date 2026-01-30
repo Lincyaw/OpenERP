@@ -23,7 +23,7 @@ func TestNewFileSystemStorage(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotNil(t, storage)
 		assert.Equal(t, tempDir, storage.config.BasePath)
-		assert.Equal(t, "/api/v1/prints", storage.config.BaseURL) // Default
+		assert.Equal(t, "/prints", storage.config.BaseURL) // Default
 	})
 
 	t.Run("with nil config", func(t *testing.T) {
