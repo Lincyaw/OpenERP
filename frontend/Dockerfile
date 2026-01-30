@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Runtime stage - using Nginx to serve static files
-FROM nginx:1.25-alpine
+FROM nginx:1.29-alpine3.23-perl
 
 # Install runtime dependencies
 RUN apk add --no-cache curl

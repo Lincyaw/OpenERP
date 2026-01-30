@@ -14,6 +14,10 @@
 # Configuration:
 #   - Copy .env.example to .env and adjust values
 #   - Backend config: backend/config.toml (override with ERP_* env vars)
+#
+# Access (Docker mode with gateway):
+#   - http://localhost       -> Frontend + API (via Nginx gateway)
+#   - http://localhost:9001  -> RustFS Admin Console
 # =============================================================================
 
 services:
@@ -65,9 +69,6 @@ services:
   # ---------------------------------------------------------------------------
   # RustFS S3-Compatible Object Storage
   # ---------------------------------------------------------------------------
-  # High-performance object storage for file attachments (product images, documents)
-  # S3-compatible API: http://localhost:9000
-  # Admin console: http://localhost:9001 (user: rustfsadmin, password: from env)
   rustfs:
     image: rustfs/rustfs:${RUSTFS_VERSION:-latest}
     container_name: erp-rustfs
@@ -80,7 +81,7 @@ services:
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin123}
       RUSTFS_REGION: ${RUSTFS_REGION:-us-east-1}
     ports:
-      - "${RUSTFS_API_PORT:-9000}:9000"
+      # S3 API port not exposed externally - accessed via nginx gateway
       - "${RUSTFS_CONSOLE_PORT:-9001}:9001"
     volumes:
       - rustfs_data:/data
@@ -128,24 +129,55 @@ services:
       redis:
         condition: service_healthy
     environment:
-      ERP_APP_PORT: ${BACKEND_PORT:-8080}
+      # App
+      ERP_APP_PORT: 8080
+      # Database
       ERP_DATABASE_HOST: postgres
       ERP_DATABASE_PORT: 5432
       ERP_DATABASE_DBNAME: ${DB_NAME:-erp_dev}
       ERP_DATABASE_USER: ${DB_USER:-postgres}
       ERP_DATABASE_PASSWORD: ${DB_PASSWORD:-admin123}
+      ERP_DATABASE_SSLMODE: ${ERP_DATABASE_SSLMODE:-disable}
+      # Redis
       ERP_REDIS_HOST: redis
       ERP_REDIS_PORT: 6379
-      # Disable auth rate limiting for E2E tests (many parallel workers login simultaneously)
+      ERP_REDIS_PASSWORD: ${ERP_REDIS_PASSWORD:-}
+      # JWT (REQUIRED in production)
+      ERP_JWT_SECRET: ${ERP_JWT_SECRET:-}
+      ERP_JWT_REFRESH_SECRET: ${ERP_JWT_REFRESH_SECRET:-}
+      # Cookie
+      ERP_COOKIE_DOMAIN: ${ERP_COOKIE_DOMAIN:-}
+      ERP_COOKIE_SECURE: ${ERP_COOKIE_SECURE:-false}
+      ERP_COOKIE_SAME_SITE: ${ERP_COOKIE_SAME_SITE:-lax}
+      # HTTP / CORS - Allow gateway origin
+      ERP_HTTP_CORS_ALLOW_ORIGINS: ${ERP_HTTP_CORS_ALLOW_ORIGINS:-http://localhost}
       ERP_HTTP_AUTH_RATE_LIMIT_ENABLED: ${ERP_HTTP_AUTH_RATE_LIMIT_ENABLED:-false}
+      ERP_HTTP_AUTH_RATE_LIMIT_REQUESTS: ${ERP_HTTP_AUTH_RATE_LIMIT_REQUESTS:-5}
+      # Storage (S3) - Use external gateway URL for presigned URLs (browser accessible)
+      ERP_STORAGE_ENDPOINT: ${ERP_STORAGE_ENDPOINT:-http://localhost}
+      ERP_STORAGE_REGION: ${ERP_STORAGE_REGION:-us-east-1}
+      ERP_STORAGE_ACCESS_KEY: ${ERP_STORAGE_ACCESS_KEY:-rustfsadmin}
+      ERP_STORAGE_SECRET_KEY: ${ERP_STORAGE_SECRET_KEY:-rustfsadmin123}
+      ERP_STORAGE_BUCKET: ${ERP_STORAGE_BUCKET:-erp-attachments}
+      ERP_STORAGE_USE_PATH_STYLE: ${ERP_STORAGE_USE_PATH_STYLE:-true}
+      ERP_STORAGE_USE_SSL: ${ERP_STORAGE_USE_SSL:-false}
+      # Telemetry
+      ERP_TELEMETRY_COLLECTOR_ENDPOINT: ${ERP_TELEMETRY_COLLECTOR_ENDPOINT:-otel-collector:14317}
+      ERP_TELEMETRY_SAMPLING_RATIO: ${ERP_TELEMETRY_SAMPLING_RATIO:-1.0}
+      ERP_TELEMETRY_INSECURE: ${ERP_TELEMETRY_INSECURE:-true}
+      ERP_TELEMETRY_PROFILING_ENABLED: ${ERP_TELEMETRY_PROFILING_ENABLED:-false}
+      # Swagger
+      ERP_SWAGGER_ENABLED: ${ERP_SWAGGER_ENABLED:-true}
+      # Logging
+      ERP_LOG_LEVEL: ${ERP_LOG_LEVEL:-info}
+      ERP_LOG_FORMAT: ${ERP_LOG_FORMAT:-console}
     volumes:
       - ./backend/config.toml:/app/config.toml:ro
-    ports:
-      - "${BACKEND_PORT:-8080}:${BACKEND_PORT:-8080}"
+    # Port not exposed externally - accessed via nginx gateway
     networks:
       - erp-network
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "-O", "/dev/null", "http://localhost:${BACKEND_PORT:-8080}/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "-O", "/dev/null", "http://localhost:8080/health"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -168,8 +200,7 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    ports:
-      - "${FRONTEND_PORT:-3000}:80"
+    # Port not exposed externally - accessed via nginx gateway
     networks:
       - erp-network
     healthcheck:
@@ -182,6 +213,36 @@ services:
       - docker
 
   # ---------------------------------------------------------------------------
+  # Nginx Gateway (Docker mode only)
+  # ---------------------------------------------------------------------------
+  # Unified entry point for all services
+  nginx:
+    image: nginx:1.29-alpine3.23-perl
+    container_name: erp-nginx
+    restart: unless-stopped
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+      rustfs:
+        condition: service_healthy
+    ports:
+      - "${GATEWAY_PORT:-80}:80"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost/nginx-health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    profiles:
+      - docker
+
+  # ---------------------------------------------------------------------------
   # Playwright E2E Test Runner (E2E mode only)
   # ---------------------------------------------------------------------------
   playwright:
@@ -190,12 +251,10 @@ services:
     user: "${FRONTEND_USER:-1000:1000}"
     working_dir: /app
     depends_on:
-      frontend:
-        condition: service_healthy
-      backend:
+      nginx:
         condition: service_healthy
     environment:
-      E2E_BASE_URL: http://frontend:80
+      E2E_BASE_URL: http://nginx
       CI: ${CI:-true}
       HOME: /tmp
     volumes:
@@ -251,9 +310,6 @@ services:
       - "55679:55679"                      # zpages (debugging)
     networks:
       - erp-network
-    # Note: OTEL Collector contrib uses a distroless image without shell utilities.
-    # Health is verified via the health_check extension exposed on port 13133.
-    # External monitoring should check: curl http://localhost:13133/health
     healthcheck:
       disable: true
     profiles:

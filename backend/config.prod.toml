@@ -1,0 +1,158 @@
+# =============================================================================
+# ERP Backend Production Configuration
+# =============================================================================
+# SECURITY: Sensitive values should be set via environment variables:
+#   ERP_DATABASE_PASSWORD, ERP_JWT_SECRET, ERP_JWT_REFRESH_SECRET,
+#   ERP_REDIS_PASSWORD, ERP_STORAGE_ACCESS_KEY, ERP_STORAGE_SECRET_KEY
+#
+# Environment variables override any setting using the prefix "ERP_"
+# Example: ERP_DATABASE_HOST=db.example.com overrides [database] host
+# =============================================================================
+
+[app]
+name = "erp-backend"
+port = "8080"
+
+[database]
+host = "postgres"                    # Docker service name or actual DB host
+port = 5432
+user = "postgres"
+password = ""                        # SET VIA: ERP_DATABASE_PASSWORD
+dbname = "erp_prod"
+sslmode = "require"                  # Enable SSL in production
+max_open_conns = 50                  # Increase for production load
+max_idle_conns = 10
+conn_max_lifetime = 60               # minutes
+conn_max_idle_time = 30              # minutes
+
+[redis]
+host = "redis"                       # Docker service name or actual Redis host
+port = 6379
+password = ""                        # SET VIA: ERP_REDIS_PASSWORD
+db = 0
+
+[jwt]
+secret = ""                          # SET VIA: ERP_JWT_SECRET (required, min 32 chars)
+access_token_expiration = "15m"
+refresh_token_expiration = "168h"    # 7 days
+issuer = "erp-backend"
+refresh_secret = ""                  # SET VIA: ERP_JWT_REFRESH_SECRET (required, min 32 chars)
+max_refresh_count = 10
+
+[cookie]
+domain = ""                          # SET VIA: ERP_COOKIE_DOMAIN (e.g., ".example.com")
+path = "/"
+secure = true                        # HTTPS required in production
+same_site = "strict"                 # Strict for CSRF protection
+
+[log]
+level = "info"                       # Use "warn" for less verbose logging
+format = "json"                      # JSON format for log aggregation
+output = "stdout"
+
+[event]
+processor_enabled = true
+batch_size = 100
+poll_interval = "5s"
+max_retries = 5
+cleanup_enabled = true
+cleanup_retention = "168h"           # 7 days
+
+[http]
+read_timeout = "30s"
+write_timeout = "30s"
+idle_timeout = "120s"
+max_header_bytes = 1048576           # 1MB
+max_body_size = 10485760             # 10MB
+rate_limit_enabled = true
+rate_limit_requests = 1000           # Per IP per minute
+rate_limit_window = "1m"
+# Auth rate limiting - strict limits for production
+auth_rate_limit_enabled = true
+auth_rate_limit_requests = 5         # 5 attempts per minute
+auth_rate_limit_window = "1m"
+# CORS - set to your actual frontend domain(s)
+cors_allow_origins = []              # SET VIA: ERP_HTTP_CORS_ALLOW_ORIGINS or configure here
+cors_allow_methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+cors_allow_headers = ["Content-Type", "Authorization", "X-Request-ID", "X-Tenant-ID"]
+# Trusted proxies for rate limiter (set to your load balancer/reverse proxy IPs)
+trusted_proxies = []                 # Example: ["10.0.0.0/8", "172.16.0.0/12"]
+
+[scheduler]
+enabled = true
+daily_cron_schedule = "0 2 * * *"    # 2am daily
+max_concurrent_jobs = 3
+job_timeout = "30m"
+retry_attempts = 3
+retry_delay = "5m"
+
+[stock_lock]
+check_interval = "5m"
+default_expiration = "24h"
+auto_release_enabled = true
+
+[swagger]
+enabled = false                      # Disable in production
+require_auth = true                  # Require auth if enabled
+allowed_ips = ["127.0.0.1"]          # Restrict to localhost if enabled
+
+[telemetry]
+enabled = true
+collector_endpoint = "otel-collector:14317"
+sampling_ratio = 0.1                 # Sample 10% of traces in production
+service_name = "erp-backend"
+insecure = false                     # Use TLS in production
+metrics_export_interval = "60s"
+
+# Logs bridge
+logs_enabled = true
+
+# Database tracing
+db_trace_enabled = true
+db_log_full_sql = false              # NEVER enable in production (security risk)
+db_slow_query_threshold = "200ms"
+
+[telemetry.profiling]
+enabled = false                      # Enable if using Pyroscope
+server_address = "http://pyroscope:4040"
+application_name = "erp-backend"
+# Grafana Cloud (if using)
+# basic_auth_user = ""               # SET VIA: ERP_TELEMETRY_PROFILING_BASIC_AUTH_USER
+# basic_auth_password = ""           # SET VIA: ERP_TELEMETRY_PROFILING_BASIC_AUTH_PASSWORD
+
+profile_cpu = true
+profile_alloc_objects = true
+profile_alloc_space = true
+profile_inuse_objects = true
+profile_inuse_space = true
+profile_goroutines = true
+profile_mutex_count = false
+profile_mutex_duration = false
+profile_block_count = false
+profile_block_duration = false
+mutex_profile_fraction = 5
+block_profile_rate = 5
+disable_gc_runs = false
+span_profiles_enabled = false        # Disable for performance in production
+
+[storage]
+endpoint = ""                        # SET VIA: ERP_STORAGE_ENDPOINT (e.g., "https://s3.amazonaws.com")
+region = "us-east-1"                 # SET VIA: ERP_STORAGE_REGION
+access_key = ""                      # SET VIA: ERP_STORAGE_ACCESS_KEY
+secret_key = ""                      # SET VIA: ERP_STORAGE_SECRET_KEY
+bucket = "erp-attachments"
+use_path_style = false               # false for AWS S3, true for MinIO/RustFS
+use_ssl = true                       # Enable SSL in production
+presign_expiration = "15m"
+max_file_size = 52428800             # 50MB
+allowed_mime_types = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+]

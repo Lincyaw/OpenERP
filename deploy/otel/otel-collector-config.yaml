@@ -54,38 +54,20 @@ processors:
         action: upsert
 
 exporters:
-  # File exporter for traces
-  file/traces:
-    path: /var/log/otel/traces.json
-    rotation:
-      max_megabytes: 100
-      max_days: 7
-      max_backups: 3
-      localtime: true
-
-  # File exporter for metrics
-  file/metrics:
-    path: /var/log/otel/metrics.json
-    rotation:
-      max_megabytes: 100
-      max_days: 7
-      max_backups: 3
-      localtime: true
-
-  # File exporter for logs
-  file/logs:
-    path: /var/log/otel/logs.json
-    rotation:
-      max_megabytes: 100
-      max_days: 7
-      max_backups: 3
-      localtime: true
-
-  # Debug exporter for console output (useful for troubleshooting)
+  # Debug exporter for console output (useful for development)
   debug:
     verbosity: basic
     sampling_initial: 5
     sampling_thereafter: 200
+
+  # NOTE: File exporters disabled due to permission issues in container
+  # For production, use proper backends like Jaeger, Tempo, or cloud services
+  # file/traces:
+  #   path: /var/log/otel/traces.json
+  # file/metrics:
+  #   path: /var/log/otel/metrics.json
+  # file/logs:
+  #   path: /var/log/otel/logs.json
 
 extensions:
   # Health check endpoint for container orchestration
@@ -116,7 +98,6 @@ service:
         - resource
         - batch
       exporters:
-        - file/traces
         - debug
 
     metrics:
@@ -127,7 +108,6 @@ service:
         - resource
         - batch
       exporters:
-        - file/metrics
         - debug
 
     logs:
@@ -138,7 +118,6 @@ service:
         - resource
         - batch
       exporters:
-        - file/logs
         - debug
 
   telemetry:
@@ -147,4 +126,9 @@ service:
       encoding: console
     metrics:
       level: basic
-      address: 0.0.0.0:8888
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: "0.0.0.0"
+                port: 8888
