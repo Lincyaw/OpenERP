@@ -1,24 +1,22 @@
 # =============================================================================
-# ERP System - Docker Compose Configuration
+# ERP System - Production Docker Compose
 # =============================================================================
-# Two usage modes:
+# Production deployment with:
+#   - Pre-built images from container registry
+#   - Nginx gateway for unified access
+#   - Optimized configurations
 #
-#   1. Docker Mode (all services in containers):
-#      make docker-up
+# Usage:
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod --profile migrate up migrate
 #
-#   2. Local Development Mode (database only in Docker):
-#      make dev            # Start postgres + redis
-#      make dev-backend    # Run backend locally
-#      make dev-frontend   # Run frontend locally
-#
-# Configuration:
-#   - Copy .env.example to .env and adjust values
-#   - Backend config: backend/config.toml (override with ERP_* env vars)
-#
-# Access (Docker mode with gateway):
-#   - http://localhost       -> Frontend + API (via Nginx gateway)
-#   - http://localhost:9001  -> RustFS Admin Console
+# Required .env.prod settings:
+#   - ERP_JWT_SECRET, ERP_JWT_REFRESH_SECRET (generate with: openssl rand -base64 32)
+#   - ERP_STORAGE_ENDPOINT (external URL for presigned URLs)
+#   - DB_PASSWORD, ERP_REDIS_PASSWORD (strong passwords)
 # =============================================================================
+
+x-image-registry: &image-registry "pair-diag-cn-guangzhou.cr.volces.com/pair"
 
 services:
   # ---------------------------------------------------------------------------
@@ -29,19 +27,16 @@ services:
     container_name: erp-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME:-erp_dev}
+      POSTGRES_DB: ${DB_NAME:-erp_prod}
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-admin123}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
     networks:
       - erp-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-erp_dev}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-erp_prod}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -53,15 +48,16 @@ services:
     image: redis:8.4.0
     container_name: erp-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${ERP_REDIS_PASSWORD:-}
     volumes:
       - redis_data:/data
     networks:
       - erp-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${ERP_REDIS_PASSWORD:-}", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -77,12 +73,9 @@ services:
       RUSTFS_VOLUMES: /data
       RUSTFS_ADDRESS: ":9000"
       RUSTFS_CONSOLE_ADDRESS: ":9001"
-      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
-      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin123}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?RUSTFS_ACCESS_KEY is required}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?RUSTFS_SECRET_KEY is required}
       RUSTFS_REGION: ${RUSTFS_REGION:-us-east-1}
-    ports:
-      # S3 API port not exposed externally - accessed via nginx gateway
-      - "${RUSTFS_CONSOLE_PORT:-9001}:9001"
     volumes:
       - rustfs_data:/data
     networks:
@@ -109,7 +102,7 @@ services:
       - erp-network
     command: >
       -path=/migrations
-      -database "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-admin123}@postgres:5432/${DB_NAME:-erp_dev}?sslmode=disable"
+      -database "postgres://${DB_USER:-postgres}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-erp_prod}?sslmode=${ERP_DATABASE_SSLMODE:-require}"
       up
     profiles:
       - migrate
@@ -124,8 +117,8 @@ services:
       rustfs:
         condition: service_healthy
     environment:
-      AWS_ACCESS_KEY_ID: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
-      AWS_SECRET_ACCESS_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin123}
+      AWS_ACCESS_KEY_ID: ${RUSTFS_ACCESS_KEY:?RUSTFS_ACCESS_KEY is required}
+      AWS_SECRET_ACCESS_KEY: ${RUSTFS_SECRET_KEY:?RUSTFS_SECRET_KEY is required}
     networks:
       - erp-network
     entrypoint: ["/bin/sh", "-c"]
@@ -136,12 +129,10 @@ services:
       - migrate
 
   # ---------------------------------------------------------------------------
-  # Backend API (Docker mode only)
+  # Backend API
   # ---------------------------------------------------------------------------
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ${IMAGE_REGISTRY:-pair-diag-cn-guangzhou.cr.volces.com/pair}/erp-backend:${IMAGE_TAG:-latest}
     container_name: erp-backend
     restart: unless-stopped
     depends_on:
@@ -155,46 +146,43 @@ services:
       # Database
       ERP_DATABASE_HOST: postgres
       ERP_DATABASE_PORT: 5432
-      ERP_DATABASE_DBNAME: ${DB_NAME:-erp_dev}
+      ERP_DATABASE_DBNAME: ${DB_NAME:-erp_prod}
       ERP_DATABASE_USER: ${DB_USER:-postgres}
-      ERP_DATABASE_PASSWORD: ${DB_PASSWORD:-admin123}
-      ERP_DATABASE_SSLMODE: ${ERP_DATABASE_SSLMODE:-disable}
+      ERP_DATABASE_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      ERP_DATABASE_SSLMODE: ${ERP_DATABASE_SSLMODE:-require}
       # Redis
       ERP_REDIS_HOST: redis
       ERP_REDIS_PORT: 6379
       ERP_REDIS_PASSWORD: ${ERP_REDIS_PASSWORD:-}
-      # JWT (REQUIRED in production)
-      ERP_JWT_SECRET: ${ERP_JWT_SECRET:-}
-      ERP_JWT_REFRESH_SECRET: ${ERP_JWT_REFRESH_SECRET:-}
+      # JWT (REQUIRED)
+      ERP_JWT_SECRET: ${ERP_JWT_SECRET:?ERP_JWT_SECRET is required}
+      ERP_JWT_REFRESH_SECRET: ${ERP_JWT_REFRESH_SECRET:?ERP_JWT_REFRESH_SECRET is required}
       # Cookie
       ERP_COOKIE_DOMAIN: ${ERP_COOKIE_DOMAIN:-}
-      ERP_COOKIE_SECURE: ${ERP_COOKIE_SECURE:-false}
-      ERP_COOKIE_SAME_SITE: ${ERP_COOKIE_SAME_SITE:-lax}
-      # HTTP / CORS - Allow gateway origin
-      ERP_HTTP_CORS_ALLOW_ORIGINS: ${ERP_HTTP_CORS_ALLOW_ORIGINS:-http://localhost}
-      ERP_HTTP_AUTH_RATE_LIMIT_ENABLED: ${ERP_HTTP_AUTH_RATE_LIMIT_ENABLED:-false}
+      ERP_COOKIE_SECURE: ${ERP_COOKIE_SECURE:-true}
+      ERP_COOKIE_SAME_SITE: ${ERP_COOKIE_SAME_SITE:-strict}
+      # HTTP / CORS
+      ERP_HTTP_CORS_ALLOW_ORIGINS: ${ERP_HTTP_CORS_ALLOW_ORIGINS:?ERP_HTTP_CORS_ALLOW_ORIGINS is required}
+      ERP_HTTP_AUTH_RATE_LIMIT_ENABLED: ${ERP_HTTP_AUTH_RATE_LIMIT_ENABLED:-true}
       ERP_HTTP_AUTH_RATE_LIMIT_REQUESTS: ${ERP_HTTP_AUTH_RATE_LIMIT_REQUESTS:-5}
-      # Storage (S3) - Use external gateway URL for presigned URLs (browser accessible)
-      ERP_STORAGE_ENDPOINT: ${ERP_STORAGE_ENDPOINT:-http://localhost}
+      # Storage (S3) - External URL for presigned URLs
+      ERP_STORAGE_ENDPOINT: ${ERP_STORAGE_ENDPOINT:?ERP_STORAGE_ENDPOINT is required}
       ERP_STORAGE_REGION: ${ERP_STORAGE_REGION:-us-east-1}
-      ERP_STORAGE_ACCESS_KEY: ${ERP_STORAGE_ACCESS_KEY:-rustfsadmin}
-      ERP_STORAGE_SECRET_KEY: ${ERP_STORAGE_SECRET_KEY:-rustfsadmin123}
+      ERP_STORAGE_ACCESS_KEY: ${ERP_STORAGE_ACCESS_KEY:-${RUSTFS_ACCESS_KEY}}
+      ERP_STORAGE_SECRET_KEY: ${ERP_STORAGE_SECRET_KEY:-${RUSTFS_SECRET_KEY}}
       ERP_STORAGE_BUCKET: ${ERP_STORAGE_BUCKET:-erp-attachments}
       ERP_STORAGE_USE_PATH_STYLE: ${ERP_STORAGE_USE_PATH_STYLE:-true}
       ERP_STORAGE_USE_SSL: ${ERP_STORAGE_USE_SSL:-false}
       # Telemetry
+      ERP_TELEMETRY_ENABLED: ${ERP_TELEMETRY_ENABLED:-true}
       ERP_TELEMETRY_COLLECTOR_ENDPOINT: ${ERP_TELEMETRY_COLLECTOR_ENDPOINT:-otel-collector:14317}
-      ERP_TELEMETRY_SAMPLING_RATIO: ${ERP_TELEMETRY_SAMPLING_RATIO:-1.0}
+      ERP_TELEMETRY_SAMPLING_RATIO: ${ERP_TELEMETRY_SAMPLING_RATIO:-0.1}
       ERP_TELEMETRY_INSECURE: ${ERP_TELEMETRY_INSECURE:-true}
-      ERP_TELEMETRY_PROFILING_ENABLED: ${ERP_TELEMETRY_PROFILING_ENABLED:-false}
-      # Swagger
-      ERP_SWAGGER_ENABLED: ${ERP_SWAGGER_ENABLED:-true}
+      # Swagger (disabled in production)
+      ERP_SWAGGER_ENABLED: ${ERP_SWAGGER_ENABLED:-false}
       # Logging
       ERP_LOG_LEVEL: ${ERP_LOG_LEVEL:-info}
-      ERP_LOG_FORMAT: ${ERP_LOG_FORMAT:-console}
-    volumes:
-      - ./backend/config.toml:/app/config.toml:ro
-    # Port not exposed externally - accessed via nginx gateway
+      ERP_LOG_FORMAT: ${ERP_LOG_FORMAT:-json}
     networks:
       - erp-network
     healthcheck:
@@ -203,25 +191,17 @@ services:
       timeout: 3s
       retries: 3
       start_period: 10s
-    profiles:
-      - docker
 
   # ---------------------------------------------------------------------------
-  # Frontend Web App (Docker mode only)
+  # Frontend Web App
   # ---------------------------------------------------------------------------
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
-        VITE_APP_NAME: ${VITE_APP_NAME:-ERP System}
+    image: ${IMAGE_REGISTRY:-pair-diag-cn-guangzhou.cr.volces.com/pair}/erp-frontend:${IMAGE_TAG:-latest}
     container_name: erp-frontend
     restart: unless-stopped
     depends_on:
       backend:
         condition: service_healthy
-    # Port not exposed externally - accessed via nginx gateway
     networks:
       - erp-network
     healthcheck:
@@ -230,15 +210,12 @@ services:
       timeout: 3s
       retries: 3
       start_period: 10s
-    profiles:
-      - docker
 
   # ---------------------------------------------------------------------------
-  # Nginx Gateway (Docker mode only)
+  # Nginx Gateway
   # ---------------------------------------------------------------------------
-  # Unified entry point for all services
   nginx:
-    image: nginx:1.29-alpine3.23-perl
+    image: nginx:1.27-alpine
     container_name: erp-nginx
     restart: unless-stopped
     depends_on:
@@ -260,59 +237,9 @@ services:
       timeout: 3s
       retries: 3
       start_period: 5s
-    profiles:
-      - docker
 
   # ---------------------------------------------------------------------------
-  # Playwright E2E Test Runner (E2E mode only)
-  # ---------------------------------------------------------------------------
-  playwright:
-    image: mcr.microsoft.com/playwright:${PLAYWRIGHT_VERSION:-v1.58.0-noble}
-    container_name: erp-playwright
-    user: "${FRONTEND_USER:-1000:1000}"
-    working_dir: /app
-    depends_on:
-      nginx:
-        condition: service_healthy
-    environment:
-      E2E_BASE_URL: http://nginx
-      CI: ${CI:-true}
-      HOME: /tmp
-    volumes:
-      - ./frontend:/app
-    networks:
-      - erp-network
-    command: ["npx", "playwright", "test", "--reporter=list"]
-    profiles:
-      - e2e
-
-  # ---------------------------------------------------------------------------
-  # Pyroscope Profiling Server (Observability mode)
-  # ---------------------------------------------------------------------------
-  pyroscope:
-    image: grafana/pyroscope:${PYROSCOPE_VERSION:-latest}
-    container_name: erp-pyroscope
-    restart: unless-stopped
-    environment:
-      - PYROSCOPE_LOG_LEVEL=${PYROSCOPE_LOG_LEVEL:-info}
-    ports:
-      - "${PYROSCOPE_PORT:-4040}:4040"
-    volumes:
-      - pyroscope_data:/data
-    networks:
-      - erp-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4040/ready"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    profiles:
-      - otel
-      - docker
-
-  # ---------------------------------------------------------------------------
-  # OpenTelemetry Collector (Observability mode)
+  # OpenTelemetry Collector (Optional)
   # ---------------------------------------------------------------------------
   otel-collector:
     image: otel/opentelemetry-collector-contrib:${OTEL_COLLECTOR_VERSION:-0.144.0}
@@ -322,34 +249,20 @@ services:
       - "--config=/etc/otel-collector-config.yaml"
     volumes:
       - ./deploy/otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
-      - otel_logs:/var/log/otel
-    ports:
-      - "${OTEL_GRPC_PORT:-14317}:14317"   # OTLP gRPC receiver
-      - "${OTEL_HTTP_PORT:-14318}:14318"   # OTLP HTTP receiver
-      - "13133:13133"                     # Health check
-      - "8888:8888"                        # Prometheus metrics (collector self-monitoring)
-      - "55679:55679"                      # zpages (debugging)
     networks:
       - erp-network
-    healthcheck:
-      disable: true
     profiles:
       - otel
-      - docker
 
 networks:
   erp-network:
     driver: bridge
-    name: erp-network
+    name: erp-prod-network
 
 volumes:
   postgres_data:
-    name: erp-postgres-data
+    name: erp-prod-postgres-data
   redis_data:
-    name: erp-redis-data
+    name: erp-prod-redis-data
   rustfs_data:
-    name: erp-rustfs-data
-  otel_logs:
-    name: erp-otel-logs
-  pyroscope_data:
-    name: erp-pyroscope-data
+    name: erp-prod-rustfs-data

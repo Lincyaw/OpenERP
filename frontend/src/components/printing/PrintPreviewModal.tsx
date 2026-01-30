@@ -32,6 +32,7 @@ import {
 import { IconPrint, IconMinus, IconPlus, IconDownload, IconRefresh } from '@douyinfe/semi-icons'
 import { usePrint, ZOOM_LEVELS } from '@/hooks/usePrint'
 import { Row, Spacer } from '@/components/common/layout/Flex'
+import axiosInstance from '@/services/axios-instance'
 import type { CSSProperties } from 'react'
 import './PrintPreviewModal.css'
 
@@ -158,9 +159,20 @@ export function PrintPreviewModal({
     try {
       const job = await generatePdf(copies)
       if (job.status === 'COMPLETED' && job.pdf_url) {
-        // Open PDF in new tab
-        window.open(job.pdf_url, '_blank')
-        Toast.success('PDF 生成成功')
+        // Download PDF using axios (with auth header) and open as blob URL
+        try {
+          const response = await axiosInstance.get(job.pdf_url, {
+            responseType: 'blob',
+          })
+          const blob = new Blob([response.data], { type: 'application/pdf' })
+          const blobUrl = URL.createObjectURL(blob)
+          window.open(blobUrl, '_blank')
+          // Clean up blob URL after a delay
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+          Toast.success('PDF 生成成功')
+        } catch {
+          Toast.error('PDF 下载失败')
+        }
       } else if (job.status === 'PROCESSING') {
         Toast.info('PDF 正在生成中，请稍候...')
       } else if (job.status === 'FAILED') {

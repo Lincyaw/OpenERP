@@ -163,6 +163,14 @@ db-migrate: ## Run database migrations
 		-database "postgres://$${DB_USER:-postgres}:$${DB_PASSWORD:-admin123}@erp-postgres:5432/$${DB_NAME:-erp_dev}?sslmode=disable" \
 		up 2>/dev/null || echo "  Migrations may already be applied"
 	@echo "$(GREEN)Migrations complete.$(NC)"
+	@echo "$(CYAN)Initializing storage bucket...$(NC)"
+	@docker run --rm --network erp-network \
+		-e AWS_ACCESS_KEY_ID=$${RUSTFS_ACCESS_KEY:-rustfsadmin} \
+		-e AWS_SECRET_ACCESS_KEY=$${RUSTFS_SECRET_KEY:-rustfsadmin123} \
+		amazon/aws-cli:latest \
+		--endpoint-url http://erp-rustfs:9000 \
+		s3 mb s3://$${ERP_STORAGE_BUCKET:-erp-attachments} 2>/dev/null || echo "  Bucket already exists"
+	@echo "$(GREEN)Storage initialized.$(NC)"
 
 db-seed: ## Load seed data into database
 	@echo "$(CYAN)Loading seed data...$(NC)"
