@@ -28,9 +28,18 @@
     "e2e:ui": "playwright test --ui",
     "e2e:report": "playwright show-report",
     "e2e:ci": "playwright test --reporter=html,github",
-    "prepare": "husky"
+    "prepare": "husky",
+    "cap:sync": "npx cap sync",
+    "cap:android": "npm run build && npx cap sync android && npx cap open android",
+    "cap:ios": "npm run build && npx cap sync ios && npx cap open ios",
+    "cap:run:android": "npx cap run android",
+    "cap:run:ios": "npx cap run ios"
   },
   "dependencies": {
+    "@capacitor/android": "^8.0.2",
+    "@capacitor/cli": "^8.0.2",
+    "@capacitor/core": "^8.0.2",
+    "@capacitor/ios": "^8.0.2",
     "@douyinfe/semi-icons": "^2.90.13",
     "@douyinfe/semi-ui-19": "^2.90.13",
     "@hookform/resolvers": "^5.2.2",
@@ -75,12 +84,12 @@
     "lint-staged": "^16.2.7",
     "orval": "^8.0.3",
     "prettier": "^3.8.1",
+    "stylelint": "^16.17.0",
+    "stylelint-config-standard": "^38.0.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
-    "vitest": "^4.0.18",
-    "stylelint": "^16.17.0",
-    "stylelint-config-standard": "^38.0.0"
+    "vitest": "^4.0.18"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

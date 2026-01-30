@@ -40,3 +40,7 @@ playwright-report/
 tests/e2e/.auth/user.json
 blob-report/
 playwright/.cache/
+
+# Capacitor
+android/
+ios/

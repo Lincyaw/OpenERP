@@ -301,16 +301,17 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
 
   // Handle customer selection
   const handleCustomerChange = useCallback(
-    (selectedOption: string | number | unknown[] | Record<string, unknown> | undefined) => {
-      const option = selectedOption as { value?: string; label?: string } | undefined
+    (value: string | number | (string | number)[] | Record<string, unknown> | undefined) => {
+      const customerId = typeof value === 'string' ? value : ''
+      const customer = customers.find((c) => c.id === customerId)
       setFormData((prev) => ({
         ...prev,
-        customer_id: option?.value || '',
-        customer_name: option?.label || '',
+        customer_id: customerId,
+        customer_name: customer?.name || '',
       }))
       clearError('customer_id')
     },
-    [setFormData, clearError]
+    [customers, setFormData, clearError]
   )
 
   // Handle product selection for an item
@@ -610,7 +611,6 @@ export function SalesOrderForm({ orderId, initialData }: SalesOrderFormProps) {
                 value={formData.customer_id || undefined}
                 placeholder={t('orderForm.basicInfo.customerPlaceholder')}
                 onChange={handleCustomerChange}
-                onChangeWithObject
                 optionList={customerOptions}
                 filter
                 remote
