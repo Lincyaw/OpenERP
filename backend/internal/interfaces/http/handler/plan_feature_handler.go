@@ -2,6 +2,7 @@ package handler
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/erp/backend/internal/domain/identity"
 	"github.com/erp/backend/internal/domain/shared"
@@ -10,16 +11,24 @@ import (
 	"github.com/google/uuid"
 )
 
+// PlanFeatureRepositoryWithAudit extends PlanFeatureRepository with audit logging
+type PlanFeatureRepositoryWithAudit interface {
+	identity.PlanFeatureRepository
+	SaveBatchWithAuditLog(ctx interface{}, features []identity.PlanFeature, changedBy *uuid.UUID) error
+}
+
 // PlanFeatureHandler handles plan feature management HTTP requests
 type PlanFeatureHandler struct {
 	BaseHandler
-	tenantRepo identity.TenantRepository
+	tenantRepo      identity.TenantRepository
+	planFeatureRepo identity.PlanFeatureRepository
 }
 
 // NewPlanFeatureHandler creates a new plan feature handler
-func NewPlanFeatureHandler(tenantRepo identity.TenantRepository) *PlanFeatureHandler {
+func NewPlanFeatureHandler(tenantRepo identity.TenantRepository, planFeatureRepo identity.PlanFeatureRepository) *PlanFeatureHandler {
 	return &PlanFeatureHandler{
-		tenantRepo: tenantRepo,
+		tenantRepo:      tenantRepo,
+		planFeatureRepo: planFeatureRepo,
 	}
 }
 
@@ -171,8 +180,23 @@ func (h *PlanFeatureHandler) GetPlanFeatures(c *gin.Context) {
 		return
 	}
 
-	// Get default features for the plan
-	features := identity.DefaultPlanFeatures(plan)
+	// Try to get features from database first
+	var features []identity.PlanFeature
+	var err error
+
+	if h.planFeatureRepo != nil {
+		features, err = h.planFeatureRepo.FindByPlan(c.Request.Context(), plan)
+		if err != nil {
+			slog.Error("failed to retrieve plan features from database", "plan", planCode, "error", err)
+			// Fall back to defaults on error
+			features = identity.DefaultPlanFeatures(plan)
+		}
+	}
+
+	// If no features found in database, use defaults
+	if len(features) == 0 {
+		features = identity.DefaultPlanFeatures(plan)
+	}
 
 	// Convert to response
 	featureResponses := make([]PlanFeatureResponse, len(features))
@@ -195,10 +219,8 @@ func (h *PlanFeatureHandler) GetPlanFeatures(c *gin.Context) {
 // UpdatePlanFeatures godoc
 //
 //	@ID				updatePlanFeatures
-//	@Summary		Preview feature updates for a plan (read-only)
-//	@Description	Validate and preview feature configuration changes for a subscription plan.
-//	@Description	NOTE: This endpoint currently returns a preview of the changes but does NOT persist them.
-//	@Description	Full persistence will be implemented when PlanFeatureRepository is available.
+//	@Summary		Update feature configurations for a plan
+//	@Description	Update feature configurations for a subscription plan. Changes are persisted to the database.
 //	@Tags			plan-features
 //	@Accept			json
 //	@Produce		json
@@ -250,26 +272,45 @@ func (h *PlanFeatureHandler) UpdatePlanFeatures(c *gin.Context) {
 		}
 	}
 
-	// Get current features and apply updates
-	// TODO: Implement persistence via PlanFeatureRepository when available.
-	// Currently this endpoint validates input and returns a preview of changes
-	// but does NOT persist them to the database.
-	slog.Info("UpdatePlanFeatures preview requested",
-		"plan", planCode,
-		"feature_count", len(req.Features),
-		"note", "Changes are not persisted - preview only")
-	features := identity.DefaultPlanFeatures(plan)
+	// Get current user ID for audit logging
+	var changedBy *uuid.UUID
+	if userIDStr := middleware.GetJWTUserID(c); userIDStr != "" {
+		if userID, err := uuid.Parse(userIDStr); err == nil {
+			changedBy = &userID
+		}
+	}
+
+	// Get existing features from database or use defaults
+	var existingFeatures []identity.PlanFeature
+	var err error
+
+	if h.planFeatureRepo != nil {
+		existingFeatures, err = h.planFeatureRepo.FindByPlan(c.Request.Context(), plan)
+		if err != nil {
+			slog.Error("failed to retrieve existing plan features", "plan", planCode, "error", err)
+		}
+	}
+
+	// If no features in database, use defaults as base
+	if len(existingFeatures) == 0 {
+		existingFeatures = identity.DefaultPlanFeatures(plan)
+	}
 
 	// Create a map for quick lookup
 	featureMap := make(map[identity.FeatureKey]*identity.PlanFeature)
-	for i := range features {
-		featureMap[features[i].FeatureKey] = &features[i]
+	for i := range existingFeatures {
+		featureMap[existingFeatures[i].FeatureKey] = &existingFeatures[i]
 	}
+
+	// Collect features to update
+	featuresToUpdate := make([]identity.PlanFeature, 0, len(req.Features))
+	now := time.Now()
 
 	// Apply updates
 	for _, update := range req.Features {
 		key := identity.FeatureKey(update.FeatureKey)
 		if pf, exists := featureMap[key]; exists {
+			// Update existing feature
 			if update.Enabled {
 				pf.Enable()
 			} else {
@@ -283,12 +324,59 @@ func (h *PlanFeatureHandler) UpdatePlanFeatures(c *gin.Context) {
 			} else {
 				pf.ClearLimit()
 			}
+			pf.UpdatedAt = now
+			featuresToUpdate = append(featuresToUpdate, *pf)
 		}
 	}
 
+	// Persist changes to database
+	if h.planFeatureRepo != nil && len(featuresToUpdate) > 0 {
+		// Check if repository supports audit logging
+		if auditRepo, ok := h.planFeatureRepo.(interface {
+			SaveBatchWithAuditLog(ctx interface{}, features []identity.PlanFeature, changedBy *uuid.UUID) error
+		}); ok {
+			if err := auditRepo.SaveBatchWithAuditLog(c.Request.Context(), featuresToUpdate, changedBy); err != nil {
+				slog.Error("failed to persist plan features with audit log",
+					"plan", planCode,
+					"feature_count", len(featuresToUpdate),
+					"error", err)
+				h.InternalError(c, "Failed to save feature configuration")
+				return
+			}
+		} else {
+			// Fall back to regular batch save
+			if err := h.planFeatureRepo.SaveBatch(c.Request.Context(), featuresToUpdate); err != nil {
+				slog.Error("failed to persist plan features",
+					"plan", planCode,
+					"feature_count", len(featuresToUpdate),
+					"error", err)
+				h.InternalError(c, "Failed to save feature configuration")
+				return
+			}
+		}
+
+		slog.Info("Plan features updated successfully",
+			"plan", planCode,
+			"feature_count", len(featuresToUpdate),
+			"changed_by", changedBy)
+	}
+
+	// Retrieve updated features for response
+	var updatedFeatures []identity.PlanFeature
+	if h.planFeatureRepo != nil {
+		updatedFeatures, err = h.planFeatureRepo.FindByPlan(c.Request.Context(), plan)
+		if err != nil {
+			slog.Error("failed to retrieve updated plan features", "plan", planCode, "error", err)
+			// Use the features we just updated
+			updatedFeatures = existingFeatures
+		}
+	} else {
+		updatedFeatures = existingFeatures
+	}
+
 	// Convert to response
-	featureResponses := make([]PlanFeatureResponse, len(features))
-	for i, f := range features {
+	featureResponses := make([]PlanFeatureResponse, len(updatedFeatures))
+	for i, f := range updatedFeatures {
 		featureResponses[i] = PlanFeatureResponse{
 			ID:          f.ID.String(),
 			FeatureKey:  string(f.FeatureKey),
@@ -343,10 +431,21 @@ func (h *PlanFeatureHandler) GetCurrentTenantFeatures(c *gin.Context) {
 		return
 	}
 
-	// Get features for the tenant's plan
-	features := identity.DefaultPlanFeatures(tenant.Plan)
+	// Get features for the tenant's plan from database first
+	var features []identity.PlanFeature
+	if h.planFeatureRepo != nil {
+		features, err = h.planFeatureRepo.FindByPlan(c.Request.Context(), tenant.Plan)
+		if err != nil {
+			slog.Error("failed to retrieve plan features from database", "plan", tenant.Plan, "error", err)
+		}
+	}
 
-	// Filter to only enabled features and convert to response
+	// If no features found in database, use defaults
+	if len(features) == 0 {
+		features = identity.DefaultPlanFeatures(tenant.Plan)
+	}
+
+	// Convert to response (include all features, not just enabled)
 	enabledFeatures := make([]TenantFeatureResponse, 0, len(features))
 	for _, f := range features {
 		enabledFeatures = append(enabledFeatures, TenantFeatureResponse{

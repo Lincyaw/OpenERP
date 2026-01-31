@@ -43190,3 +43190,87 @@ Created comprehensive documentation for the SaaS billing system covering:
 === Next Steps ===
 - Consider adding visual indicators for subscription status in the menu
 - May want to add notification badges for unpaid invoices
+
+2026-01-31 - SAAS-BE-012: 实现计划功能配置持久化
+
+=== Implementation Details ===
+- Created PlanFeatureModel in backend/internal/infrastructure/persistence/models/identity.go
+  - Maps to plan_features table with proper GORM tags
+  - Includes ToDomain() and FromDomain() conversion methods
+  - Added PlanFeatureChangeLogModel for audit logging
+
+- Created database migration 000044_create_plan_feature_change_logs
+  - Stores audit trail of all plan feature configuration changes
+  - Tracks old/new values for enabled state and limits
+  - Records who made the change and when
+
+- Implemented GormPlanFeatureRepository in backend/internal/infrastructure/persistence/plan_feature_repository.go
+  - Full implementation of identity.PlanFeatureRepository interface
+  - FindByID, FindByPlan, FindByPlanAndFeature, FindEnabledByPlan
+  - HasFeature, GetFeatureLimit for feature checking
+  - Save, SaveBatch for persistence
+  - Delete, DeleteByPlan for removal
+  - SaveWithAuditLog, SaveBatchWithAuditLog for audit-enabled persistence
+
+- Updated PlanFeatureHandler in backend/internal/interfaces/http/handler/plan_feature_handler.go
+  - Added planFeatureRepo dependency to handler struct
+  - Modified NewPlanFeatureHandler to accept PlanFeatureRepository
+  - GetPlanFeatures now reads from database first, falls back to defaults
+  - UpdatePlanFeatures now persists changes to database with audit logging
+  - GetCurrentTenantFeatures reads from database for tenant's plan
+  - Updated Swagger documentation to reflect persistence behavior
+
+- Updated main.go to wire up the new repository
+  - Added planFeatureRepo initialization
+  - Passed planFeatureRepo to NewPlanFeatureHandler
+
+- Updated handler tests to pass nil for planFeatureRepo (backward compatible)
+
+- Created comprehensive integration tests in plan_feature_repository_test.go
+  - Tests for all repository methods
+  - Uses in-memory SQLite for fast testing
+  - Covers CRUD operations, batch operations, and audit logging
+
+=== Files Modified/Created ===
+- backend/internal/infrastructure/persistence/models/identity.go (modified)
+- backend/migrations/000044_create_plan_feature_change_logs.up.sql (new)
+- backend/migrations/000044_create_plan_feature_change_logs.down.sql (new)
+- backend/internal/infrastructure/persistence/plan_feature_repository.go (new)
+- backend/internal/infrastructure/persistence/plan_feature_repository_test.go (new)
+- backend/internal/interfaces/http/handler/plan_feature_handler.go (modified)
+- backend/internal/interfaces/http/handler/plan_feature_handler_test.go (modified)
+- backend/cmd/server/main.go (modified)
+
+=== Verification ===
+- All repository tests pass (12 tests)
+- All handler tests pass (6 test functions with subtests)
+- Backend builds successfully
+- No type errors
+
+=== Acceptance Criteria Met ===
+✓ PUT /admin/plans/{plan}/features 成功保存配置到数据库
+✓ 配置变更后重启服务配置仍然生效 (persisted to plan_features table)
+✓ 并发更新时数据一致性得到保证 (database transactions used)
+✓ 审计日志记录功能配置变更 (plan_feature_change_logs table)
+
+=== Design Decisions ===
+1. Fallback to defaults: If no features found in database, system falls back to DefaultPlanFeatures()
+   - This ensures backward compatibility and graceful degradation
+   - Existing deployments continue to work without migration
+
+2. Audit logging via separate table: Used plan_feature_change_logs instead of generic audit
+   - Provides specific schema for feature changes
+   - Easier to query and analyze feature configuration history
+
+3. Repository interface extension: Added SaveBatchWithAuditLog as a method on the concrete repository
+   - Handler checks for interface support via type assertion
+   - Falls back to regular SaveBatch if audit logging not available
+
+=== Notes ===
+- The plan_features table was already created in migration 000041
+- Only the audit log table (000044) needed to be created
+- Handler is backward compatible - works with nil planFeatureRepo
+
+=== Next Steps ===
+- Consider adding API endpoint to query audit logs
+- May want to add cache layer for frequently accessed plan features

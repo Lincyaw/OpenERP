@@ -282,6 +282,7 @@ func main() {
 	userRepo := persistence.NewGormUserRepository(db.DB)
 	roleRepo := persistence.NewGormRoleRepository(db.DB)
 	tenantRepo := persistence.NewGormTenantRepository(db.DB)
+	planFeatureRepo := persistence.NewGormPlanFeatureRepository(db.DB)
 	salesReportRepo := persistence.NewGormSalesReportRepository(db.DB)
 	inventoryReportRepo := persistence.NewGormInventoryReportRepository(db.DB)
 	financeReportRepo := persistence.NewGormFinanceReportRepository(db.DB)
@@ -731,7 +732,7 @@ func main() {
 	outboxHandler := handler.NewOutboxHandler(outboxService)
 	featureFlagHandler := handler.NewFeatureFlagHandler(flagService, evaluationService, overrideService)
 	printHandler := handler.NewPrintHandler(printService, pdfStorage)
-	planFeatureHandler := handler.NewPlanFeatureHandler(tenantRepo)
+	planFeatureHandler := handler.NewPlanFeatureHandler(tenantRepo, planFeatureRepo)
 	usageHandler := handler.NewUsageHandler(tenantRepo, userRepo, warehouseRepo, productRepo)
 
 	// Initialize Stripe webhook handler (if Stripe is enabled)

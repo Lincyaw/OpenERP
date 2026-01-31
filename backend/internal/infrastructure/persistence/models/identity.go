@@ -453,3 +453,72 @@ func DepartmentModelFromDomain(d *identity.Department, metadataJSON string) *Dep
 	m.FromDomain(d, metadataJSON)
 	return m
 }
+
+// PlanFeatureModel is the persistence model for the PlanFeature domain entity.
+type PlanFeatureModel struct {
+	ID          uuid.UUID           `gorm:"type:uuid;primary_key"`
+	PlanID      identity.TenantPlan `gorm:"column:plan_id;type:varchar(50);not null"`
+	FeatureKey  string              `gorm:"column:feature_key;type:varchar(100);not null"`
+	Enabled     bool                `gorm:"not null;default:false"`
+	Limit       *int                `gorm:"column:feature_limit"`
+	Description string              `gorm:"type:text"`
+	CreatedAt   time.Time           `gorm:"not null"`
+	UpdatedAt   time.Time           `gorm:"not null"`
+}
+
+// TableName returns the table name for GORM
+func (PlanFeatureModel) TableName() string {
+	return "plan_features"
+}
+
+// ToDomain converts the persistence model to a domain PlanFeature entity.
+func (m *PlanFeatureModel) ToDomain() *identity.PlanFeature {
+	return &identity.PlanFeature{
+		ID:          m.ID,
+		PlanID:      m.PlanID,
+		FeatureKey:  identity.FeatureKey(m.FeatureKey),
+		Enabled:     m.Enabled,
+		Limit:       m.Limit,
+		Description: m.Description,
+		CreatedAt:   m.CreatedAt,
+		UpdatedAt:   m.UpdatedAt,
+	}
+}
+
+// FromDomain populates the persistence model from a domain PlanFeature entity.
+func (m *PlanFeatureModel) FromDomain(pf *identity.PlanFeature) {
+	m.ID = pf.ID
+	m.PlanID = pf.PlanID
+	m.FeatureKey = string(pf.FeatureKey)
+	m.Enabled = pf.Enabled
+	m.Limit = pf.Limit
+	m.Description = pf.Description
+	m.CreatedAt = pf.CreatedAt
+	m.UpdatedAt = pf.UpdatedAt
+}
+
+// PlanFeatureModelFromDomain creates a new persistence model from a domain PlanFeature entity.
+func PlanFeatureModelFromDomain(pf *identity.PlanFeature) *PlanFeatureModel {
+	m := &PlanFeatureModel{}
+	m.FromDomain(pf)
+	return m
+}
+
+// PlanFeatureChangeLogModel is the persistence model for audit logging plan feature changes.
+type PlanFeatureChangeLogModel struct {
+	ID         uuid.UUID  `gorm:"type:uuid;primary_key"`
+	PlanID     string     `gorm:"column:plan_id;type:varchar(50);not null"`
+	FeatureKey string     `gorm:"column:feature_key;type:varchar(100);not null"`
+	ChangeType string     `gorm:"column:change_type;type:varchar(20);not null"` // created, updated, deleted
+	OldEnabled *bool      `gorm:"column:old_enabled"`
+	NewEnabled *bool      `gorm:"column:new_enabled"`
+	OldLimit   *int       `gorm:"column:old_limit"`
+	NewLimit   *int       `gorm:"column:new_limit"`
+	ChangedBy  *uuid.UUID `gorm:"column:changed_by;type:uuid"`
+	ChangedAt  time.Time  `gorm:"column:changed_at;not null"`
+}
+
+// TableName returns the table name for GORM
+func (PlanFeatureChangeLogModel) TableName() string {
+	return "plan_feature_change_logs"
+}

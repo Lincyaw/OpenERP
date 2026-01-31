@@ -13094,7 +13094,7 @@
       "并发更新时数据一致性得到保证"
     ],
     "context": "当前 UpdatePlanFeatures 端点只返回预览结果，不持久化到数据库。代码中有 TODO 注释：'Implement persistence via PlanFeatureRepository when available'。这限制了管理员动态调整计划功能的能力。",
-    "passes": false
+    "passes": true
   },
   {
     "id": "SAAS-BE-013",

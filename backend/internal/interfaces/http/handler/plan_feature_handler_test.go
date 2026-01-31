@@ -102,7 +102,7 @@ func (m *mockTenantRepository) FindByStripeSubscriptionID(ctx context.Context, s
 }
 
 func TestPlanFeatureHandler_ListPlans(t *testing.T) {
-	h := NewPlanFeatureHandler(&mockTenantRepository{})
+	h := NewPlanFeatureHandler(&mockTenantRepository{}, nil)
 
 	router := gin.New()
 	router.GET("/admin/plans", h.ListPlans)
@@ -136,7 +136,7 @@ func TestPlanFeatureHandler_ListPlans(t *testing.T) {
 }
 
 func TestPlanFeatureHandler_GetPlanFeatures(t *testing.T) {
-	h := NewPlanFeatureHandler(&mockTenantRepository{})
+	h := NewPlanFeatureHandler(&mockTenantRepository{}, nil)
 
 	tests := []struct {
 		name           string
@@ -207,7 +207,7 @@ func TestPlanFeatureHandler_GetPlanFeatures(t *testing.T) {
 }
 
 func TestPlanFeatureHandler_GetPlanFeatures_EmptyPlan(t *testing.T) {
-	h := NewPlanFeatureHandler(&mockTenantRepository{})
+	h := NewPlanFeatureHandler(&mockTenantRepository{}, nil)
 
 	router := gin.New()
 	router.GET("/admin/plans/:plan/features", h.GetPlanFeatures)
@@ -221,7 +221,7 @@ func TestPlanFeatureHandler_GetPlanFeatures_EmptyPlan(t *testing.T) {
 }
 
 func TestPlanFeatureHandler_UpdatePlanFeatures(t *testing.T) {
-	h := NewPlanFeatureHandler(&mockTenantRepository{})
+	h := NewPlanFeatureHandler(&mockTenantRepository{}, nil)
 
 	tests := []struct {
 		name           string
@@ -336,7 +336,7 @@ func TestPlanFeatureHandler_UpdatePlanFeatures(t *testing.T) {
 }
 
 func TestPlanFeatureHandler_UpdatePlanFeatures_InvalidJSON(t *testing.T) {
-	h := NewPlanFeatureHandler(&mockTenantRepository{})
+	h := NewPlanFeatureHandler(&mockTenantRepository{}, nil)
 
 	router := gin.New()
 	router.PUT("/admin/plans/:plan/features", h.UpdatePlanFeatures)
@@ -398,7 +398,7 @@ func TestPlanFeatureHandler_GetCurrentTenantFeatures(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewPlanFeatureHandler(tt.mockRepo)
+			h := NewPlanFeatureHandler(tt.mockRepo, nil)
 
 			router := gin.New()
 			router.GET("/tenants/current/features", func(c *gin.Context) {
@@ -439,7 +439,7 @@ func TestPlanFeatureHandler_GetCurrentTenantFeatures_InternalError(t *testing.T)
 	tenantID := uuid.New()
 	h := NewPlanFeatureHandler(&mockTenantRepository{
 		err: assert.AnError,
-	})
+	}, nil)
 
 	router := gin.New()
 	router.GET("/tenants/current/features", func(c *gin.Context) {
