@@ -22,5 +22,28 @@ export {
 // Only export the store itself here for advanced use cases.
 export { useFeatureFlagStore } from './featureFlagStore'
 
+// Feature store (SaaS plan-based features)
+// Note: Selector hooks (useHasFeature, useFeatureLimit, etc.) are provided
+// by @/hooks/useFeature for type-safe, documented API.
+export type {
+  TenantPlan,
+  FeatureKey,
+  FeatureDefinition,
+  FeatureState,
+  FeatureActions,
+} from './featureStore'
+export {
+  useFeatureStore,
+  useTenantPlan,
+  useFeaturesReady,
+  useHasFeature,
+  useFeatureLimit,
+  useRequiredPlan,
+  isPlanHigherOrEqual,
+  getNextPlan,
+  getPlanDisplayName,
+  getAllFeatureKeys,
+} from './featureStore'
+
 // Store utilities
 export { createSelectors, createStoreWithSelectors } from './createStore'

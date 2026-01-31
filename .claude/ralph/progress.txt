@@ -42219,3 +42219,130 @@ default_currency = "cny"
 - SAAS-BE-011: Implement billing portal integration
 - Add retry logic for transient failures (future enhancement)
 - Add observability metrics for webhook processing
+
+================================================================================
+2025-01-31 - SAAS-FE-001: 前端功能权限检查组件
+================================================================================
+
+=== Implementation Details ===
+
+Created comprehensive SaaS plan-based feature permission system for the frontend:
+
+1. `frontend/src/store/featureStore.ts` (450+ lines)
+   - `TenantPlan` type: 'free' | 'basic' | 'pro' | 'enterprise'
+   - `FeatureKey` type: 29 feature keys matching backend identity.FeatureKey
+   - `FeatureDefinition` interface: key, enabled, limit, description, requiredPlan
+   - `useFeatureStore` Zustand store with:
+     - `initialize(plan, tenantId)` - Initialize features for tenant
+     - `setPlan(plan)` - Update plan and rebuild features
+     - `hasFeature(key)` - Check if feature is enabled
+     - `getFeatureLimit(key)` - Get feature limit (null = unlimited)
+     - `getFeature(key)` - Get full feature definition
+     - `getEnabledFeatures()` / `getDisabledFeatures()` - List features
+     - `getRequiredPlan(key)` - Get minimum plan for feature
+   - Selector hooks: useTenantPlan, useFeaturesReady, useHasFeature, useFeatureLimit, useRequiredPlan
+   - Utility functions: isPlanHigherOrEqual, getNextPlan, getPlanDisplayName, getAllFeatureKeys
+   - SessionStorage persistence for plan caching
+
+2. `frontend/src/hooks/useFeature.ts` (300+ lines)
+   - `useFeature(key)` - Returns comprehensive feature info:
+     - enabled, limit, description
+     - requiredPlan, requiredPlanName
+     - currentPlan, currentPlanName
+     - needsUpgrade, upgradePlan, upgradePlanName
+     - isReady
+   - `useFeatures(keys)` - Check multiple features at once
+   - `useDisabledFeatures()` - Get all disabled features for upgrade prompts
+   - `useEnabledFeatures()` - Get all enabled features
+   - `usePlan()` - Get current plan info
+   - `useFeatureReady()` - Check if features are loaded
+
+3. `frontend/src/components/common/FeatureGate.tsx` (280+ lines)
+   - `<FeatureGate feature="..." />` - Conditional rendering component
+   - Props: feature, children, fallback, loading, showUpgradePrompt, inline, upgradeUrl, onUpgradeClick
+   - `<UpgradePrompt />` - Standalone upgrade prompt component
+   - Supports inline mode for buttons/links
+   - Uses Semi UI components (Button, Typography, Card, Space, Icons)
+
+4. Test files:
+   - `frontend/src/store/featureStore.test.ts` (19 tests)
+   - `frontend/src/hooks/useFeature.test.ts` (16 tests)
+   - Total: 35 tests passing
+
+5. Updated exports:
+   - `frontend/src/store/index.ts` - Export feature store types and functions
+   - `frontend/src/hooks/index.ts` - Export useFeature hooks
+
+**Key Design Decisions:**
+
+1. **Client-side feature derivation**: Features are derived from plan on the client side
+   using the same logic as backend identity.DefaultPlanFeatures(). This avoids an
+   extra API call and keeps feature checks fast.
+
+2. **Separation from feature flags**: This is distinct from featureFlagStore which
+   handles A/B testing. featureStore handles subscription-based feature gating.
+
+3. **Upgrade prompts built-in**: FeatureGate component has built-in upgrade prompt
+   UI that shows required plan and upgrade button.
+
+4. **Type-safe feature keys**: FeatureKey type ensures only valid feature keys are used.
+
+5. **Shallow comparison for arrays**: useDisabledFeatures/useEnabledFeatures use
+   useShallow to prevent infinite re-renders.
+
+=== Verification ===
+
+- ✅ TypeScript type checking passes: `npm run type-check`
+- ✅ ESLint passes for new files (no errors in new files)
+- ✅ Unit tests pass: 35 tests in featureStore.test.ts and useFeature.test.ts
+- ✅ Build succeeds
+
+=== Acceptance Criteria Verification ===
+
+✅ useFeature('advanced_reports') 返回功能可用状态
+   - useFeature hook returns { enabled, needsUpgrade, requiredPlan, ... }
+   - Example: useFeature('advanced_reporting') returns enabled=false for free plan
+
+✅ <FeatureGate feature='bulk_import'>...</FeatureGate> 正确控制显示
+   - FeatureGate renders children when feature is enabled
+   - Renders fallback or nothing when feature is disabled
+   - Example: <FeatureGate feature="data_import">...</FeatureGate>
+
+✅ 功能不可用时显示升级引导
+   - showUpgradePrompt prop shows UpgradePrompt component
+   - UpgradePrompt shows feature description, required plan, and upgrade button
+   - Supports inline mode for buttons/links
+
+=== Files Created/Modified ===
+
+- NEW: frontend/src/store/featureStore.ts
+- NEW: frontend/src/store/featureStore.test.ts
+- NEW: frontend/src/hooks/useFeature.ts
+- NEW: frontend/src/hooks/useFeature.test.ts
+- NEW: frontend/src/components/common/FeatureGate.tsx
+- MODIFIED: frontend/src/store/index.ts
+- MODIFIED: frontend/src/hooks/index.ts
+
+=== Usage Examples ===
+
+```tsx
+// Check single feature
+const { enabled, needsUpgrade, requiredPlanName } = useFeature('api_access')
+
+// Check multiple features
+const features = useFeatures(['multi_warehouse', 'api_access'])
+
+// Conditional rendering with upgrade prompt
+<FeatureGate feature="advanced_reporting" showUpgradePrompt>
+  <AdvancedReports />
+</FeatureGate>
+
+// Initialize on login (in auth flow)
+useFeatureStore.getState().initialize(tenant.plan, tenant.id)
+```
+
+=== Next Steps ===
+
+- SAAS-FE-002: 订阅计划展示页面
+- Integrate featureStore initialization with auth flow
+- Add feature checks to existing pages (e.g., import wizard, reports)

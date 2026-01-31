@@ -65,6 +65,25 @@ export {
   type FeatureFlagValue,
 } from './useFeatureFlag'
 
+// SaaS feature permission hooks
+export {
+  useFeature,
+  useFeatures,
+  useDisabledFeatures,
+  useEnabledFeatures,
+  usePlan,
+  useFeatureReady,
+  getPlanDisplayName,
+  getNextPlan,
+  isPlanHigherOrEqual,
+  getAllFeatureKeys,
+  type UseFeatureResult,
+  type UseFeaturesResult,
+  type FeatureKey,
+  type TenantPlan,
+  type FeatureDefinition,
+} from './useFeature'
+
 // Responsive hooks
 export {
   useResponsive,

@@ -12707,7 +12707,7 @@
       "<FeatureGate feature='bulk_import'>...</FeatureGate> 正确控制显示",
       "功能不可用时显示升级引导"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SAAS-FE-002",
