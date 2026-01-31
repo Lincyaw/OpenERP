@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	billingapp "github.com/erp/backend/internal/application/billing"
 	catalogapp "github.com/erp/backend/internal/application/catalog"
 	eventapp "github.com/erp/backend/internal/application/event"
 	featureflagapp "github.com/erp/backend/internal/application/featureflag"
@@ -21,6 +22,7 @@ import (
 	financedomain "github.com/erp/backend/internal/domain/finance"
 	domainStrategy "github.com/erp/backend/internal/domain/shared/strategy"
 	"github.com/erp/backend/internal/infrastructure/auth"
+	"github.com/erp/backend/internal/infrastructure/billing"
 	"github.com/erp/backend/internal/infrastructure/cache"
 	"github.com/erp/backend/internal/infrastructure/config"
 	"github.com/erp/backend/internal/infrastructure/event"
@@ -730,6 +732,33 @@ func main() {
 	featureFlagHandler := handler.NewFeatureFlagHandler(flagService, evaluationService, overrideService)
 	printHandler := handler.NewPrintHandler(printService, pdfStorage)
 
+	// Initialize Stripe webhook handler (if Stripe is enabled)
+	var stripeWebhookHandler *handler.StripeWebhookHandler
+	if cfg.Stripe.Enabled {
+		stripeConfig := &billing.StripeConfig{
+			SecretKey:              cfg.Stripe.SecretKey,
+			PublishableKey:         cfg.Stripe.PublishableKey,
+			WebhookSecret:          cfg.Stripe.WebhookSecret,
+			IsTestMode:             cfg.Stripe.IsTestMode,
+			DefaultCurrency:        cfg.Stripe.DefaultCurrency,
+			PriceIDs:               cfg.Stripe.PriceIDs,
+			SuccessURL:             cfg.Stripe.SuccessURL,
+			CancelURL:              cfg.Stripe.CancelURL,
+			BillingPortalReturnURL: cfg.Stripe.BillingPortalReturnURL,
+		}
+		stripeWebhookService := billingapp.NewStripeWebhookService(billingapp.StripeWebhookServiceConfig{
+			Config:     stripeConfig,
+			TenantRepo: tenantRepo,
+			EventBus:   nil, // Event bus can be set later if needed
+			Logger:     log,
+		})
+		stripeWebhookHandler = handler.NewStripeWebhookHandler(stripeWebhookService)
+		log.Info("Stripe webhook handler initialized",
+			zap.Bool("test_mode", cfg.Stripe.IsTestMode))
+	} else {
+		log.Info("Stripe integration disabled")
+	}
+
 	// Initialize Feature Flag SSE handler for real-time updates
 	// This creates a Redis Pub/Sub subscriber that broadcasts flag updates to connected SSE clients
 	var featureFlagSSEHandler *handler.FeatureFlagSSEHandler
@@ -878,6 +907,13 @@ func main() {
 	paymentCallbackGroup.POST("/alipay", paymentCallbackHandler.HandleAlipayPaymentCallback)
 	paymentCallbackGroup.POST("/alipay/refund", paymentCallbackHandler.HandleAlipayRefundCallback)
 
+	// Stripe webhook endpoint (no authentication required, uses signature verification)
+	if stripeWebhookHandler != nil {
+		webhookGroup := engine.Group("/api/v1/webhooks")
+		webhookGroup.POST("/stripe", stripeWebhookHandler.HandleStripeWebhook)
+		log.Info("Stripe webhook endpoint registered at /api/v1/webhooks/stripe")
+	}
+
 	// Setup API routes using router
 	r := router.NewRouter(engine, router.WithAPIVersion("v1"))
 
@@ -895,6 +931,7 @@ func main() {
 		},
 		SkipPathPrefixes: []string{
 			"/api/v1/payment/callback",
+			"/api/v1/webhooks",
 		},
 		Logger: log,
 	}

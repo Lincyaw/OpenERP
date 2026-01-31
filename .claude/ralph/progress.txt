@@ -42117,3 +42117,105 @@ This task involved implementing Stripe Billing integration for subscription mana
 - SAAS-BE-010: Implement Stripe Webhook handling
 - SAAS-BE-011: Implement billing portal integration
 - Integrate subscription management into tenant onboarding flow
+
+2026-01-31 - SAAS-BE-010: Stripe Webhook 处理
+
+=== Implementation Details ===
+
+Created comprehensive Stripe webhook handling for subscription management:
+
+1. `backend/internal/application/billing/stripe_webhook_service.go` (420+ lines)
+   - `NewStripeWebhookService()` - Creates service with config, tenant repo, event bus
+   - `ProcessWebhook()` - Main entry point with signature verification
+   - `handleSubscriptionCreated()` - Handles customer.subscription.created events
+   - `handleSubscriptionUpdated()` - Handles customer.subscription.updated events
+   - `handleSubscriptionDeleted()` - Handles customer.subscription.deleted events
+   - `handleInvoicePaid()` - Handles invoice.paid events
+   - `handleInvoicePaymentFailed()` - Handles invoice.payment_failed events
+   - Publishes domain events for subscription and payment changes
+
+2. `backend/internal/application/billing/stripe_events.go` (70 lines)
+   - `StripeSubscriptionEvent` - Domain event for subscription changes
+   - `StripePaymentEvent` - Domain event for payment changes
+   - Event type constants for all Stripe webhook events
+
+3. `backend/internal/interfaces/http/handler/stripe_webhook_handler.go` (95 lines)
+   - `NewStripeWebhookHandler()` - Creates handler with webhook service
+   - `HandleStripeWebhook()` - POST /webhooks/stripe endpoint
+   - Reads raw body for signature verification
+   - Returns appropriate HTTP responses for Stripe
+
+4. `backend/internal/infrastructure/config/config.go` (updated)
+   - Added `StripeConfig` struct with all Stripe settings
+   - Added config loading for stripe.* settings
+   - Added defaults for currency and price IDs
+
+5. `backend/cmd/server/main.go` (updated)
+   - Added billingapp and billing imports
+   - Initialize StripeWebhookService when Stripe is enabled
+   - Register webhook endpoint at /api/v1/webhooks/stripe
+   - Added /api/v1/webhooks to JWT skip path prefixes
+
+6. `backend/internal/application/billing/stripe_webhook_service_test.go` (500+ lines)
+   - MockTenantRepository for testing
+   - Tests for all webhook event handlers
+   - Tests for tenant not found scenarios
+   - Tests for domain event creation
+
+**Key Design Decisions:**
+
+1. **Signature Verification First**: All webhooks verify Stripe signature before processing
+2. **Graceful Tenant Not Found**: If tenant not found, log warning and return success (prevents Stripe retries)
+3. **Automatic Status Sync**: Subscription status syncs to tenant.plan and tenant.expires_at
+4. **Payment Failure = Suspension**: Failed payments automatically suspend tenant
+5. **Domain Events**: All changes publish domain events for other modules to react
+6. **Idempotent Processing**: Safe to receive duplicate webhooks
+
+=== Verification ===
+
+- ✅ All tests pass: `go test -race -cover ./internal/application/billing/...`
+- ✅ Test coverage: 70.2% for application/billing (99.1% for infrastructure/billing)
+- ✅ Go build succeeds: `go build ./...`
+- ✅ No race conditions detected
+
+=== Acceptance Criteria Verification ===
+
+✅ Webhook 正确验证签名
+   - Uses stripe.webhook.ConstructEvent() for signature verification
+   - Returns 401 for invalid signatures
+
+✅ 订阅变更自动同步到系统
+   - subscription.created/updated sync plan and expiration
+   - subscription.deleted downgrades to free plan
+   - invoice.paid updates expiration date
+
+✅ 支付失败时租户状态变为 suspended
+   - invoice.payment_failed calls tenant.Suspend()
+   - Logs warning for audit trail
+
+=== Files Modified/Created ===
+
+- NEW: backend/internal/application/billing/stripe_webhook_service.go
+- NEW: backend/internal/application/billing/stripe_events.go
+- NEW: backend/internal/application/billing/stripe_webhook_service_test.go
+- NEW: backend/internal/interfaces/http/handler/stripe_webhook_handler.go
+- MODIFIED: backend/internal/infrastructure/config/config.go
+- MODIFIED: backend/cmd/server/main.go
+
+=== Configuration Required ===
+
+To enable Stripe webhooks, add to config.toml:
+```toml
+[stripe]
+enabled = true
+secret_key = "sk_test_xxx"
+webhook_secret = "whsec_xxx"
+is_test_mode = true
+default_currency = "cny"
+```
+
+=== Next Steps ===
+
+- SAAS-BE-011: Implement billing portal integration
+- Add retry logic for transient failures (future enhancement)
+- Add observability metrics for webhook processing

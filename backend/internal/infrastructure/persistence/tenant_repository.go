@@ -332,3 +332,37 @@ func (r *GormTenantRepository) ExistsByDomain(ctx context.Context, domain string
 	}
 	return count > 0, nil
 }
+
+// FindByStripeCustomerID finds a tenant by its Stripe customer ID
+func (r *GormTenantRepository) FindByStripeCustomerID(ctx context.Context, customerID string) (*identity.Tenant, error) {
+	if customerID == "" {
+		return nil, shared.ErrNotFound
+	}
+	var model models.TenantModel
+	if err := r.db.WithContext(ctx).
+		Where("stripe_customer_id = ?", customerID).
+		First(&model).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, shared.ErrNotFound
+		}
+		return nil, err
+	}
+	return model.ToDomain(), nil
+}
+
+// FindByStripeSubscriptionID finds a tenant by its Stripe subscription ID
+func (r *GormTenantRepository) FindByStripeSubscriptionID(ctx context.Context, subscriptionID string) (*identity.Tenant, error) {
+	if subscriptionID == "" {
+		return nil, shared.ErrNotFound
+	}
+	var model models.TenantModel
+	if err := r.db.WithContext(ctx).
+		Where("stripe_subscription_id = ?", subscriptionID).
+		First(&model).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, shared.ErrNotFound
+		}
+		return nil, err
+	}
+	return model.ToDomain(), nil
+}

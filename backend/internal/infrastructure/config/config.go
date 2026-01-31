@@ -25,6 +25,31 @@ type Config struct {
 	Telemetry    TelemetryConfig
 	FeatureFlags FeatureFlagsConfig
 	Storage      StorageConfig
+	Stripe       StripeConfig
+}
+
+// StripeConfig holds Stripe billing configuration
+type StripeConfig struct {
+	// Enabled indicates whether Stripe integration is enabled
+	Enabled bool
+	// SecretKey is the Stripe secret API key (sk_test_xxx or sk_live_xxx)
+	SecretKey string
+	// PublishableKey is the Stripe publishable key for frontend (pk_test_xxx or pk_live_xxx)
+	PublishableKey string
+	// WebhookSecret is the secret for verifying webhook signatures
+	WebhookSecret string
+	// IsTestMode indicates if using Stripe test mode
+	IsTestMode bool
+	// DefaultCurrency is the default currency for subscriptions (e.g., "cny", "usd")
+	DefaultCurrency string
+	// PriceIDs maps plan names to Stripe Price IDs
+	PriceIDs map[string]string
+	// SuccessURL is the URL to redirect after successful checkout
+	SuccessURL string
+	// CancelURL is the URL to redirect after cancelled checkout
+	CancelURL string
+	// BillingPortalReturnURL is the return URL from Stripe billing portal
+	BillingPortalReturnURL string
 }
 
 // LogConfig holds logging configuration
@@ -391,6 +416,18 @@ func Load() (*Config, error) {
 			MaxFileSize:       v.GetInt64("storage.max_file_size"),
 			AllowedMIMETypes:  v.GetStringSlice("storage.allowed_mime_types"),
 		},
+		Stripe: StripeConfig{
+			Enabled:                v.GetBool("stripe.enabled"),
+			SecretKey:              v.GetString("stripe.secret_key"),
+			PublishableKey:         v.GetString("stripe.publishable_key"),
+			WebhookSecret:          v.GetString("stripe.webhook_secret"),
+			IsTestMode:             v.GetBool("stripe.is_test_mode"),
+			DefaultCurrency:        v.GetString("stripe.default_currency"),
+			PriceIDs:               v.GetStringMapString("stripe.price_ids"),
+			SuccessURL:             v.GetString("stripe.success_url"),
+			CancelURL:              v.GetString("stripe.cancel_url"),
+			BillingPortalReturnURL: v.GetString("stripe.billing_portal_return_url"),
+		},
 	}
 
 	// Apply defaults for empty values
@@ -635,6 +672,19 @@ func applyDefaults(cfg *Config) {
 	// For RustFS/MinIO, set use_path_style = true in config
 	// Note: UseSSL defaults to false for development
 	// For production, set use_ssl = true
+
+	// Stripe defaults
+	if cfg.Stripe.DefaultCurrency == "" {
+		cfg.Stripe.DefaultCurrency = "cny"
+	}
+	if cfg.Stripe.PriceIDs == nil {
+		cfg.Stripe.PriceIDs = map[string]string{
+			"free":       "",
+			"basic":      "price_basic_monthly",
+			"pro":        "price_pro_monthly",
+			"enterprise": "price_ent_monthly",
+		}
+	}
 }
 
 // validate performs validation on the configuration

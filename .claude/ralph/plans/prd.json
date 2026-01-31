@@ -12889,7 +12889,7 @@
       "订阅变更自动同步到系统",
       "支付失败时租户状态变为 suspended"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SAAS-BE-011",

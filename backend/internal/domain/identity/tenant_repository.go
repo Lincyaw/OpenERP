@@ -59,4 +59,10 @@ type TenantRepository interface {
 
 	// ExistsByDomain checks if a tenant with the given domain exists
 	ExistsByDomain(ctx context.Context, domain string) (bool, error)
+
+	// FindByStripeCustomerID finds a tenant by its Stripe customer ID
+	FindByStripeCustomerID(ctx context.Context, customerID string) (*Tenant, error)
+
+	// FindByStripeSubscriptionID finds a tenant by its Stripe subscription ID
+	FindByStripeSubscriptionID(ctx context.Context, subscriptionID string) (*Tenant, error)
 }
