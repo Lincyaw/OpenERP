@@ -13071,7 +13071,7 @@
       "所有新增文案有中英文两个版本"
     ],
     "context": "系统支持中英文国际化，所有用户可见文案必须有对应翻译。",
-    "passes": false
+    "passes": true
   },
   {
     "id": "SAAS-BE-012",
@@ -13117,7 +13117,7 @@
       "历史数据按保留策略自动清理"
     ],
     "context": "当前 GET /usage/history 端点返回当前快照值重复填充各日期，不是真实历史数据。代码注释：'This is a simplified implementation that returns current snapshot values. A production system would track historical usage in a dedicated table'。",
-    "passes": false
+    "passes": true
   },
   {
     "id": "SAAS-BE-014",

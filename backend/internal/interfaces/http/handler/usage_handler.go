@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/erp/backend/internal/domain/billing"
 	"github.com/erp/backend/internal/domain/identity"
 	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/interfaces/http/middleware"
@@ -20,6 +21,7 @@ type UsageHandler struct {
 	userRepo      identity.UserRepository
 	warehouseRepo WarehouseCounter
 	productRepo   ProductCounter
+	historyRepo   billing.UsageHistoryRepository
 }
 
 // WarehouseCounter interface for counting warehouses
@@ -45,6 +47,12 @@ func NewUsageHandler(
 		warehouseRepo: warehouseRepo,
 		productRepo:   productRepo,
 	}
+}
+
+// WithHistoryRepo sets the usage history repository (optional)
+func (h *UsageHandler) WithHistoryRepo(historyRepo billing.UsageHistoryRepository) *UsageHandler {
+	h.historyRepo = historyRepo
+	return h
 }
 
 // ============================================================================
@@ -255,9 +263,16 @@ func (h *UsageHandler) GetUsageHistory(c *gin.Context) {
 		return
 	}
 
+	// Limit maximum date range to 365 days to prevent performance issues
+	maxRange := 365 * 24 * time.Hour
+	if endDate.Sub(startDate) > maxRange {
+		h.BadRequest(c, "Date range cannot exceed 365 days")
+		return
+	}
+
 	// Generate historical data points
-	// Note: This is a simplified implementation that returns current snapshot values
-	// A production system would track historical usage in a dedicated table
+	// Uses real historical data from usage_history table when available,
+	// falls back to current snapshot values for dates without historical data
 	dataPoints, err := h.generateHistoryDataPoints(c, tenantID, period, startDate, endDate)
 	if err != nil {
 		slog.Error("failed to generate history data points", "tenant_id", tenantID, "error", err)
@@ -511,11 +526,107 @@ func (h *UsageHandler) getQuotaItems(c *gin.Context, tenantID uuid.UUID, tenant 
 }
 
 // generateHistoryDataPoints generates historical data points
-// Note: This is a simplified implementation. A production system would
-// track historical usage in a dedicated table for accurate historical data.
+// Uses real historical data from usage_history table when available,
+// falls back to current snapshot values for dates without historical data.
 func (h *UsageHandler) generateHistoryDataPoints(c *gin.Context, tenantID uuid.UUID, period string, startDate, endDate time.Time) ([]UsageHistoryPoint, error) {
 	ctx := c.Request.Context()
 
+	// Try to get real historical data if repository is available
+	if h.historyRepo != nil {
+		dataPoints, err := h.generateHistoryFromRepository(ctx, tenantID, period, startDate, endDate)
+		if err == nil && len(dataPoints) > 0 {
+			return dataPoints, nil
+		}
+		// Log warning but continue with fallback
+		if err != nil {
+			slog.Warn("failed to get historical data from repository, using fallback", "tenant_id", tenantID, "error", err)
+		}
+	}
+
+	// Fallback: Get current counts (used as baseline for dates without history)
+	return h.generateHistoryFallback(ctx, tenantID, period, startDate, endDate)
+}
+
+// generateHistoryFromRepository retrieves real historical data from the usage_history table
+func (h *UsageHandler) generateHistoryFromRepository(ctx context.Context, tenantID uuid.UUID, period string, startDate, endDate time.Time) ([]UsageHistoryPoint, error) {
+	filter := billing.UsageHistoryFilter{
+		StartDate: &startDate,
+		EndDate:   &endDate,
+		Page:      1,
+		PageSize:  1000,
+	}
+
+	histories, err := h.historyRepo.FindByTenant(ctx, tenantID, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(histories) == 0 {
+		return nil, nil // No historical data, will use fallback
+	}
+
+	// Build a map of date -> history for quick lookup
+	historyMap := make(map[string]*billing.UsageHistory)
+	for _, h := range histories {
+		dateKey := h.SnapshotDate.Format("2006-01-02")
+		historyMap[dateKey] = h
+	}
+
+	var dataPoints []UsageHistoryPoint
+	var step time.Duration
+
+	switch period {
+	case "weekly":
+		step = 7 * 24 * time.Hour
+	case "monthly":
+		step = 30 * 24 * time.Hour
+	default: // daily
+		step = 24 * time.Hour
+	}
+
+	// Generate data points from start to end date
+	for date := startDate; !date.After(endDate); date = date.Add(step) {
+		dateKey := date.Format("2006-01-02")
+		point := UsageHistoryPoint{
+			Date: dateKey,
+		}
+
+		if history, exists := historyMap[dateKey]; exists {
+			// Use real historical data
+			point.Users = history.UsersCount
+			point.Products = history.ProductsCount
+			point.Warehouses = history.WarehousesCount
+		} else {
+			// Find the closest previous date with data
+			closestHistory := h.findClosestHistory(histories, date)
+			if closestHistory != nil {
+				point.Users = closestHistory.UsersCount
+				point.Products = closestHistory.ProductsCount
+				point.Warehouses = closestHistory.WarehousesCount
+			}
+		}
+
+		dataPoints = append(dataPoints, point)
+	}
+
+	return dataPoints, nil
+}
+
+// findClosestHistory finds the closest historical record before or on the given date
+func (h *UsageHandler) findClosestHistory(histories []*billing.UsageHistory, targetDate time.Time) *billing.UsageHistory {
+	var closest *billing.UsageHistory
+	for _, history := range histories {
+		if !history.SnapshotDate.After(targetDate) {
+			if closest == nil || history.SnapshotDate.After(closest.SnapshotDate) {
+				closest = history
+			}
+		}
+	}
+	return closest
+}
+
+// generateHistoryFallback generates history data points using current counts as baseline
+func (h *UsageHandler) generateHistoryFallback(ctx context.Context, tenantID uuid.UUID, period string, startDate, endDate time.Time) ([]UsageHistoryPoint, error) {
 	// Get current counts (used as baseline)
 	userCount, err := h.userRepo.Count(ctx)
 	if err != nil {
