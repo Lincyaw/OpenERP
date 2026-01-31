@@ -19,6 +19,8 @@ import {
   IconBell,
   IconHome,
   IconMenu,
+  IconCreditCard,
+  IconHistogram,
 } from '@douyinfe/semi-icons'
 
 import { useAppStore, useAuthStore, useUser } from '@/store'
@@ -72,6 +74,16 @@ export function Header() {
     navigate('/settings')
   }, [navigate])
 
+  // Handle subscription navigation
+  const handleSubscription = useCallback(() => {
+    navigate('/subscription')
+  }, [navigate])
+
+  // Handle billing navigation
+  const handleBilling = useCallback(() => {
+    navigate('/billing')
+  }, [navigate])
+
   // User dropdown menu items
   const userMenuItems = [
     {
@@ -87,6 +99,20 @@ export function Header() {
       name: t('nav.settings'),
       icon: <IconSetting />,
       onClick: handleSettings,
+    },
+    {
+      node: 'item',
+      key: 'subscription',
+      name: t('nav.subscription', 'Subscription'),
+      icon: <IconCreditCard />,
+      onClick: handleSubscription,
+    },
+    {
+      node: 'item',
+      key: 'billing',
+      name: t('nav.billing', 'Billing History'),
+      icon: <IconHistogram />,
+      onClick: handleBilling,
     },
     {
       node: 'divider',

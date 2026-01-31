@@ -191,7 +191,6 @@ func (i *OtherIncomeRecord) Confirm(confirmedBy uuid.UUID) error {
 	i.ConfirmedAt = &now
 	i.ConfirmedBy = &confirmedBy
 	i.UpdatedAt = now
-	i.IncrementVersion()
 
 	i.AddDomainEvent(NewOtherIncomeRecordConfirmedEvent(i))
 
@@ -216,7 +215,6 @@ func (i *OtherIncomeRecord) Cancel(cancelledBy uuid.UUID, reason string) error {
 	i.CancelledBy = &cancelledBy
 	i.CancelReason = reason
 	i.UpdatedAt = now
-	i.IncrementVersion()
 
 	i.AddDomainEvent(NewOtherIncomeRecordCancelledEvent(i))
 
@@ -240,7 +238,6 @@ func (i *OtherIncomeRecord) MarkAsReceived(paymentMethod PaymentMethod) error {
 	i.PaymentMethod = &paymentMethod
 	i.ActualReceived = &now
 	i.UpdatedAt = now
-	i.IncrementVersion()
 
 	i.AddDomainEvent(NewOtherIncomeRecordReceivedEvent(i))
 
@@ -275,7 +272,6 @@ func (i *OtherIncomeRecord) Update(
 	i.Description = description
 	i.ReceivedAt = receivedAt
 	i.UpdatedAt = time.Now()
-	i.IncrementVersion()
 
 	return nil
 }
@@ -284,14 +280,12 @@ func (i *OtherIncomeRecord) Update(
 func (i *OtherIncomeRecord) SetRemark(remark string) {
 	i.Remark = remark
 	i.UpdatedAt = time.Now()
-	i.IncrementVersion()
 }
 
 // SetAttachmentURLs sets the attachment URLs (JSON array)
 func (i *OtherIncomeRecord) SetAttachmentURLs(urls string) {
 	i.AttachmentURLs = urls
 	i.UpdatedAt = time.Now()
-	i.IncrementVersion()
 }
 
 // Helper methods

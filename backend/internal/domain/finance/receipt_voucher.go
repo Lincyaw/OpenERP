@@ -200,7 +200,6 @@ func (rv *ReceiptVoucher) Confirm(confirmedBy uuid.UUID) error {
 	rv.ConfirmedAt = &now
 	rv.ConfirmedBy = &confirmedBy
 	rv.UpdatedAt = now
-	rv.IncrementVersion()
 
 	rv.AddDomainEvent(NewReceiptVoucherConfirmedEvent(rv))
 
@@ -252,7 +251,6 @@ func (rv *ReceiptVoucher) AllocateToReceivable(
 	}
 
 	rv.UpdatedAt = time.Now()
-	rv.IncrementVersion()
 
 	rv.AddDomainEvent(NewReceiptVoucherAllocatedEvent(rv, allocation))
 
@@ -282,7 +280,6 @@ func (rv *ReceiptVoucher) Cancel(cancelledBy uuid.UUID, reason string) error {
 	rv.CancelledBy = &cancelledBy
 	rv.CancelReason = reason
 	rv.UpdatedAt = now
-	rv.IncrementVersion()
 
 	rv.AddDomainEvent(NewReceiptVoucherCancelledEvent(rv, previousStatus))
 
@@ -300,7 +297,6 @@ func (rv *ReceiptVoucher) SetPaymentReference(reference string) error {
 
 	rv.PaymentReference = reference
 	rv.UpdatedAt = time.Now()
-	rv.IncrementVersion()
 
 	return nil
 }
@@ -313,7 +309,6 @@ func (rv *ReceiptVoucher) SetRemark(remark string) error {
 
 	rv.Remark = remark
 	rv.UpdatedAt = time.Now()
-	rv.IncrementVersion()
 
 	return nil
 }

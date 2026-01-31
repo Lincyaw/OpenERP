@@ -210,7 +210,6 @@ func (ap *AccountPayable) ApplyPayment(amount valueobject.Money, voucherID uuid.
 	}
 
 	ap.UpdatedAt = time.Now()
-	ap.IncrementVersion()
 
 	return nil
 }
@@ -232,7 +231,6 @@ func (ap *AccountPayable) Reverse(reason string) error {
 	ap.ReversalReason = reason
 	ap.OutstandingAmount = decimal.Zero // No longer outstanding after reversal
 	ap.UpdatedAt = now
-	ap.IncrementVersion()
 
 	ap.AddDomainEvent(NewAccountPayableReversedEvent(ap, previousStatus))
 
@@ -257,7 +255,6 @@ func (ap *AccountPayable) Cancel(reason string) error {
 	ap.CancelReason = reason
 	ap.OutstandingAmount = decimal.Zero // No longer outstanding
 	ap.UpdatedAt = now
-	ap.IncrementVersion()
 
 	ap.AddDomainEvent(NewAccountPayableCancelledEvent(ap))
 
@@ -272,7 +269,6 @@ func (ap *AccountPayable) SetDueDate(dueDate *time.Time) error {
 
 	ap.DueDate = dueDate
 	ap.UpdatedAt = time.Now()
-	ap.IncrementVersion()
 
 	return nil
 }
@@ -281,7 +277,6 @@ func (ap *AccountPayable) SetDueDate(dueDate *time.Time) error {
 func (ap *AccountPayable) SetRemark(remark string) {
 	ap.Remark = remark
 	ap.UpdatedAt = time.Now()
-	ap.IncrementVersion()
 }
 
 // Helper methods

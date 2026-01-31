@@ -236,7 +236,6 @@ func (r *RefundRecord) SetOriginalPayment(paymentID uuid.UUID) error {
 
 	r.OriginalPaymentID = &paymentID
 	r.UpdatedAt = time.Now()
-	r.IncrementVersion()
 
 	return nil
 }
@@ -247,7 +246,6 @@ func (r *RefundRecord) SetGatewayInfo(gatewayRefundID, gatewayOrderID, gatewayTr
 	r.GatewayOrderID = gatewayOrderID
 	r.GatewayTransactionID = gatewayTransactionID
 	r.UpdatedAt = time.Now()
-	r.IncrementVersion()
 }
 
 // MarkProcessing marks the refund as being processed by the gateway
@@ -259,7 +257,6 @@ func (r *RefundRecord) MarkProcessing(gatewayRefundID string) error {
 	r.Status = RefundRecordStatusProcessing
 	r.GatewayRefundID = gatewayRefundID
 	r.UpdatedAt = time.Now()
-	r.IncrementVersion()
 
 	return nil
 }
@@ -279,7 +276,6 @@ func (r *RefundRecord) Complete(actualAmount decimal.Decimal, rawResponse string
 	r.RawResponse = rawResponse
 	r.CompletedAt = &now
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewRefundRecordCompletedEvent(r))
 
@@ -314,7 +310,6 @@ func (r *RefundRecord) Fail(reason, rawResponse string) error {
 	r.RawResponse = rawResponse
 	r.FailedAt = &now
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewRefundRecordFailedEvent(r))
 
@@ -330,7 +325,6 @@ func (r *RefundRecord) Close(reason string) error {
 	r.Status = RefundRecordStatusClosed
 	r.FailReason = reason
 	r.UpdatedAt = time.Now()
-	r.IncrementVersion()
 
 	return nil
 }
@@ -339,7 +333,6 @@ func (r *RefundRecord) Close(reason string) error {
 func (r *RefundRecord) SetRemark(remark string) {
 	r.Remark = remark
 	r.UpdatedAt = time.Now()
-	r.IncrementVersion()
 }
 
 // Helper methods

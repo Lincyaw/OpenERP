@@ -128,7 +128,6 @@ func (pv *PaymentVoucher) Confirm(confirmedBy uuid.UUID) error {
 	pv.ConfirmedAt = &now
 	pv.ConfirmedBy = &confirmedBy
 	pv.UpdatedAt = now
-	pv.IncrementVersion()
 
 	pv.AddDomainEvent(NewPaymentVoucherConfirmedEvent(pv))
 
@@ -180,7 +179,6 @@ func (pv *PaymentVoucher) AllocateToPayable(
 	}
 
 	pv.UpdatedAt = time.Now()
-	pv.IncrementVersion()
 
 	pv.AddDomainEvent(NewPaymentVoucherAllocatedEvent(pv, allocation))
 
@@ -210,7 +208,6 @@ func (pv *PaymentVoucher) Cancel(cancelledBy uuid.UUID, reason string) error {
 	pv.CancelledBy = &cancelledBy
 	pv.CancelReason = reason
 	pv.UpdatedAt = now
-	pv.IncrementVersion()
 
 	pv.AddDomainEvent(NewPaymentVoucherCancelledEvent(pv, previousStatus))
 
@@ -228,7 +225,6 @@ func (pv *PaymentVoucher) SetPaymentReference(reference string) error {
 
 	pv.PaymentReference = reference
 	pv.UpdatedAt = time.Now()
-	pv.IncrementVersion()
 
 	return nil
 }
@@ -241,7 +237,6 @@ func (pv *PaymentVoucher) SetRemark(remark string) error {
 
 	pv.Remark = remark
 	pv.UpdatedAt = time.Now()
-	pv.IncrementVersion()
 
 	return nil
 }

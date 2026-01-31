@@ -699,6 +699,329 @@ func buildURLWithQueryParams(baseURL string, ep config.EndpointConfig) string {
 	return url
 }
 
+// TestERPReadWriteMixedLoad performs a load test with both read and write operations.
+// This creates actual data in the database (customers, products, orders).
+func TestERPReadWriteMixedLoad(t *testing.T) {
+	skipUnlessE2E(t)
+
+	cfg, err := loadERPConfig(t)
+	require.NoError(t, err)
+
+	token, err := authenticate(t, cfg)
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+	defer cancel()
+
+	baseURL := getBaseURL()
+	client := &http.Client{Timeout: 10 * time.Second}
+
+	// Parameter pool to store created IDs
+	idPool := &idPoolStore{
+		ids: make(map[string][]string),
+	}
+
+	// Warmup: get some existing IDs
+	t.Log("Warming up: fetching existing IDs...")
+	warmupEndpoints := []struct {
+		path     string
+		idType   string
+		nameType string
+		jsonPath string
+	}{
+		{"/catalog/categories", "category_id", "", "data"},
+		{"/catalog/products", "product_id", "", "data"},
+		{"/partner/customers", "customer_id", "customer_name", "data"},
+		{"/partner/suppliers", "supplier_id", "supplier_name", "data"},
+		{"/partner/warehouses", "warehouse_id", "", "data"},
+	}
+
+	for _, ep := range warmupEndpoints {
+		url := baseURL + "/api/v1" + ep.path + "?page=1&page_size=50"
+		req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
+		req.Header.Set("Authorization", "Bearer "+token)
+		req.Header.Set("Accept", "application/json")
+
+		resp, err := client.Do(req)
+		if err != nil {
+			continue
+		}
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+
+		// Extract IDs from response
+		var result map[string]interface{}
+		if json.Unmarshal(body, &result) == nil {
+			if data, ok := result["data"].([]interface{}); ok {
+				for _, item := range data {
+					if m, ok := item.(map[string]interface{}); ok {
+						if id, ok := m["id"].(string); ok {
+							idPool.add(ep.idType, id)
+						}
+						// Also extract name if needed
+						if ep.nameType != "" {
+							if name, ok := m["name"].(string); ok {
+								idPool.add(ep.nameType, name)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	t.Logf("Warmup complete: %d category_ids, %d product_ids, %d customer_ids, %d supplier_ids, %d warehouse_ids",
+		len(idPool.ids["category_id"]), len(idPool.ids["product_id"]),
+		len(idPool.ids["customer_id"]), len(idPool.ids["supplier_id"]),
+		len(idPool.ids["warehouse_id"]))
+
+	// Define operations with weights
+	type operation struct {
+		name       string
+		method     string
+		path       string
+		weight     int
+		bodyFunc   func() string
+		needsIDs   []string
+		producesID string
+	}
+
+	operations := []operation{
+		// Read operations (80% of traffic)
+		{name: "list_categories", method: "GET", path: "/catalog/categories?page=1&page_size=20", weight: 15},
+		{name: "list_products", method: "GET", path: "/catalog/products?page=1&page_size=20", weight: 20},
+		{name: "list_customers", method: "GET", path: "/partner/customers?page=1&page_size=20", weight: 15},
+		{name: "list_suppliers", method: "GET", path: "/partner/suppliers?page=1&page_size=20", weight: 10},
+		{name: "list_warehouses", method: "GET", path: "/partner/warehouses", weight: 10},
+		{name: "list_sales_orders", method: "GET", path: "/trade/sales-orders?page=1&page_size=20", weight: 10},
+
+		// Write operations (20% of traffic)
+		{
+			name: "create_customer", method: "POST", path: "/partner/customers",
+			weight: 5, producesID: "customer_id",
+			bodyFunc: func() string {
+				ts := time.Now().UnixNano() % 100000
+				return fmt.Sprintf(`{"name":"LoadTest-Customer-%d","code":"LT-CUST-%d","type":"organization","contact_name":"Test Contact","phone":"123456"}`,
+					ts, ts)
+			},
+		},
+		{
+			name: "create_category", method: "POST", path: "/catalog/categories",
+			weight: 3, producesID: "category_id",
+			bodyFunc: func() string {
+				ts := time.Now().UnixNano() % 100000
+				return fmt.Sprintf(`{"name":"LoadTest-Category-%d","code":"LT-CAT-%d"}`,
+					ts, ts)
+			},
+		},
+		{
+			name: "create_sales_order", method: "POST", path: "/trade/sales-orders",
+			weight: 5, needsIDs: []string{"customer_id", "warehouse_id"}, producesID: "sales_order_id",
+			bodyFunc: func() string {
+				custID := idPool.getRandom("customer_id")
+				custName := idPool.getRandom("customer_name")
+				whID := idPool.getRandom("warehouse_id")
+				if custID == "" || whID == "" {
+					return ""
+				}
+				if custName == "" {
+					custName = "LoadTest Customer"
+				}
+				return fmt.Sprintf(`{"customer_id":"%s","customer_name":"%s","warehouse_id":"%s","remark":"LoadTest order"}`, custID, custName, whID)
+			},
+		},
+		{
+			name: "create_purchase_order", method: "POST", path: "/trade/purchase-orders",
+			weight: 3, needsIDs: []string{"supplier_id", "warehouse_id"}, producesID: "purchase_order_id",
+			bodyFunc: func() string {
+				suppID := idPool.getRandom("supplier_id")
+				suppName := idPool.getRandom("supplier_name")
+				whID := idPool.getRandom("warehouse_id")
+				if suppID == "" || whID == "" {
+					return ""
+				}
+				if suppName == "" {
+					suppName = "LoadTest Supplier"
+				}
+				return fmt.Sprintf(`{"supplier_id":"%s","supplier_name":"%s","warehouse_id":"%s","remark":"LoadTest PO"}`, suppID, suppName, whID)
+			},
+		},
+	}
+
+	// Build weighted list
+	var weightedOps []operation
+	for _, op := range operations {
+		for i := 0; i < op.weight; i++ {
+			weightedOps = append(weightedOps, op)
+		}
+	}
+
+	// Metrics
+	var totalRequests, successRequests, failedRequests int
+	var readRequests, writeRequests, writeSuccess int
+	latencies := make([]time.Duration, 0, 5000)
+	startTime := time.Now()
+	testDuration := 3 * time.Minute
+
+	t.Logf("Running read/write mixed load test for %s", testDuration)
+	t.Logf("Operations: %d types, %d weighted total", len(operations), len(weightedOps))
+
+	ticker := time.NewTicker(20 * time.Millisecond) // ~50 QPS
+	defer ticker.Stop()
+
+	opIdx := 0
+	for {
+		select {
+		case <-ctx.Done():
+			t.Fatal("Context cancelled")
+			return
+		case <-ticker.C:
+			elapsed := time.Since(startTime)
+			if elapsed >= testDuration {
+				goto done
+			}
+
+			// Progress log every 30s
+			if opIdx%1500 == 0 && opIdx > 0 {
+				t.Logf("Progress: %s | Total: %d | Reads: %d | Writes: %d/%d",
+					elapsed.Round(time.Second), totalRequests, readRequests, writeSuccess, writeRequests)
+			}
+
+			op := weightedOps[opIdx%len(weightedOps)]
+			opIdx++
+
+			var bodyReader io.Reader
+			if op.bodyFunc != nil {
+				body := op.bodyFunc()
+				if body == "" {
+					// Skip if we don't have required IDs
+					continue
+				}
+				bodyReader = strings.NewReader(body)
+			}
+
+			url := baseURL + "/api/v1" + op.path
+			reqStart := time.Now()
+
+			req, err := http.NewRequestWithContext(ctx, op.method, url, bodyReader)
+			if err != nil {
+				failedRequests++
+				totalRequests++
+				continue
+			}
+			req.Header.Set("Authorization", "Bearer "+token)
+			req.Header.Set("Accept", "application/json")
+			if op.method == "POST" {
+				req.Header.Set("Content-Type", "application/json")
+				writeRequests++
+			} else {
+				readRequests++
+			}
+
+			resp, err := client.Do(req)
+			totalRequests++
+			latency := time.Since(reqStart)
+			latencies = append(latencies, latency)
+
+			if err != nil {
+				failedRequests++
+				continue
+			}
+
+			respBody, _ := io.ReadAll(resp.Body)
+			resp.Body.Close()
+
+			if resp.StatusCode >= 200 && resp.StatusCode < 400 {
+				successRequests++
+				if op.method == "POST" {
+					writeSuccess++
+					// Extract created ID and add to pool
+					if op.producesID != "" {
+						var result map[string]interface{}
+						if json.Unmarshal(respBody, &result) == nil {
+							if data, ok := result["data"].(map[string]interface{}); ok {
+								if id, ok := data["id"].(string); ok {
+									idPool.add(op.producesID, id)
+								}
+							}
+						}
+					}
+				}
+			} else {
+				failedRequests++
+				if op.method == "POST" && resp.StatusCode >= 400 {
+					t.Logf("Write failed: %s %s -> %d: %s", op.method, op.path, resp.StatusCode, string(respBody)[:min(200, len(respBody))])
+				}
+			}
+		}
+	}
+
+done:
+	elapsed := time.Since(startTime)
+	qps := float64(totalRequests) / elapsed.Seconds()
+	successRate := float64(successRequests) / float64(totalRequests) * 100
+	writeSuccessRate := float64(writeSuccess) / float64(max(writeRequests, 1)) * 100
+	p95 := calculateP95(latencies)
+
+	t.Logf("\n===== READ/WRITE MIXED LOAD TEST RESULTS =====")
+	t.Logf("Duration: %s", elapsed.Round(time.Second))
+	t.Logf("Total requests: %d", totalRequests)
+	t.Logf("  - Reads: %d", readRequests)
+	t.Logf("  - Writes: %d (success: %d, %.1f%%)", writeRequests, writeSuccess, writeSuccessRate)
+	t.Logf("Successful: %d", successRequests)
+	t.Logf("Failed: %d", failedRequests)
+	t.Logf("QPS: %.2f", qps)
+	t.Logf("Success rate: %.2f%%", successRate)
+	t.Logf("P95 latency: %s", p95)
+	t.Logf("Created IDs: customers=%d, categories=%d, sales_orders=%d, purchase_orders=%d",
+		len(idPool.ids["customer_id"])-len(warmupEndpoints),
+		len(idPool.ids["category_id"])-len(warmupEndpoints),
+		len(idPool.ids["sales_order_id"]),
+		len(idPool.ids["purchase_order_id"]))
+	t.Logf("==============================================\n")
+
+	// Acceptance criteria
+	assert.GreaterOrEqual(t, totalRequests, 3000, "Should have made at least 3000 requests")
+	assert.Greater(t, successRate, 90.0, "Success rate should be > 90%%")
+	assert.Greater(t, writeSuccessRate, 80.0, "Write success rate should be > 80%%")
+}
+
+// idPoolStore is a simple thread-safe ID pool for testing
+type idPoolStore struct {
+	mu  sync.RWMutex
+	ids map[string][]string
+}
+
+func (p *idPoolStore) add(idType, id string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.ids[idType] = append(p.ids[idType], id)
+}
+
+func (p *idPoolStore) getRandom(idType string) string {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	ids := p.ids[idType]
+	if len(ids) == 0 {
+		return ""
+	}
+	return ids[time.Now().UnixNano()%int64(len(ids))]
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func calculateP95(latencies []time.Duration) time.Duration {
 	if len(latencies) == 0 {
 		return 0

@@ -82,13 +82,18 @@ func (r *GormFeatureFlagRepository) Create(ctx context.Context, flag *featurefla
 
 // Update updates an existing feature flag with optimistic locking
 func (r *GormFeatureFlagRepository) Update(ctx context.Context, flag *featureflag.FeatureFlag) error {
+	// Check version matches before incrementing
+	currentVersion := flag.Version
+
+	// Increment version
+	flag.IncrementVersion()
+
 	model := models.FeatureFlagModelFromDomain(flag)
 
 	// Use optimistic locking: only update if version matches
-	expectedVersion := flag.Version - 1
 	result := r.db.WithContext(ctx).
 		Model(&models.FeatureFlagModel{}).
-		Where("id = ? AND version = ?", flag.ID, expectedVersion).
+		Where("id = ? AND version = ?", flag.ID, currentVersion).
 		Updates(map[string]any{
 			"name":          model.Name,
 			"description":   model.Description,

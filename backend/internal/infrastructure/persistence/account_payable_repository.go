@@ -183,17 +183,35 @@ func (r *GormAccountPayableRepository) Save(ctx context.Context, payable *financ
 
 // SaveWithLock saves with optimistic locking
 func (r *GormAccountPayableRepository) SaveWithLock(ctx context.Context, payable *finance.AccountPayable) error {
+	// Get current version from database
+	var currentVersion int
+	if err := r.db.WithContext(ctx).
+		Model(&models.AccountPayableModel{}).
+		Where("id = ?", payable.ID).
+		Select("version").
+		Scan(&currentVersion).Error; err != nil {
+		return err
+	}
+
+	// Check version matches
+	if currentVersion != payable.Version {
+		return shared.NewDomainError("CONCURRENT_MODIFICATION", "The record has been modified by another user")
+	}
+
+	// Increment version
+	payable.Version++
+
 	model := models.AccountPayableModelFromDomain(payable)
 	result := r.db.WithContext(ctx).
 		Model(model).
-		Where("id = ? AND version = ?", payable.ID, payable.Version-1).
+		Where("id = ? AND version = ?", payable.ID, currentVersion).
 		Updates(model)
 
 	if result.Error != nil {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return shared.NewDomainError("OPTIMISTIC_LOCK_ERROR", "The record has been modified by another transaction")
+		return shared.NewDomainError("CONCURRENT_MODIFICATION", "The record has been modified by another user")
 	}
 	return nil
 }

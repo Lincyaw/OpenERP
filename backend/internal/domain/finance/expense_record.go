@@ -215,7 +215,6 @@ func (e *ExpenseRecord) Submit(submittedBy uuid.UUID) error {
 	e.SubmittedAt = &now
 	e.SubmittedBy = &submittedBy
 	e.UpdatedAt = now
-	e.IncrementVersion()
 
 	e.AddDomainEvent(NewExpenseRecordSubmittedEvent(e))
 
@@ -237,7 +236,6 @@ func (e *ExpenseRecord) Approve(approvedBy uuid.UUID, remark string) error {
 	e.ApprovedBy = &approvedBy
 	e.ApprovalRemark = remark
 	e.UpdatedAt = now
-	e.IncrementVersion()
 
 	e.AddDomainEvent(NewExpenseRecordApprovedEvent(e))
 
@@ -262,7 +260,6 @@ func (e *ExpenseRecord) Reject(rejectedBy uuid.UUID, reason string) error {
 	e.RejectedBy = &rejectedBy
 	e.RejectionReason = reason
 	e.UpdatedAt = now
-	e.IncrementVersion()
 
 	e.AddDomainEvent(NewExpenseRecordRejectedEvent(e))
 
@@ -287,7 +284,6 @@ func (e *ExpenseRecord) Cancel(cancelledBy uuid.UUID, reason string) error {
 	e.CancelledBy = &cancelledBy
 	e.CancelReason = reason
 	e.UpdatedAt = now
-	e.IncrementVersion()
 
 	e.AddDomainEvent(NewExpenseRecordCancelledEvent(e))
 
@@ -311,7 +307,6 @@ func (e *ExpenseRecord) MarkAsPaid(paymentMethod PaymentMethod) error {
 	e.PaymentMethod = &paymentMethod
 	e.PaidAt = &now
 	e.UpdatedAt = now
-	e.IncrementVersion()
 
 	e.AddDomainEvent(NewExpenseRecordPaidEvent(e))
 
@@ -346,7 +341,6 @@ func (e *ExpenseRecord) Update(
 	e.Description = description
 	e.IncurredAt = incurredAt
 	e.UpdatedAt = time.Now()
-	e.IncrementVersion()
 
 	return nil
 }
@@ -355,14 +349,12 @@ func (e *ExpenseRecord) Update(
 func (e *ExpenseRecord) SetRemark(remark string) {
 	e.Remark = remark
 	e.UpdatedAt = time.Now()
-	e.IncrementVersion()
 }
 
 // SetAttachmentURLs sets the attachment URLs (JSON array)
 func (e *ExpenseRecord) SetAttachmentURLs(urls string) {
 	e.AttachmentURLs = urls
 	e.UpdatedAt = time.Now()
-	e.IncrementVersion()
 }
 
 // Helper methods

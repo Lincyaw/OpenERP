@@ -407,7 +407,9 @@
     "importHistory": "导入记录",
     "settings": "系统设置",
     "profile": "个人资料",
-    "notifications": "通知"
+    "notifications": "通知",
+    "subscription": "订阅管理",
+    "billing": "账单历史"
   },
   "importHistory": {
     "title": "导入记录",

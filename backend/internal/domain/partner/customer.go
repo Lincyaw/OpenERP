@@ -106,7 +106,6 @@ func (c *Customer) Update(name, shortName string) error {
 	c.Name = name
 	c.ShortName = shortName
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	c.AddDomainEvent(NewCustomerUpdatedEvent(c))
 
@@ -121,7 +120,6 @@ func (c *Customer) UpdateCode(code string) error {
 
 	c.Code = strings.ToUpper(code)
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	c.AddDomainEvent(NewCustomerUpdatedEvent(c))
 
@@ -148,7 +146,6 @@ func (c *Customer) SetContact(contactName, phone, email string) error {
 	c.Phone = phone
 	c.Email = email
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	return nil
 }
@@ -179,7 +176,6 @@ func (c *Customer) SetAddress(address, city, province, postalCode, country strin
 		c.Country = country
 	}
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	return nil
 }
@@ -192,7 +188,6 @@ func (c *Customer) SetTaxID(taxID string) error {
 
 	c.TaxID = taxID
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	return nil
 }
@@ -206,7 +201,6 @@ func (c *Customer) SetLevel(level CustomerLevel) error {
 	oldLevel := c.Level
 	c.Level = level
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	c.AddDomainEvent(NewCustomerLevelChangedEvent(c, oldLevel, level))
 
@@ -221,7 +215,6 @@ func (c *Customer) SetCreditLimit(limit decimal.Decimal) error {
 
 	c.CreditLimit = limit
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	return nil
 }
@@ -238,7 +231,6 @@ func (c *Customer) AddBalance(amount decimal.Decimal) error {
 	oldBalance := c.Balance
 	c.Balance = c.Balance.Add(amount)
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	c.AddDomainEvent(NewCustomerBalanceChangedEvent(c, oldBalance, c.Balance, "recharge"))
 
@@ -260,7 +252,6 @@ func (c *Customer) DeductBalance(amount decimal.Decimal) error {
 	oldBalance := c.Balance
 	c.Balance = c.Balance.Sub(amount)
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	c.AddDomainEvent(NewCustomerBalanceChangedEvent(c, oldBalance, c.Balance, "deduction"))
 
@@ -279,7 +270,6 @@ func (c *Customer) RefundBalance(amount decimal.Decimal) error {
 	oldBalance := c.Balance
 	c.Balance = c.Balance.Add(amount)
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	c.AddDomainEvent(NewCustomerBalanceChangedEvent(c, oldBalance, c.Balance, "refund"))
 
@@ -290,14 +280,12 @@ func (c *Customer) RefundBalance(amount decimal.Decimal) error {
 func (c *Customer) SetNotes(notes string) {
 	c.Notes = notes
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 }
 
 // SetSortOrder sets the display order
 func (c *Customer) SetSortOrder(order int) {
 	c.SortOrder = order
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 }
 
 // SetAttributes sets custom attributes as JSON
@@ -312,7 +300,6 @@ func (c *Customer) SetAttributes(attributes string) error {
 
 	c.Attributes = trimmed
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	return nil
 }
@@ -326,7 +313,6 @@ func (c *Customer) Activate() error {
 	oldStatus := c.Status
 	c.Status = CustomerStatusActive
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	c.AddDomainEvent(NewCustomerStatusChangedEvent(c, oldStatus, CustomerStatusActive))
 
@@ -342,7 +328,6 @@ func (c *Customer) Deactivate() error {
 	oldStatus := c.Status
 	c.Status = CustomerStatusInactive
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	c.AddDomainEvent(NewCustomerStatusChangedEvent(c, oldStatus, CustomerStatusInactive))
 
@@ -358,7 +343,6 @@ func (c *Customer) Suspend() error {
 	oldStatus := c.Status
 	c.Status = CustomerStatusSuspended
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 
 	c.AddDomainEvent(NewCustomerStatusChangedEvent(c, oldStatus, CustomerStatusSuspended))
 
@@ -476,7 +460,6 @@ func (c *Customer) SetAddressVO(addr valueobject.Address) {
 		}
 	}
 	c.UpdatedAt = time.Now()
-	c.IncrementVersion()
 }
 
 // Validation functions

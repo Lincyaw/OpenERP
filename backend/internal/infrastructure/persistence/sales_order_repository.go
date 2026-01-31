@@ -218,9 +218,6 @@ func (r *GormSalesOrderRepository) Save(ctx context.Context, order *trade.SalesO
 }
 
 // SaveWithLock saves with optimistic locking (version check)
-// Note: Domain model methods may increment version multiple times during a single operation
-// (e.g., SetWarehouse + Ship both increment version). We fetch the current DB version
-// and use that as the basis for the optimistic lock check.
 func (r *GormSalesOrderRepository) SaveWithLock(ctx context.Context, order *trade.SalesOrder) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Get current version from database
@@ -235,15 +232,16 @@ func (r *GormSalesOrderRepository) SaveWithLock(ctx context.Context, order *trad
 			return err
 		}
 
-		// Validate: the new version must be greater than the current DB version
-		// This ensures domain operations have properly incremented the version
-		if order.Version <= currentVersion {
+		// Check version matches
+		if currentVersion != order.Version {
 			return shared.NewDomainError("CONCURRENT_MODIFICATION", "The order has been modified by another user")
 		}
 
+		// Increment version
+		order.Version++
 		order.UpdatedAt = time.Now()
 
-		// Update order with version check using the actual DB version (not assumed -1)
+		// Update order with version check
 		result := tx.Model(&models.SalesOrderModel{}).
 			Where("id = ? AND version = ?", order.ID, currentVersion).
 			Updates(map[string]interface{}{
@@ -321,11 +319,13 @@ func (r *GormSalesOrderRepository) SaveWithLockAndEvents(ctx context.Context, or
 			return err
 		}
 
-		// Validate: the new version must be greater than the current DB version
-		if order.Version <= currentVersion {
+		// Check version matches
+		if currentVersion != order.Version {
 			return shared.NewDomainError("CONCURRENT_MODIFICATION", "The order has been modified by another user")
 		}
 
+		// Increment version
+		order.Version++
 		order.UpdatedAt = time.Now()
 
 		// Update order with version check

@@ -174,17 +174,35 @@ func (r *GormAccountReceivableRepository) Save(ctx context.Context, receivable *
 
 // SaveWithLock saves with optimistic locking
 func (r *GormAccountReceivableRepository) SaveWithLock(ctx context.Context, receivable *finance.AccountReceivable) error {
+	// Get current version from database
+	var currentVersion int
+	if err := r.db.WithContext(ctx).
+		Model(&models.AccountReceivableModel{}).
+		Where("id = ?", receivable.ID).
+		Select("version").
+		Scan(&currentVersion).Error; err != nil {
+		return err
+	}
+
+	// Check version matches
+	if currentVersion != receivable.Version {
+		return shared.NewDomainError("CONCURRENT_MODIFICATION", "The record has been modified by another user")
+	}
+
+	// Increment version
+	receivable.Version++
+
 	model := models.AccountReceivableModelFromDomain(receivable)
 	result := r.db.WithContext(ctx).
 		Model(model).
-		Where("id = ? AND version = ?", receivable.ID, receivable.Version-1).
+		Where("id = ? AND version = ?", receivable.ID, currentVersion).
 		Updates(model)
 
 	if result.Error != nil {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return shared.NewDomainError("OPTIMISTIC_LOCK_ERROR", "The record has been modified by another transaction")
+		return shared.NewDomainError("CONCURRENT_MODIFICATION", "The record has been modified by another user")
 	}
 	return nil
 }

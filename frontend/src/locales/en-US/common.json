@@ -406,7 +406,9 @@
     "importHistory": "Import History",
     "settings": "Settings",
     "profile": "Profile",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "subscription": "Subscription",
+    "billing": "Billing History"
   },
   "importHistory": {
     "title": "Import History",

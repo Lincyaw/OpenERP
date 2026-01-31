@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/erp/backend/internal/domain/finance"
+	"github.com/erp/backend/internal/domain/shared"
 	"github.com/erp/backend/internal/infrastructure/persistence/models"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -151,17 +152,35 @@ func (r *GormReceiptVoucherRepository) Save(ctx context.Context, voucher *financ
 
 // SaveWithLock saves with optimistic locking (version check)
 func (r *GormReceiptVoucherRepository) SaveWithLock(ctx context.Context, voucher *finance.ReceiptVoucher) error {
+	// Get current version from database
+	var currentVersion int
+	if err := r.db.WithContext(ctx).
+		Model(&models.ReceiptVoucherModel{}).
+		Where("id = ?", voucher.ID).
+		Select("version").
+		Scan(&currentVersion).Error; err != nil {
+		return err
+	}
+
+	// Check version matches
+	if currentVersion != voucher.Version {
+		return shared.NewDomainError("CONCURRENT_MODIFICATION", "The voucher has been modified by another user")
+	}
+
+	// Increment version
+	voucher.Version++
+
 	model := models.ReceiptVoucherModelFromDomain(voucher)
 	result := r.db.WithContext(ctx).
 		Model(model).
-		Where("id = ? AND version = ?", voucher.ID, voucher.Version-1).
+		Where("id = ? AND version = ?", voucher.ID, currentVersion).
 		Updates(model)
 
 	if result.Error != nil {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return errors.New("optimistic lock error: version mismatch")
+		return shared.NewDomainError("CONCURRENT_MODIFICATION", "The voucher has been modified by another user")
 	}
 	return nil
 }

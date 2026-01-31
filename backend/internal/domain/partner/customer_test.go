@@ -111,7 +111,8 @@ func TestCustomerUpdate(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, "New Name", customer.Name)
 		assert.Equal(t, "Short", customer.ShortName)
-		assert.Greater(t, customer.Version, originalVersion)
+		// Version is now managed by repository, not domain
+		assert.Equal(t, originalVersion, customer.Version)
 		assert.Len(t, customer.GetDomainEvents(), 1)
 	})
 

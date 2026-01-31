@@ -268,17 +268,35 @@ func (r *GormCustomerRepository) Save(ctx context.Context, customer *partner.Cus
 // SaveWithLock saves a customer with optimistic locking (version check)
 // Returns error if the version has changed (concurrent modification)
 func (r *GormCustomerRepository) SaveWithLock(ctx context.Context, customer *partner.Customer) error {
+	// Get current version from database
+	var currentVersion int
+	if err := r.db.WithContext(ctx).
+		Model(&models.CustomerModel{}).
+		Where("id = ?", customer.ID).
+		Select("version").
+		Scan(&currentVersion).Error; err != nil {
+		return err
+	}
+
+	// Check version matches
+	if currentVersion != customer.Version {
+		return shared.NewDomainError("CONCURRENT_MODIFICATION", "The customer has been modified by another user")
+	}
+
+	// Increment version
+	customer.Version++
+
 	model := models.CustomerModelFromDomain(customer)
 	result := r.db.WithContext(ctx).
 		Model(model).
-		Where("id = ? AND version = ?", customer.ID, customer.Version-1).
+		Where("id = ? AND version = ?", customer.ID, currentVersion).
 		Updates(model)
 
 	if result.Error != nil {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return shared.NewDomainError("OPTIMISTIC_LOCK_ERROR", "The customer record has been modified by another transaction")
+		return shared.NewDomainError("CONCURRENT_MODIFICATION", "The customer has been modified by another user")
 	}
 	return nil
 }

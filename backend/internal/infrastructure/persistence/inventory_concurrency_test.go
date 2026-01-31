@@ -45,7 +45,7 @@ func TestSaveWithLock_OptimisticLocking(t *testing.T) {
 		defer mockDB.Close()
 
 		item := createTestInventoryItemForConcurrency(t)
-		item.Version = 2 // Simulate incremented version after domain operation
+		item.Version = 1 // Current version matches DB
 
 		// First, expect SELECT to get current version from DB
 		rows := sqlmock.NewRows([]string{"version"}).AddRow(1) // DB has version 1
@@ -53,13 +53,14 @@ func TestSaveWithLock_OptimisticLocking(t *testing.T) {
 			WithArgs(item.ID).
 			WillReturnRows(rows)
 
-		// Then expect UPDATE with version check
+		// Then expect UPDATE with version check (repository increments to 2)
 		mock.ExpectExec(`UPDATE "inventory_items" SET`).
 			WillReturnResult(sqlmock.NewResult(0, 1))
 
 		err := repo.SaveWithLock(context.Background(), item)
 
 		assert.NoError(t, err)
+		assert.Equal(t, 2, item.Version) // Repository incremented version
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -68,7 +69,7 @@ func TestSaveWithLock_OptimisticLocking(t *testing.T) {
 		defer mockDB.Close()
 
 		item := createTestInventoryItemForConcurrency(t)
-		item.Version = 2 // Domain expects DB to have version 1
+		item.Version = 1 // Entity has version 1
 
 		// DB returns version 2 (another transaction already updated)
 		rows := sqlmock.NewRows([]string{"version"}).AddRow(2)
@@ -90,7 +91,7 @@ func TestSaveWithLock_OptimisticLocking(t *testing.T) {
 		defer mockDB.Close()
 
 		item := createTestInventoryItemForConcurrency(t)
-		item.Version = 2
+		item.Version = 1
 
 		// First, SELECT returns correct version
 		rows := sqlmock.NewRows([]string{"version"}).AddRow(1)
@@ -113,7 +114,7 @@ func TestSaveWithLock_OptimisticLocking(t *testing.T) {
 		defer mockDB.Close()
 
 		item := createTestInventoryItemForConcurrency(t)
-		item.Version = 2
+		item.Version = 1
 
 		// SELECT returns empty rows (GORM's Scan doesn't return ErrRecordNotFound)
 		// We need to simulate RowsAffected = 0
@@ -134,7 +135,7 @@ func TestSaveWithLock_OptimisticLocking(t *testing.T) {
 		defer mockDB.Close()
 
 		item := createTestInventoryItemForConcurrency(t)
-		item.Version = 2
+		item.Version = 1
 
 		// SELECT returns expected version
 		rows := sqlmock.NewRows([]string{"version"}).AddRow(1)
@@ -166,10 +167,10 @@ func TestSaveWithLock_UpdatedFields(t *testing.T) {
 		item.UnitCost = decimal.NewFromFloat(15.50)
 		item.MinQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(10))
 		item.MaxQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(500))
-		item.Version = 3
+		item.Version = 2 // Current version
 		item.UpdatedAt = time.Now()
 
-		// First, SELECT returns expected version (version - 1 = 2)
+		// First, SELECT returns expected version
 		rows := sqlmock.NewRows([]string{"version"}).AddRow(2)
 		mock.ExpectQuery(`SELECT .* FROM "inventory_items"`).
 			WithArgs(item.ID).
@@ -182,13 +183,13 @@ func TestSaveWithLock_UpdatedFields(t *testing.T) {
 		err := repo.SaveWithLock(context.Background(), item)
 
 		assert.NoError(t, err)
+		assert.Equal(t, 3, item.Version) // Repository incremented version
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
 
 // TestConcurrentLockScenario_Domain tests concurrent lock scenarios at domain level
 // This test demonstrates how optimistic locking would prevent race conditions
-// by verifying that both readers start with the same version and both increment it
 func TestConcurrentLockScenario_Domain(t *testing.T) {
 	t.Run("simulates read-modify-write race condition prevention", func(t *testing.T) {
 		// Simulate two readers getting the same inventory item (version 1)
@@ -200,22 +201,22 @@ func TestConcurrentLockScenario_Domain(t *testing.T) {
 		reader2.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 		reader2.Version = 1 // Same version as reader1
 
-		// Both readers perform domain operations
+		// Both readers perform domain operations (version NOT incremented by domain)
 		_, err := reader1.LockStock(decimal.NewFromInt(30), "order", "O-1", time.Now().Add(time.Hour))
 		require.NoError(t, err)
 
 		_, err = reader2.LockStock(decimal.NewFromInt(30), "order", "O-2", time.Now().Add(time.Hour))
 		require.NoError(t, err)
 
-		// Both have incremented their version to 2
-		assert.Equal(t, 2, reader1.Version)
-		assert.Equal(t, 2, reader2.Version)
+		// Both still have version 1 (repository will increment on save)
+		assert.Equal(t, 1, reader1.Version)
+		assert.Equal(t, 1, reader2.Version)
 
 		// In the real database scenario with SaveWithLock:
 		// - Reader 1 saves first: SELECT returns version=1, version check passes,
 		//   UPDATE WHERE version=1 succeeds, DB version becomes 2
 		// - Reader 2 tries to save: SELECT returns version=2 (DB was updated),
-		//   but reader2.Version-1=1 != 2, so optimistic lock fails immediately
+		//   but reader2.Version=1 != 2, so optimistic lock fails immediately
 		// This ensures only one writer succeeds when concurrent modifications occur
 	})
 
@@ -224,12 +225,9 @@ func TestConcurrentLockScenario_Domain(t *testing.T) {
 		defer mockDB.Close()
 
 		item := createTestInventoryItemForConcurrency(t)
-		item.Version = 2 // After domain operation increments version
+		item.Version = 1 // Entity has version 1
 
 		// Simulate database already has version 2 (another transaction saved first)
-		// SaveWithLock first SELECTs the current version from DB
-		// Then compares: currentVersion (2) != expectedVersion (item.Version-1 = 1)
-		// So optimistic lock fails without even attempting UPDATE
 		rows := sqlmock.NewRows([]string{"version"}).AddRow(2)
 		mock.ExpectQuery(`SELECT .* FROM "inventory_items"`).
 			WithArgs(item.ID).
@@ -295,9 +293,10 @@ func TestOversellPrevention_Domain(t *testing.T) {
 	})
 }
 
-// TestVersionIncrement tests that version is correctly incremented on domain operations
+// TestVersionIncrement tests that version is correctly managed by repository
+// Note: Domain operations no longer increment version - repository does this on save
 func TestVersionIncrement(t *testing.T) {
-	t.Run("LockStock increments version", func(t *testing.T) {
+	t.Run("LockStock does not increment version (repository responsibility)", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
 		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 		initialVersion := item.Version
@@ -305,10 +304,10 @@ func TestVersionIncrement(t *testing.T) {
 		_, err := item.LockStock(decimal.NewFromInt(30), "order", "O-1", time.Now().Add(time.Hour))
 		require.NoError(t, err)
 
-		assert.Equal(t, initialVersion+1, item.Version)
+		assert.Equal(t, initialVersion, item.Version) // Version unchanged by domain
 	})
 
-	t.Run("UnlockStock increments version", func(t *testing.T) {
+	t.Run("UnlockStock does not increment version (repository responsibility)", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
 		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 
@@ -319,10 +318,10 @@ func TestVersionIncrement(t *testing.T) {
 		err = item.UnlockStock(lock.ID)
 		require.NoError(t, err)
 
-		assert.Equal(t, versionAfterLock+1, item.Version)
+		assert.Equal(t, versionAfterLock, item.Version) // Version unchanged by domain
 	})
 
-	t.Run("DeductStock increments version", func(t *testing.T) {
+	t.Run("DeductStock does not increment version (repository responsibility)", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
 		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 
@@ -333,10 +332,10 @@ func TestVersionIncrement(t *testing.T) {
 		err = item.DeductStock(lock.ID)
 		require.NoError(t, err)
 
-		assert.Equal(t, versionAfterLock+1, item.Version)
+		assert.Equal(t, versionAfterLock, item.Version) // Version unchanged by domain
 	})
 
-	t.Run("IncreaseStock increments version", func(t *testing.T) {
+	t.Run("IncreaseStock does not increment version (repository responsibility)", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
 		initialVersion := item.Version
 
@@ -347,10 +346,10 @@ func TestVersionIncrement(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		assert.Equal(t, initialVersion+1, item.Version)
+		assert.Equal(t, initialVersion, item.Version) // Version unchanged by domain
 	})
 
-	t.Run("AdjustStock increments version", func(t *testing.T) {
+	t.Run("AdjustStock does not increment version (repository responsibility)", func(t *testing.T) {
 		item := createTestInventoryItemForConcurrency(t)
 		item.AvailableQuantity = inventory.MustNewInventoryQuantity(decimal.NewFromInt(100))
 		initialVersion := item.Version
@@ -358,7 +357,7 @@ func TestVersionIncrement(t *testing.T) {
 		err := item.AdjustStock(decimal.NewFromInt(110), "Found extra stock")
 		require.NoError(t, err)
 
-		assert.Equal(t, initialVersion+1, item.Version)
+		assert.Equal(t, initialVersion, item.Version) // Version unchanged by domain
 	})
 }
 

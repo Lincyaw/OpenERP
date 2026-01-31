@@ -897,7 +897,8 @@ func TestAccountReceivable_SetRemark(t *testing.T) {
 	ar.SetRemark("Important customer")
 
 	assert.Equal(t, "Important customer", ar.Remark)
-	assert.Equal(t, originalVersion+1, ar.GetVersion())
+	// Version is now managed by repository, not domain
+	assert.Equal(t, originalVersion, ar.GetVersion())
 }
 
 // ============================================

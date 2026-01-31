@@ -284,7 +284,6 @@ func (ar *AccountReceivable) ApplyPayment(amount valueobject.Money, voucherID uu
 	}
 
 	ar.UpdatedAt = time.Now()
-	ar.IncrementVersion()
 
 	return nil
 }
@@ -346,7 +345,6 @@ func (ar *AccountReceivable) Reverse(reason string) (*ReversalResult, error) {
 	ar.ReversalReason = reason
 	ar.OutstandingAmount = decimal.Zero // No longer outstanding after reversal
 	ar.UpdatedAt = now
-	ar.IncrementVersion()
 
 	ar.AddDomainEvent(NewAccountReceivableReversedEvent(ar, previousStatus, result))
 
@@ -381,7 +379,6 @@ func (ar *AccountReceivable) Cancel(reason string) error {
 	ar.CancelReason = reason
 	ar.OutstandingAmount = decimal.Zero // No longer outstanding
 	ar.UpdatedAt = now
-	ar.IncrementVersion()
 
 	ar.AddDomainEvent(NewAccountReceivableCancelledEvent(ar))
 
@@ -396,7 +393,6 @@ func (ar *AccountReceivable) SetDueDate(dueDate *time.Time) error {
 
 	ar.DueDate = dueDate
 	ar.UpdatedAt = time.Now()
-	ar.IncrementVersion()
 
 	return nil
 }
@@ -405,7 +401,6 @@ func (ar *AccountReceivable) SetDueDate(dueDate *time.Time) error {
 func (ar *AccountReceivable) SetRemark(remark string) {
 	ar.Remark = remark
 	ar.UpdatedAt = time.Now()
-	ar.IncrementVersion()
 }
 
 // Helper methods

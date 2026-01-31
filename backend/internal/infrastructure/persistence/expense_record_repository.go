@@ -151,16 +151,18 @@ func (r *GormExpenseRecordRepository) SaveWithLock(ctx context.Context, expense 
 			return err
 		}
 
-		// Check version matches (domain model already incremented version)
-		expectedVersion := expense.GetVersion() - 1
-		if current.Version != expectedVersion {
+		// Check version matches
+		if current.Version != expense.GetVersion() {
 			return shared.NewDomainError("VERSION_CONFLICT", "Expense record has been modified by another user")
 		}
+
+		// Increment version
+		expense.IncrementVersion()
 
 		// Update with version check
 		model := models.ExpenseRecordModelFromDomain(expense)
 		result := tx.Model(model).
-			Where("id = ? AND version = ?", expense.GetID(), expectedVersion).
+			Where("id = ? AND version = ?", expense.GetID(), current.Version).
 			Save(model)
 
 		if result.Error != nil {

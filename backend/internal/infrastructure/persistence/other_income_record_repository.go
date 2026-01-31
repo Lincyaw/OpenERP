@@ -151,16 +151,18 @@ func (r *GormOtherIncomeRecordRepository) SaveWithLock(ctx context.Context, inco
 			return err
 		}
 
-		// Check version matches (domain model already incremented version)
-		expectedVersion := income.GetVersion() - 1
-		if current.Version != expectedVersion {
+		// Check version matches
+		if current.Version != income.GetVersion() {
 			return shared.NewDomainError("VERSION_CONFLICT", "Income record has been modified by another user")
 		}
+
+		// Increment version
+		income.IncrementVersion()
 
 		// Update with version check
 		model := models.OtherIncomeRecordModelFromDomain(income)
 		result := tx.Model(model).
-			Where("id = ? AND version = ?", income.GetID(), expectedVersion).
+			Where("id = ? AND version = ?", income.GetID(), current.Version).
 			Save(model)
 
 		if result.Error != nil {

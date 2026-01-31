@@ -689,7 +689,8 @@ func TestAccountPayable_SetRemark(t *testing.T) {
 	ap.SetRemark("New remark")
 
 	assert.Equal(t, "New remark", ap.Remark)
-	assert.Greater(t, ap.Version, originalVersion)
+	// Version is now managed by repository, not domain
+	assert.Equal(t, originalVersion, ap.Version)
 }
 
 // Test Helper methods

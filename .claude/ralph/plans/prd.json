@@ -13000,5 +13000,146 @@
       "API 文档完整准确"
     ],
     "passes": true
+  },
+  {
+    "id": "SAAS-FE-006",
+    "story": "添加订阅与计费导航入口 - 用户下拉菜单",
+    "priority": "high",
+    "category": "frontend",
+    "phase": "short-term",
+    "doc_ref": ".claude/ralph/docs/saas-billing.md",
+    "requirements": [
+      "修改 frontend/src/components/layout/Header.tsx",
+      "在 userMenuItems 数组中添加「订阅管理」菜单项，导航到 /subscription",
+      "在 userMenuItems 数组中添加「账单历史」菜单项，导航到 /billing",
+      "使用 IconCreditCard 或 IconHistogram 图标",
+      "菜单项位置：在 Settings 之后、Divider 之前",
+      "添加 handleSubscription 和 handleBilling 回调函数"
+    ],
+    "acceptance_criteria": [
+      "用户点击头像下拉菜单可看到「订阅管理」和「账单历史」选项",
+      "点击菜单项正确跳转到对应页面",
+      "菜单项图标与文字对齐，样式一致"
+    ],
+    "context": "当前订阅和计费页面已实现（/subscription, /billing, /upgrade），但前端没有导航入口，用户只能手动输入URL访问。这是SaaS计费系统可用性的关键缺失。",
+    "passes": true
+  },
+  {
+    "id": "SAAS-FE-007",
+    "story": "在设置页面添加订阅与计费分区",
+    "priority": "medium",
+    "category": "frontend",
+    "phase": "short-term",
+    "doc_ref": ".claude/ralph/docs/saas-billing.md",
+    "requirements": [
+      "修改 frontend/src/pages/user/Settings.tsx",
+      "添加新的 Card 分区「订阅与计费」",
+      "显示当前订阅计划名称和状态",
+      "添加「管理订阅」按钮，导航到 /subscription",
+      "添加「查看账单」按钮，导航到 /billing",
+      "使用 IconCreditCard 图标",
+      "调用 useGetCurrentUsage API 获取当前计划信息"
+    ],
+    "acceptance_criteria": [
+      "设置页面显示「订阅与计费」分区",
+      "显示当前计划名称（Free/Basic/Pro/Enterprise）",
+      "按钮点击正确跳转",
+      "样式与其他设置分区一致"
+    ],
+    "context": "Settings页面是用户管理账户的主要入口，添加计费分区符合用户心智模型，与Notion、Slack等SaaS产品的设计一致。",
+    "passes": false
+  },
+  {
+    "id": "SAAS-FE-008",
+    "story": "添加订阅计费导航的国际化文案",
+    "priority": "medium",
+    "category": "frontend",
+    "phase": "short-term",
+    "doc_ref": ".claude/ralph/docs/saas-billing.md",
+    "requirements": [
+      "修改 frontend/src/locales/zh-CN/system.json",
+      "修改 frontend/src/locales/en-US/system.json",
+      "添加 nav.subscription: 订阅管理 / Subscription",
+      "添加 nav.billing: 账单历史 / Billing History",
+      "添加 settings.billing.title: 订阅与计费 / Subscription & Billing",
+      "添加 settings.billing.description: 管理您的订阅计划和查看账单 / Manage your subscription plan and view billing",
+      "添加 settings.billing.managePlan: 管理订阅 / Manage Subscription",
+      "添加 settings.billing.viewBilling: 查看账单 / View Billing"
+    ],
+    "acceptance_criteria": [
+      "中英文切换时导航文案正确显示",
+      "所有新增文案有中英文两个版本"
+    ],
+    "context": "系统支持中英文国际化，所有用户可见文案必须有对应翻译。",
+    "passes": false
+  },
+  {
+    "id": "SAAS-BE-012",
+    "story": "实现计划功能配置持久化",
+    "priority": "medium",
+    "category": "backend",
+    "phase": "medium-term",
+    "doc_ref": ".claude/ralph/docs/saas-billing.md",
+    "requirements": [
+      "修改 backend/internal/interfaces/http/handler/plan_feature_handler.go",
+      "实现 PlanFeatureRepository 接口的 GORM 实现",
+      "UpdatePlanFeatures 端点从预览模式改为实际持久化",
+      "添加数据库事务支持，确保原子性更新",
+      "添加审计日志记录功能配置变更",
+      "编写集成测试验证持久化逻辑"
+    ],
+    "acceptance_criteria": [
+      "PUT /admin/plans/{plan}/features 成功保存配置到数据库",
+      "配置变更后重启服务配置仍然生效",
+      "并发更新时数据一致性得到保证"
+    ],
+    "context": "当前 UpdatePlanFeatures 端点只返回预览结果，不持久化到数据库。代码中有 TODO 注释：'Implement persistence via PlanFeatureRepository when available'。这限制了管理员动态调整计划功能的能力。",
+    "passes": false
+  },
+  {
+    "id": "SAAS-BE-013",
+    "story": "实现真实用量历史数据存储",
+    "priority": "low",
+    "category": "backend",
+    "phase": "medium-term",
+    "doc_ref": ".claude/ralph/docs/saas-billing.md",
+    "requirements": [
+      "创建 usage_history 表存储历史用量快照",
+      "实现定时任务每日记录各租户用量快照",
+      "修改 GET /usage/history 端点返回真实历史数据",
+      "支持按日期范围查询历史用量",
+      "添加数据保留策略（如保留90天）",
+      "编写单元测试和集成测试"
+    ],
+    "acceptance_criteria": [
+      "用量历史API返回真实的历史数据而非当前快照",
+      "前端用量趋势图显示真实的历史变化",
+      "历史数据按保留策略自动清理"
+    ],
+    "context": "当前 GET /usage/history 端点返回当前快照值重复填充各日期，不是真实历史数据。代码注释：'This is a simplified implementation that returns current snapshot values. A production system would track historical usage in a dedicated table'。",
+    "passes": false
+  },
+  {
+    "id": "SAAS-BE-014",
+    "story": "实现 UsageRecord/UsageQuota/UsageMeter Repository",
+    "priority": "low",
+    "category": "backend",
+    "phase": "medium-term",
+    "doc_ref": ".claude/ralph/docs/saas-billing.md",
+    "requirements": [
+      "实现 UsageRecordRepository 的 GORM 实现",
+      "实现 UsageQuotaRepository 的 GORM 实现",
+      "实现 UsageMeterRepository 的 GORM 实现",
+      "创建对应的数据库迁移文件",
+      "编写 Repository 单元测试",
+      "集成到现有的 QuotaService 中"
+    ],
+    "acceptance_criteria": [
+      "所有 Repository 接口有完整的 GORM 实现",
+      "数据库表结构与领域模型一致",
+      "单元测试覆盖率达到80%"
+    ],
+    "context": "当前 billing 领域的 Repository 接口已定义但未实现。只有 UsageReportLogRepository 有完整实现。这限制了用量数据的持久化和查询能力。",
+    "passes": false
   }
 ]

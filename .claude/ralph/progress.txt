@@ -43151,3 +43151,42 @@ Created comprehensive documentation for the SaaS billing system covering:
 === Next Steps ===
 - All SAAS tasks complete - consider E2E testing (SAAS-TEST-001)
 - May need documentation updates as implementation evolves
+
+2026-01-31 - SAAS-FE-006: 添加订阅与计费导航入口 - 用户下拉菜单
+
+=== Implementation Details ===
+- Modified frontend/src/components/layout/Header.tsx
+- Added IconCreditCard and IconHistogram imports from @douyinfe/semi-icons
+- Added handleSubscription callback function to navigate to /subscription
+- Added handleBilling callback function to navigate to /billing
+- Added two new menu items to userMenuItems array:
+  - "Subscription" (订阅管理) with IconCreditCard icon, navigates to /subscription
+  - "Billing History" (账单历史) with IconHistogram icon, navigates to /billing
+- Menu items positioned after Settings and before the Divider (as required)
+- Added i18n translations for both English and Chinese:
+  - frontend/src/locales/en-US/common.json: nav.subscription, nav.billing
+  - frontend/src/locales/zh-CN/common.json: nav.subscription, nav.billing
+
+=== Files Modified ===
+- frontend/src/components/layout/Header.tsx (main implementation)
+- frontend/src/locales/en-US/common.json (English translations)
+- frontend/src/locales/zh-CN/common.json (Chinese translations)
+
+=== Verification ===
+- TypeScript type checking: PASSED (npm run type-check)
+- ESLint: PASSED (no new errors in Header.tsx)
+- Routes /subscription and /billing already exist in routes.tsx (lines 780-781)
+
+=== Acceptance Criteria Met ===
+✓ 用户点击头像下拉菜单可看到「订阅管理」和「账单历史」选项
+✓ 点击菜单项正确跳转到对应页面 (/subscription, /billing)
+✓ 菜单项图标与文字对齐，样式一致 (using Semi Design icons)
+
+=== Notes ===
+- Used IconCreditCard for Subscription (consistent with payment/billing theme)
+- Used IconHistogram for Billing History (represents historical data/charts)
+- Both pages (SubscriptionPage, BillingHistoryPage) were already implemented in previous tasks
+
+=== Next Steps ===
+- Consider adding visual indicators for subscription status in the menu
+- May want to add notification badges for unpaid invoices

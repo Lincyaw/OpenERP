@@ -247,7 +247,6 @@ func (f *FeatureFlag) SetRequiredPlan(plan RequiredPlan, updatedBy *uuid.UUID) e
 	f.RequiredPlan = plan
 	f.UpdatedBy = updatedBy
 	f.UpdatedAt = time.Now()
-	f.IncrementVersion()
 
 	f.AddDomainEvent(NewFlagUpdatedEvent(f))
 
@@ -327,7 +326,6 @@ func (f *FeatureFlag) Enable(updatedBy *uuid.UUID) error {
 	f.Status = FlagStatusEnabled
 	f.UpdatedBy = updatedBy
 	f.UpdatedAt = time.Now()
-	f.IncrementVersion()
 
 	f.AddDomainEvent(NewFlagEnabledEvent(f, oldStatus))
 
@@ -347,7 +345,6 @@ func (f *FeatureFlag) Disable(updatedBy *uuid.UUID) error {
 	f.Status = FlagStatusDisabled
 	f.UpdatedBy = updatedBy
 	f.UpdatedAt = time.Now()
-	f.IncrementVersion()
 
 	f.AddDomainEvent(NewFlagDisabledEvent(f, oldStatus))
 
@@ -365,7 +362,6 @@ func (f *FeatureFlag) Archive(updatedBy *uuid.UUID) error {
 	f.Status = FlagStatusArchived
 	f.UpdatedBy = updatedBy
 	f.UpdatedAt = time.Now()
-	f.IncrementVersion()
 
 	f.AddDomainEvent(NewFlagArchivedEvent(f, oldStatus))
 
@@ -385,7 +381,6 @@ func (f *FeatureFlag) Update(name, description string, updatedBy *uuid.UUID) err
 	f.Description = description
 	f.UpdatedBy = updatedBy
 	f.UpdatedAt = time.Now()
-	f.IncrementVersion()
 
 	f.AddDomainEvent(NewFlagUpdatedEvent(f))
 
@@ -402,7 +397,6 @@ func (f *FeatureFlag) SetDefault(value FlagValue, updatedBy *uuid.UUID) error {
 	f.DefaultValue = value
 	f.UpdatedBy = updatedBy
 	f.UpdatedAt = time.Now()
-	f.IncrementVersion()
 
 	f.AddDomainEvent(NewFlagUpdatedEventWithDetails(f, oldValue))
 
@@ -429,7 +423,6 @@ func (f *FeatureFlag) AddRule(rule TargetingRule, updatedBy *uuid.UUID) error {
 	f.sortRulesByPriority()
 	f.UpdatedBy = updatedBy
 	f.UpdatedAt = time.Now()
-	f.IncrementVersion()
 
 	f.AddDomainEvent(NewFlagUpdatedEvent(f))
 
@@ -459,7 +452,6 @@ func (f *FeatureFlag) RemoveRule(ruleID string, updatedBy *uuid.UUID) error {
 	f.Rules = newRules
 	f.UpdatedBy = updatedBy
 	f.UpdatedAt = time.Now()
-	f.IncrementVersion()
 
 	f.AddDomainEvent(NewFlagUpdatedEvent(f))
 
@@ -491,7 +483,6 @@ func (f *FeatureFlag) UpdateRule(rule TargetingRule, updatedBy *uuid.UUID) error
 	f.sortRulesByPriority()
 	f.UpdatedBy = updatedBy
 	f.UpdatedAt = time.Now()
-	f.IncrementVersion()
 
 	f.AddDomainEvent(NewFlagUpdatedEvent(f))
 
@@ -507,7 +498,6 @@ func (f *FeatureFlag) ClearRules(updatedBy *uuid.UUID) error {
 	f.Rules = make([]TargetingRule, 0)
 	f.UpdatedBy = updatedBy
 	f.UpdatedAt = time.Now()
-	f.IncrementVersion()
 
 	f.AddDomainEvent(NewFlagUpdatedEvent(f))
 
@@ -537,7 +527,6 @@ func (f *FeatureFlag) SetTags(tags []string, updatedBy *uuid.UUID) error {
 	f.Tags = normalizedTags
 	f.UpdatedBy = updatedBy
 	f.UpdatedAt = time.Now()
-	f.IncrementVersion()
 
 	return nil
 }
@@ -560,7 +549,6 @@ func (f *FeatureFlag) AddTag(tag string, updatedBy *uuid.UUID) error {
 	f.Tags = append(f.Tags, normalized)
 	f.UpdatedBy = updatedBy
 	f.UpdatedAt = time.Now()
-	f.IncrementVersion()
 
 	return nil
 }
@@ -582,7 +570,6 @@ func (f *FeatureFlag) RemoveTag(tag string, updatedBy *uuid.UUID) error {
 	f.Tags = newTags
 	f.UpdatedBy = updatedBy
 	f.UpdatedAt = time.Now()
-	f.IncrementVersion()
 
 	return nil
 }

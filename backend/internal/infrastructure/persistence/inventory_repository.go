@@ -3,6 +3,7 @@ package persistence
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/erp/backend/internal/domain/inventory"
 	"github.com/erp/backend/internal/domain/shared"
@@ -228,8 +229,8 @@ func (r *GormInventoryItemRepository) Save(ctx context.Context, item *inventory.
 // SaveWithLock saves with optimistic locking (checks version)
 // This method properly handles version checking by:
 // 1. Fetching the current version from the database
-// 2. Comparing it with the expected version (item.Version - 1, since domain operations increment before save)
-// 3. Updating only if versions match
+// 2. Comparing it with the entity's version (must match)
+// 3. Incrementing version and updating only if versions match
 //
 // For new entities (Version=1), use Save() instead as there's no existing record to lock against.
 func (r *GormInventoryItemRepository) SaveWithLock(ctx context.Context, item *inventory.InventoryItem) error {
@@ -252,18 +253,19 @@ func (r *GormInventoryItemRepository) SaveWithLock(ctx context.Context, item *in
 		return shared.ErrNotFound
 	}
 
-	// The expected version is item.Version - 1, because domain operations increment
-	// version BEFORE calling SaveWithLock. This check ensures no other transaction
-	// modified the record between read and write.
-	expectedVersion := item.Version - 1
-	if currentVersion != expectedVersion {
+	// Check version matches
+	if currentVersion != item.Version {
 		return shared.NewDomainError("OPTIMISTIC_LOCK_FAILED", "Inventory item was modified by another transaction")
 	}
+
+	// Increment version
+	item.Version++
+	item.UpdatedAt = time.Now()
 
 	// Update with version check in WHERE clause for additional safety
 	updateResult := r.db.WithContext(ctx).
 		Model(&models.InventoryItemModel{}).
-		Where("id = ? AND version = ?", item.ID, expectedVersion).
+		Where("id = ? AND version = ?", item.ID, currentVersion).
 		Updates(map[string]any{
 			"available_quantity": item.AvailableQuantity,
 			"locked_quantity":    item.LockedQuantity,

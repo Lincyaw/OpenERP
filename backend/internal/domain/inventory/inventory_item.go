@@ -151,7 +151,6 @@ func (i *InventoryItem) IncreaseStock(quantity decimal.Decimal, unitCost valueob
 	}
 	i.AvailableQuantity = newAvailable
 	i.UpdatedAt = time.Now()
-	i.IncrementVersion()
 
 	// Create batch if batch info is provided
 	if batch != nil {
@@ -199,7 +198,6 @@ func (i *InventoryItem) IncreaseStockWithCost(quantity decimal.Decimal, newUnitC
 	}
 	i.AvailableQuantity = newAvailable
 	i.UpdatedAt = time.Now()
-	i.IncrementVersion()
 
 	// Create batch if batch info is provided
 	if batch != nil {
@@ -243,7 +241,6 @@ func (i *InventoryItem) DecreaseStock(quantity decimal.Decimal, sourceType, sour
 	}
 	i.AvailableQuantity = newAvailable
 	i.UpdatedAt = time.Now()
-	i.IncrementVersion()
 
 	// Emit event
 	i.AddDomainEvent(NewStockDecreasedEvent(i, quantity, sourceType, sourceID, reason))
@@ -293,7 +290,6 @@ func (i *InventoryItem) LockStock(quantity decimal.Decimal, sourceType, sourceID
 	i.AvailableQuantity = newAvailable
 	i.LockedQuantity = newLocked
 	i.UpdatedAt = time.Now()
-	i.IncrementVersion()
 
 	// Create the lock record
 	lock := NewStockLock(i.ID, quantity, sourceType, sourceID, expireAt)
@@ -339,7 +335,6 @@ func (i *InventoryItem) UnlockStock(lockID uuid.UUID) error {
 	i.LockedQuantity = newLocked
 	i.AvailableQuantity = newAvailable
 	i.UpdatedAt = time.Now()
-	i.IncrementVersion()
 
 	// Mark lock as released
 	i.Locks[lockIndex].Release()
@@ -380,7 +375,6 @@ func (i *InventoryItem) DeductStock(lockID uuid.UUID) error {
 	}
 	i.LockedQuantity = newLocked
 	i.UpdatedAt = time.Now()
-	i.IncrementVersion()
 
 	// Mark lock as consumed
 	i.Locks[lockIndex].Consume()
@@ -424,7 +418,6 @@ func (i *InventoryItem) AdjustStock(actualQuantity decimal.Decimal, reason strin
 
 	i.AvailableQuantity = newQty
 	i.UpdatedAt = time.Now()
-	i.IncrementVersion()
 
 	i.AddDomainEvent(NewStockAdjustedEvent(i, oldQuantity, actualQuantity, difference, reason))
 
@@ -452,7 +445,6 @@ func (i *InventoryItem) SetMinQuantity(quantity decimal.Decimal) error {
 
 	i.MinQuantity = minQty
 	i.UpdatedAt = time.Now()
-	i.IncrementVersion()
 
 	return nil
 }
@@ -470,7 +462,6 @@ func (i *InventoryItem) SetMaxQuantity(quantity decimal.Decimal) error {
 
 	i.MaxQuantity = maxQty
 	i.UpdatedAt = time.Now()
-	i.IncrementVersion()
 
 	return nil
 }

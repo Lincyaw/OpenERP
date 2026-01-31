@@ -217,7 +217,8 @@ func TestFeatureFlag_Enable(t *testing.T) {
 		assert.NoError(t, err)
 		assert.True(t, flag.IsEnabled())
 		assert.Equal(t, &userID, flag.UpdatedBy)
-		assert.Equal(t, 2, flag.Version)
+		// Version is managed by repository, not domain methods
+		assert.Equal(t, 1, flag.Version)
 		assert.Len(t, flag.GetDomainEvents(), 1)
 	})
 
