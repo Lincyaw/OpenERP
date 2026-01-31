@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/erp/backend/internal/domain/shared"
 	"github.com/google/uuid"
 )
 
@@ -65,6 +66,8 @@ type PlanFeature struct {
 }
 
 // NewPlanFeature creates a new PlanFeature with the given parameters
+// Note: This is an internal constructor used by DefaultPlanFeatures.
+// For external use with validation, use NewValidatedPlanFeature.
 func NewPlanFeature(planID TenantPlan, featureKey FeatureKey, enabled bool, description string) *PlanFeature {
 	now := time.Now()
 	return &PlanFeature{
@@ -79,17 +82,47 @@ func NewPlanFeature(planID TenantPlan, featureKey FeatureKey, enabled bool, desc
 	}
 }
 
+// NewValidatedPlanFeature creates a new PlanFeature with validation
+func NewValidatedPlanFeature(planID TenantPlan, featureKey FeatureKey, enabled bool, description string) (*PlanFeature, error) {
+	if err := validateTenantPlan(planID); err != nil {
+		return nil, err
+	}
+	if !IsValidFeatureKey(featureKey) {
+		return nil, shared.NewDomainError("INVALID_FEATURE_KEY", "Invalid feature key")
+	}
+	return NewPlanFeature(planID, featureKey, enabled, description), nil
+}
+
 // NewPlanFeatureWithLimit creates a new PlanFeature with a limit
+// Note: This is an internal constructor used by DefaultPlanFeatures.
+// For external use with validation, use NewValidatedPlanFeatureWithLimit.
 func NewPlanFeatureWithLimit(planID TenantPlan, featureKey FeatureKey, enabled bool, limit int, description string) *PlanFeature {
 	pf := NewPlanFeature(planID, featureKey, enabled, description)
 	pf.Limit = &limit
 	return pf
 }
 
+// NewValidatedPlanFeatureWithLimit creates a new PlanFeature with a limit and validation
+func NewValidatedPlanFeatureWithLimit(planID TenantPlan, featureKey FeatureKey, enabled bool, limit int, description string) (*PlanFeature, error) {
+	if limit < 0 {
+		return nil, shared.NewDomainError("INVALID_LIMIT", "Limit cannot be negative")
+	}
+	pf, err := NewValidatedPlanFeature(planID, featureKey, enabled, description)
+	if err != nil {
+		return nil, err
+	}
+	pf.Limit = &limit
+	return pf, nil
+}
+
 // SetLimit sets the limit for this feature
-func (pf *PlanFeature) SetLimit(limit int) {
+func (pf *PlanFeature) SetLimit(limit int) error {
+	if limit < 0 {
+		return shared.NewDomainError("INVALID_LIMIT", "Limit cannot be negative")
+	}
 	pf.Limit = &limit
 	pf.UpdatedAt = time.Now()
+	return nil
 }
 
 // ClearLimit removes the limit for this feature (makes it unlimited)

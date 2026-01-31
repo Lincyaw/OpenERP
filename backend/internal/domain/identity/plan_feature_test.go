@@ -55,14 +55,87 @@ func TestNewPlanFeatureWithLimit(t *testing.T) {
 	})
 }
 
+func TestNewValidatedPlanFeature(t *testing.T) {
+	t.Run("creates validated plan feature successfully", func(t *testing.T) {
+		pf, err := NewValidatedPlanFeature(TenantPlanBasic, FeatureMultiWarehouse, true, "Multiple warehouse management")
+
+		require.NoError(t, err)
+		require.NotNil(t, pf)
+		assert.Equal(t, TenantPlanBasic, pf.PlanID)
+		assert.Equal(t, FeatureMultiWarehouse, pf.FeatureKey)
+		assert.True(t, pf.Enabled)
+	})
+
+	t.Run("rejects invalid plan ID", func(t *testing.T) {
+		pf, err := NewValidatedPlanFeature(TenantPlan("invalid"), FeatureMultiWarehouse, true, "Test")
+
+		assert.Error(t, err)
+		assert.Nil(t, pf)
+		assert.Contains(t, err.Error(), "Invalid tenant plan")
+	})
+
+	t.Run("rejects invalid feature key", func(t *testing.T) {
+		pf, err := NewValidatedPlanFeature(TenantPlanBasic, FeatureKey("invalid_feature"), true, "Test")
+
+		assert.Error(t, err)
+		assert.Nil(t, pf)
+		assert.Contains(t, err.Error(), "Invalid feature key")
+	})
+}
+
+func TestNewValidatedPlanFeatureWithLimit(t *testing.T) {
+	t.Run("creates validated plan feature with limit", func(t *testing.T) {
+		pf, err := NewValidatedPlanFeatureWithLimit(TenantPlanBasic, FeatureDataImport, true, 1000, "Import data")
+
+		require.NoError(t, err)
+		require.NotNil(t, pf)
+		assert.Equal(t, TenantPlanBasic, pf.PlanID)
+		assert.Equal(t, FeatureDataImport, pf.FeatureKey)
+		require.NotNil(t, pf.Limit)
+		assert.Equal(t, 1000, *pf.Limit)
+	})
+
+	t.Run("rejects negative limit", func(t *testing.T) {
+		pf, err := NewValidatedPlanFeatureWithLimit(TenantPlanBasic, FeatureDataImport, true, -1, "Import data")
+
+		assert.Error(t, err)
+		assert.Nil(t, pf)
+		assert.Contains(t, err.Error(), "cannot be negative")
+	})
+
+	t.Run("allows zero limit", func(t *testing.T) {
+		pf, err := NewValidatedPlanFeatureWithLimit(TenantPlanFree, FeatureDataImport, true, 0, "Import disabled")
+
+		require.NoError(t, err)
+		require.NotNil(t, pf)
+		require.NotNil(t, pf.Limit)
+		assert.Equal(t, 0, *pf.Limit)
+	})
+
+	t.Run("rejects invalid plan ID", func(t *testing.T) {
+		pf, err := NewValidatedPlanFeatureWithLimit(TenantPlan("invalid"), FeatureDataImport, true, 100, "Test")
+
+		assert.Error(t, err)
+		assert.Nil(t, pf)
+	})
+
+	t.Run("rejects invalid feature key", func(t *testing.T) {
+		pf, err := NewValidatedPlanFeatureWithLimit(TenantPlanBasic, FeatureKey("invalid"), true, 100, "Test")
+
+		assert.Error(t, err)
+		assert.Nil(t, pf)
+	})
+}
+
 func TestPlanFeature_SetLimit(t *testing.T) {
 	t.Run("sets limit on unlimited feature", func(t *testing.T) {
 		pf := NewPlanFeature(TenantPlanPro, FeatureDataImport, true, "Import data")
 		assert.Nil(t, pf.Limit)
 		initialUpdatedAt := pf.UpdatedAt
 
-		pf.SetLimit(5000)
+		err := pf.SetLimit(5000)
 
+		require.NoError(t, err)
 		require.NotNil(t, pf.Limit)
 		assert.Equal(t, 5000, *pf.Limit)
 		assert.True(t, pf.UpdatedAt.After(initialUpdatedAt) || pf.UpdatedAt.Equal(initialUpdatedAt))
@@ -71,10 +144,31 @@ func TestPlanFeature_SetLimit(t *testing.T) {
 	t.Run("updates existing limit", func(t *testing.T) {
 		pf := NewPlanFeatureWithLimit(TenantPlanBasic, FeatureDataImport, true, 1000, "Import data")
 
-		pf.SetLimit(2000)
+		err := pf.SetLimit(2000)
 
+		require.NoError(t, err)
 		require.NotNil(t, pf.Limit)
 		assert.Equal(t, 2000, *pf.Limit)
+	})
+
+	t.Run("rejects negative limit", func(t *testing.T) {
+		pf := NewPlanFeature(TenantPlanPro, FeatureDataImport, true, "Import data")
+
+		err := pf.SetLimit(-1)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "cannot be negative")
+		assert.Nil(t, pf.Limit) // Limit should not be set
+	})
+
+	t.Run("allows zero limit", func(t *testing.T) {
+		pf := NewPlanFeature(TenantPlanFree, FeatureDataImport, true, "Import data")
+
+		err := pf.SetLimit(0)
+
+		require.NoError(t, err)
+		require.NotNil(t, pf.Limit)
+		assert.Equal(t, 0, *pf.Limit)
 	})
 }
 
