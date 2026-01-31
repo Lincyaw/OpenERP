@@ -41735,3 +41735,110 @@ Created feature middleware for subscription plan-based feature gating in a multi
 - SAAS-BE-004: Implement TenantPlanProvider using TenantRepository
 - SAAS-BE-005: Implement FeatureCache using Redis
 - Consider adding tenant-specific feature overrides in the future
+
+2025-01-31 - SAAS-BE-005: 创建使用量计量领域模型
+
+=== Implementation Details ===
+
+Created the billing domain with comprehensive usage metering models for SaaS multi-tenant applications.
+
+**Files Created:**
+
+1. `backend/internal/domain/billing/doc.go` - Package documentation
+2. `backend/internal/domain/billing/usage_type.go` (~230 lines)
+   - `UsageType` enum: API_CALLS, STORAGE_BYTES, ACTIVE_USERS, ORDERS_CREATED, PRODUCTS_SKU, WAREHOUSES, CUSTOMERS, SUPPLIERS, REPORTS_GENERATED, DATA_EXPORTS, DATA_IMPORT_ROWS, INTEGRATION_CALLS, NOTIFICATIONS_SENT, ATTACHMENT_BYTES
+   - `UsageUnit` enum: requests, bytes, count
+   - `ResetPeriod` enum: DAILY, WEEKLY, MONTHLY, YEARLY, NEVER
+   - Helper methods: IsValid(), Unit(), IsCountable(), IsAccumulative(), IsStorage(), DisplayName()
+
+3. `backend/internal/domain/billing/usage_record.go` (~220 lines)
+   - `UsageRecord` entity - Immutable record of usage events
+   - Fields: TenantID, UsageType, Quantity, Unit, RecordedAt, PeriodStart, PeriodEnd, SourceType, SourceID, Metadata, UserID, IPAddress, UserAgent
+   - `UsageRecordBuilder` - Fluent builder pattern
+   - Helper functions: CreateAPICallRecord(), CreateStorageRecord(), CreateOrderRecord()
+
+4. `backend/internal/domain/billing/usage_meter.go` (~260 lines)
+   - `UsageMeter` value object - Aggregated usage statistics
+   - Fields: TotalUsage, RecordCount, PeakUsage, AverageRate, QuotaLimit, QuotaUsed
+   - Methods: IsOverQuota(), IsNearQuota(), GetRemainingQuota(), ProjectedUsage(), WillExceedQuota()
+   - `UsageSummary` - Collection of meters for all usage types
+   - `UsageTrend` - Time-series data for analytics
+
+5. `backend/internal/domain/billing/usage_quota.go` (~340 lines)
+   - `UsageQuota` aggregate root - Defines usage limits per plan/tenant
+   - `OveragePolicy` enum: BLOCK, WARN, CHARGE, THROTTLE
+   - `QuotaStatus` enum: OK, WARNING, EXCEEDED, INACTIVE
+   - `QuotaCheckResult` - Result of checking usage against quota
+   - `QuotaSet` - Collection of quotas for a plan
+
+6. `backend/internal/domain/billing/usage_repository.go` (~200 lines)
+   - `UsageRecordRepository` interface - CRUD + aggregation queries
+   - `UsageQuotaRepository` interface - Plan/tenant quota management
+   - `UsageMeterRepository` interface - Caching and calculation
+   - `UsageService` interface - High-level usage operations
+   - `UsageEventPublisher` interface - Event publishing
+
+7. `backend/migrations/000043_create_usage_metering.up.sql` (~200 lines)
+   - `usage_records` table with indexes for tenant, type, period queries
+   - `usage_quotas` table with plan-level and tenant-override support
+   - Default quotas for FREE, BASIC, PRO, ENTERPRISE plans
+   - Partial index for recent records (last 90 days)
+
+8. `backend/migrations/000043_create_usage_metering.down.sql` - Rollback migration
+
+**Test Files:**
+- `usage_type_test.go` - 15 test functions
+- `usage_record_test.go` - 12 test functions
+- `usage_meter_test.go` - 14 test functions
+- `usage_quota_test.go` - 18 test functions
+
+=== Key Design Decisions ===
+
+1. **Immutable Usage Records**: Records cannot be modified after creation, ensuring audit trail integrity.
+
+2. **Plan-Level + Tenant Override Quotas**: Quotas are defined at the plan level with optional tenant-specific overrides for flexibility.
+
+3. **Multiple Overage Policies**: BLOCK (hard limit), WARN (soft limit), CHARGE (overage billing), THROTTLE (rate limiting).
+
+4. **Soft Limits**: Optional warning thresholds before hitting hard limits.
+
+5. **Reset Periods**: Support for DAILY, WEEKLY, MONTHLY, YEARLY, and NEVER (lifetime limits).
+
+6. **Usage Types Categorization**:
+   - Countable (point-in-time): ACTIVE_USERS, PRODUCTS_SKU, WAREHOUSES, etc.
+   - Accumulative (event-based): API_CALLS, ORDERS_CREATED, etc.
+   - Storage: STORAGE_BYTES, ATTACHMENT_BYTES
+
+7. **Comprehensive Default Quotas**: Pre-configured quotas for all 4 plans with sensible limits.
+
+=== Verification ===
+
+- ✅ All tests pass: `go test ./internal/domain/billing/...`
+- ✅ Test coverage: 84.1% (above 80% threshold)
+- ✅ Go build succeeds: `go build ./...`
+- ✅ No linting errors
+
+=== Acceptance Criteria Verification ===
+
+✅ 可以记录各类使用量
+   - UsageRecord entity supports all 14 usage types
+   - Helper functions for common record types (API calls, storage, orders)
+   - Metadata support for additional context
+
+✅ 可以按租户、时间段聚合使用量
+   - UsageMeter value object for aggregated statistics
+   - UsageSummary for multi-type aggregation
+   - Repository interfaces with time-range filtering and aggregation methods
+
+✅ 配额定义支持不同计量单位
+   - UsageUnit enum: requests, bytes, count
+   - Each UsageType has an associated unit
+   - Formatting helpers for human-readable display
+
+=== Next Steps ===
+
+- Implement UsageRecordRepository with GORM persistence
+- Implement UsageQuotaRepository with GORM persistence
+- Implement UsageMeterRepository with Redis caching
+- Create usage recording middleware for API calls
+- Integrate with order creation events for ORDERS_CREATED tracking
