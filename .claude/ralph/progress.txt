@@ -43082,3 +43082,72 @@ PASS
 - Implement backend billing API endpoints
 - Add Stripe integration for payment method management
 - Consider adding billing email notifications
+
+2026-01-31 - SAAS-DOC-001: SaaS 计费功能文档
+
+=== Implementation Details ===
+Created comprehensive documentation for the SaaS billing system covering:
+1. Updated spec.md with new section "## 19. SaaS 计费系统 (Billing System)" including:
+   - Billing context boundaries and architecture diagram
+   - Subscription plans table (free, basic, pro, enterprise)
+   - Feature gating mechanism with PlanFeature class diagram
+   - Feature matrix showing what's available in each plan
+   - Usage metering with UsageRecord, UsageQuota, UsageMeter class diagrams
+   - Quota policies and overage handling strategies
+   - Stripe integration sequence diagram for subscription lifecycle
+   - Webhook event handling table
+   - Data model with SQL schema for usage_records, usage_quotas, plan_features
+
+2. Created new documentation file: docs/saas-billing.md (800+ lines)
+   Comprehensive guide including:
+   - System overview with architecture diagram
+   - Subscription plan configuration
+   - Feature billing configuration with code examples
+   - Usage billing configuration with quota setup
+   - Stripe integration configuration (env vars, dashboard setup)
+   - Webhook configuration for local and production
+   - Complete API reference for usage, quotas, and features endpoints
+   - Troubleshooting guide for common issues
+
+3. Regenerated Swagger API documentation (backend/docs/swagger.yaml)
+   Verified all billing-related endpoints are documented:
+   - GET /tenants/current/usage (getCurrentUsage)
+   - GET /tenants/current/usage/history (getUsageHistory)
+   - GET /tenants/current/quotas (getQuotas)
+   - GET /tenants/current/features (getCurrentTenantFeatures)
+   - GET /admin/plans (listPlans)
+   - GET /admin/plans/{plan}/features (getPlanFeatures)
+   - PUT /admin/plans/{plan}/features (updatePlanFeatures)
+   - GET /admin/tenants/{id}/usage (getTenantUsageByAdmin)
+   - POST /webhooks/stripe (handleStripeWebhook)
+
+=== Files Modified/Created ===
+- .claude/ralph/docs/spec.md (modified - added section 19)
+- .claude/ralph/docs/saas-billing.md (new - comprehensive billing guide)
+- backend/docs/swagger.yaml (regenerated)
+
+=== Verification ===
+- Spec.md section includes all architectural details
+- saas-billing.md covers all acceptance criteria topics
+- Swagger API docs include all billing endpoints
+
+=== Acceptance Criteria Met ===
+✓ 更新 spec.md 添加 SaaS 计费架构说明
+✓ 创建 docs/saas-billing.md 计费系统文档
+✓ 文档包含：功能计费配置指南
+✓ 文档包含：使用量计费配置指南
+✓ 文档包含：Stripe 集成配置指南
+✓ 文档包含：Webhook 配置说明
+✓ 更新 API 文档（Swagger）
+✓ 开发者可以根据文档配置计费功能
+✓ 运维可以根据文档配置 Stripe
+✓ API 文档完整准确
+
+=== Notes ===
+- Documentation follows existing project conventions (Chinese + English)
+- All diagrams use Mermaid syntax for consistency with spec.md
+- API reference aligns with actual handler implementations
+
+=== Next Steps ===
+- All SAAS tasks complete - consider E2E testing (SAAS-TEST-001)
+- May need documentation updates as implementation evolves

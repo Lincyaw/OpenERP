@@ -2974,6 +2974,333 @@ sequenceDiagram
 
 ---
 
+## 19. SaaS 计费系统 (Billing System)
+
+本系统采用**订阅制 + 用量计费**混合模式，支持多层级套餐和 Stripe 支付网关集成。
+
+### 19.1 计费上下文边界
+
+```mermaid
+graph TB
+    subgraph "计费上下文 Billing Context"
+        USAGE[使用量记录<br/>UsageRecord]
+        QUOTA[配额管理<br/>UsageQuota]
+        METER[使用量统计<br/>UsageMeter]
+    end
+
+    subgraph "身份上下文 Identity Context"
+        TENANT[租户<br/>Tenant]
+        PLAN[套餐功能<br/>PlanFeature]
+    end
+
+    subgraph "外部集成 External"
+        STRIPE[Stripe<br/>支付网关]
+    end
+
+    TENANT -->|订阅套餐| PLAN
+    TENANT -->|Stripe 客户 ID| STRIPE
+    QUOTA -->|套餐配额| PLAN
+    USAGE -->|租户使用量| METER
+    METER -->|配额检查| QUOTA
+    STRIPE -->|Webhook| TENANT
+```
+
+### 19.2 订阅套餐 (Subscription Plans)
+
+| 套餐 | 代码 | 最大用户 | 最大仓库 | 最大商品 | 月费 |
+|------|------|----------|----------|----------|------|
+| 免费版 | `free` | 5 | 3 | 1,000 | ¥0 |
+| 基础版 | `basic` | 10 | 5 | 5,000 | ¥199 |
+| 专业版 | `pro` | 50 | 20 | 50,000 | ¥599 |
+| 企业版 | `enterprise` | 无限 | 无限 | 无限 | 按需定价 |
+
+### 19.3 功能门控 (Feature Gating)
+
+```mermaid
+classDiagram
+    class PlanFeature {
+        <<Entity>>
+        +UUID id
+        +TenantPlan planID
+        +FeatureKey featureKey
+        +bool enabled
+        +int? limit
+        +string description
+        +Enable()
+        +Disable()
+        +SetLimit(int)
+    }
+
+    class FeatureKey {
+        <<Enumeration>>
+        MULTI_WAREHOUSE
+        BATCH_MANAGEMENT
+        SERIAL_TRACKING
+        MULTI_CURRENCY
+        ADVANCED_REPORTING
+        API_ACCESS
+        CUSTOM_FIELDS
+        AUDIT_LOG
+        DATA_EXPORT
+        DATA_IMPORT
+        ...
+    }
+
+    PlanFeature --> FeatureKey
+```
+
+**功能矩阵：**
+
+| 功能 | 免费版 | 基础版 | 专业版 | 企业版 |
+|------|:------:|:------:|:------:|:------:|
+| 多仓库管理 | ✗ | ✓ | ✓ | ✓ |
+| 批次管理 | ✗ | ✓ | ✓ | ✓ |
+| 序列号追踪 | ✗ | ✗ | ✓ | ✓ |
+| 多币种 | ✗ | ✗ | ✓ | ✓ |
+| 高级报表 | ✗ | ✗ | ✓ | ✓ |
+| API 访问 | ✗ | ✗ | ✓ | ✓ |
+| 自定义字段 | ✗ | ✗ | ✓ | ✓ |
+| 审计日志 | ✗ | ✓ | ✓ | ✓ |
+| 数据导出 | ✓ | ✓ | ✓ | ✓ |
+| 数据导入 | 100行 | 1000行 | 10000行 | 无限 |
+| 工作流审批 | ✗ | ✗ | ✓ | ✓ |
+| 通知服务 | ✗ | ✓ | ✓ | ✓ |
+| 白标定制 | ✗ | ✗ | ✗ | ✓ |
+| 专属支持 | ✗ | ✗ | ✓ | ✓ |
+
+### 19.4 使用量计量 (Usage Metering)
+
+```mermaid
+classDiagram
+    class UsageRecord {
+        <<Aggregate Root>>
+        +UUID id
+        +UUID tenantID
+        +UsageType usageType
+        +int64 quantity
+        +UsageUnit unit
+        +DateTime recordedAt
+        +DateTime periodStart
+        +DateTime periodEnd
+        +string sourceType
+        +string sourceID
+        +Map metadata
+    }
+
+    class UsageQuota {
+        <<Aggregate Root>>
+        +UUID id
+        +string planID
+        +UUID? tenantID
+        +UsageType usageType
+        +int64 limit
+        +int64? softLimit
+        +ResetPeriod resetPeriod
+        +OveragePolicy overagePolicy
+        +CheckUsage(int64) QuotaCheckResult
+        +CanConsume(int64, int64) bool
+    }
+
+    class UsageMeter {
+        <<Value Object>>
+        +UUID tenantID
+        +UsageType usageType
+        +DateTime periodStart
+        +DateTime periodEnd
+        +int64 totalUsage
+        +int64 recordCount
+        +int64 peakUsage
+        +float64 averageRate
+        +int64? quotaLimit
+        +float64 quotaUsed
+    }
+
+    class UsageType {
+        <<Enumeration>>
+        API_CALLS
+        STORAGE_BYTES
+        ACTIVE_USERS
+        ORDERS_CREATED
+        PRODUCTS_SKU
+        WAREHOUSES
+        CUSTOMERS
+        SUPPLIERS
+        REPORTS_GENERATED
+        DATA_EXPORTS
+        ...
+    }
+
+    UsageRecord --> UsageType
+    UsageQuota --> UsageType
+    UsageMeter --> UsageType
+```
+
+**使用量类型分类：**
+
+| 类型 | 计量方式 | 重置周期 | 示例 |
+|------|----------|----------|------|
+| 可数资源 | 当前计数 | 无 | 用户数、商品数、仓库数 |
+| 累计指标 | 周期累加 | 月度 | API 调用、订单创建、报表生成 |
+| 存储计量 | 当前占用 | 无 | 文件存储、附件存储 |
+
+### 19.5 配额策略 (Quota Policies)
+
+```mermaid
+classDiagram
+    class OveragePolicy {
+        <<Enumeration>>
+        BLOCK
+        WARN
+        CHARGE
+        THROTTLE
+    }
+
+    class QuotaStatus {
+        <<Enumeration>>
+        OK
+        WARNING
+        EXCEEDED
+        INACTIVE
+    }
+
+    class QuotaCheckResult {
+        +UsageType usageType
+        +QuotaStatus status
+        +int64 currentUsage
+        +int64 limit
+        +int64? softLimit
+        +int64 remaining
+        +int64 overage
+        +float64 usagePercent
+        +OveragePolicy overagePolicy
+        +IsAllowed() bool
+        +ShouldWarn() bool
+        +ShouldCharge() bool
+    }
+```
+
+**配额超限处理：**
+
+| 策略 | 行为 | 适用场景 |
+|------|------|----------|
+| `BLOCK` | 阻止操作 | 硬性资源限制（用户数、仓库数） |
+| `WARN` | 允许但警告 | 软性限制（报表生成） |
+| `CHARGE` | 允许并计费超额 | 按量付费资源（API 调用） |
+| `THROTTLE` | 降级服务 | 性能敏感资源 |
+
+### 19.6 Stripe 集成
+
+```mermaid
+sequenceDiagram
+    participant Tenant as 租户
+    participant App as 应用服务
+    participant Stripe as Stripe API
+    participant Webhook as Webhook 处理
+
+    Note over Tenant,Stripe: 订阅创建流程
+    Tenant->>App: 选择套餐
+    App->>Stripe: 创建 Checkout Session
+    Stripe-->>Tenant: 支付页面
+    Tenant->>Stripe: 完成支付
+    Stripe->>Webhook: customer.subscription.created
+    Webhook->>App: 更新租户订阅
+
+    Note over Tenant,Stripe: 续费流程
+    Stripe->>Stripe: 自动扣款
+    Stripe->>Webhook: invoice.paid
+    Webhook->>App: 延长订阅期限
+
+    Note over Tenant,Stripe: 支付失败流程
+    Stripe->>Webhook: invoice.payment_failed
+    Webhook->>App: 暂停租户服务
+```
+
+**Webhook 事件处理：**
+
+| 事件 | 处理逻辑 |
+|------|----------|
+| `customer.subscription.created` | 关联订阅ID、设置套餐、激活租户 |
+| `customer.subscription.updated` | 更新套餐、同步过期时间 |
+| `customer.subscription.deleted` | 降级为免费版、清除订阅 |
+| `invoice.paid` | 激活租户、延长过期时间 |
+| `invoice.payment_failed` | 暂停租户服务 |
+
+### 19.7 领域事件
+
+| 事件名 | 触发时机 | 订阅者 |
+|--------|----------|--------|
+| `QuotaWarning` | 使用量达到软限制 | 通知服务 |
+| `QuotaExceeded` | 使用量超过硬限制 | 限制服务 |
+| `UsageRecorded` | 记录使用量 | 统计服务 |
+| `SubscriptionCreated` | Stripe 订阅创建 | 租户服务 |
+| `SubscriptionUpdated` | Stripe 订阅更新 | 租户服务 |
+| `SubscriptionDeleted` | Stripe 订阅取消 | 租户服务 |
+| `PaymentSucceeded` | 支付成功 | 租户服务 |
+| `PaymentFailed` | 支付失败 | 租户服务、通知服务 |
+
+### 19.8 数据模型
+
+```sql
+-- 使用量记录表
+CREATE TABLE usage_records (
+    id UUID PRIMARY KEY,
+    tenant_id UUID NOT NULL REFERENCES tenants(id),
+    usage_type VARCHAR(50) NOT NULL,
+    quantity BIGINT NOT NULL,
+    unit VARCHAR(20) NOT NULL,
+    recorded_at TIMESTAMP NOT NULL,
+    period_start TIMESTAMP NOT NULL,
+    period_end TIMESTAMP NOT NULL,
+    source_type VARCHAR(50),
+    source_id VARCHAR(100),
+    metadata JSONB,
+    user_id UUID,
+    ip_address VARCHAR(50),
+    user_agent TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- 配额定义表
+CREATE TABLE usage_quotas (
+    id UUID PRIMARY KEY,
+    plan_id VARCHAR(50) NOT NULL,
+    tenant_id UUID REFERENCES tenants(id),
+    usage_type VARCHAR(50) NOT NULL,
+    "limit" BIGINT NOT NULL,
+    unit VARCHAR(20) NOT NULL,
+    reset_period VARCHAR(20) NOT NULL,
+    soft_limit BIGINT,
+    overage_policy VARCHAR(20) NOT NULL DEFAULT 'BLOCK',
+    description TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    version INT NOT NULL DEFAULT 1,
+    UNIQUE(plan_id, tenant_id, usage_type)
+);
+
+-- 套餐功能表
+CREATE TABLE plan_features (
+    id UUID PRIMARY KEY,
+    plan_id VARCHAR(50) NOT NULL,
+    feature_key VARCHAR(50) NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    "limit" INT,
+    description TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE(plan_id, feature_key)
+);
+
+-- 索引
+CREATE INDEX idx_usage_records_tenant_period ON usage_records(tenant_id, period_start, period_end);
+CREATE INDEX idx_usage_records_tenant_type ON usage_records(tenant_id, usage_type);
+CREATE INDEX idx_usage_quotas_plan ON usage_quotas(plan_id);
+CREATE INDEX idx_usage_quotas_tenant ON usage_quotas(tenant_id) WHERE tenant_id IS NOT NULL;
+```
+
+---
+
 ## 附录更新
 
 ### 附录 A: 领域事件清单（补充）

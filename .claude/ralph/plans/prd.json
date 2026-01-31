@@ -12999,6 +12999,6 @@
       "运维可以根据文档配置 Stripe",
       "API 文档完整准确"
     ],
-    "passes": false
+    "passes": true
   }
 ]
