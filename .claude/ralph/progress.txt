@@ -41842,3 +41842,83 @@ Created the billing domain with comprehensive usage metering models for SaaS mul
 - Implement UsageMeterRepository with Redis caching
 - Create usage recording middleware for API calls
 - Integrate with order creation events for ORDERS_CREATED tracking
+
+---
+
+2025-01-31 - SAAS-BE-006: 实现使用量追踪中间件
+
+=== Implementation Details ===
+
+**Files Created:**
+
+1. `backend/internal/interfaces/http/middleware/usage_middleware.go` (~640 lines)
+   - `UsageTrackerConfig` - Configuration struct with sensible defaults
+   - `UsageTracker` - Core tracker with async batch writing
+   - `TrackAPIUsage()` - Middleware for tracking API call usage
+   - `TrackResourceCreation()` - Middleware for tracking resource creation
+   - `ResourceType` enum with conversion to `UsageType`
+   - Helper middlewares: `TrackDataImport()`, `TrackDataExport()`, `TrackReportGeneration()`
+   - OpenTelemetry metrics integration for observability
+
+2. `backend/internal/interfaces/http/middleware/usage_middleware_test.go` (~870 lines)
+   - 18 test functions covering all major functionality
+   - Mock repository implementation for testing
+   - Concurrent tracking tests
+   - Performance overhead tests (<5ms requirement)
+
+**Key Design Decisions:**
+
+1. **Async Batch Writing**: Usage records are buffered in a channel and written in batches to minimize database pressure. Configurable buffer size (default 10,000), batch size (default 100), and flush interval (default 5s).
+
+2. **Non-blocking Tracking**: The `Track()` method uses a non-blocking channel send. If the buffer is full, records are dropped (with metrics) rather than blocking the request.
+
+3. **Graceful Shutdown**: The `Stop()` method drains the buffer and waits for pending writes with timeout support.
+
+4. **Skip Paths**: Health checks, metrics endpoints, and swagger are automatically excluded from tracking.
+
+5. **OpenTelemetry Metrics**: Comprehensive metrics exported:
+   - `usage_api_calls_total` - Counter of tracked API calls
+   - `usage_resource_creations_total` - Counter of resource creations
+   - `usage_buffer_size` - Current buffer utilization
+   - `usage_batch_write_duration_seconds` - Write latency histogram
+   - `usage_batch_write_errors_total` - Write error counter
+   - `usage_records_written_total` - Successfully written records
+   - `usage_records_dropped_total` - Dropped records (buffer full)
+   - `usage_tracking_overhead_seconds` - Tracking overhead histogram
+
+6. **Resource Type Mapping**: ResourceType enum maps to billing.UsageType:
+   - sales_order, purchase_order → ORDERS_CREATED
+   - product → PRODUCTS_SKU
+   - customer → CUSTOMERS
+   - supplier → SUPPLIERS
+   - warehouse → WAREHOUSES
+   - report → REPORTS_GENERATED
+   - data_export → DATA_EXPORTS
+   - data_import → DATA_IMPORT_ROWS
+
+=== Verification ===
+
+- ✅ All tests pass: `go test -race ./internal/interfaces/http/middleware/... -run "Usage|Resource"`
+- ✅ Test coverage: 81.7% (above 80% threshold)
+- ✅ Go build succeeds: `go build ./...`
+- ✅ Code review passed (1 HIGH issue fixed - path matching)
+
+=== Acceptance Criteria Verification ===
+
+✅ API 调用自动记录到 usage_records
+   - TrackAPIUsage middleware captures all API calls with tenant, user, route, method, status code, and response time
+
+✅ 资源创建（订单、产品等）自动计数
+   - TrackResourceCreation middleware tracks successful resource creations (2xx status only)
+   - SetResourceCreationContext helper for handlers to provide resource details
+
+✅ 追踪不影响 API 响应时间（<5ms 开销）
+   - Async design ensures minimal overhead
+   - Performance test confirms average overhead well under 5ms
+   - Tracking happens after response is sent to client
+
+=== Next Steps ===
+
+- SAAS-BE-007: Implement quota checking and enforcement
+- Integrate usage middleware into router setup
+- Implement UsageRecordRepository with GORM persistence
