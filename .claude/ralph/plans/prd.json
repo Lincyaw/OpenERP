@@ -12932,7 +12932,7 @@
       "支付流程安全合规（PCI DSS）",
       "支付成功后自动刷新权限"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SAAS-FE-005",

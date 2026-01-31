@@ -42346,3 +42346,47 @@ useFeatureStore.getState().initialize(tenant.plan, tenant.id)
 - SAAS-FE-002: 订阅计划展示页面
 - Integrate featureStore initialization with auth flow
 - Add feature checks to existing pages (e.g., import wizard, reports)
+
+2025-01-31 - SAAS-FE-004: Subscription Payment Flow Page
+
+=== Implementation Details ===
+- Created UpgradePlanPage.tsx with plan selection UI
+  - Four plan tiers: Free, Basic, Pro, Enterprise
+  - Plan cards with features, pricing, and selection state
+  - Highlighted "Most Popular" badge for Pro plan
+  - Current plan indicator
+  - Upgrade action bar with payment button
+  - FAQ section for common questions
+- Created UpgradePlan.css with responsive styles
+  - Grid layout for plan cards (4 columns → 2 → 1 on mobile)
+  - Hover and selection states
+  - Sticky upgrade action bar
+- Added i18n translations for both en-US and zh-CN
+  - Plan names, descriptions, and features
+  - UI labels and messages
+  - FAQ content
+- Added route at /upgrade in routes.tsx
+
+=== Key Files Modified ===
+- frontend/src/pages/user/UpgradePlan.tsx (new)
+- frontend/src/pages/user/UpgradePlan.css (new)
+- frontend/src/locales/en-US/system.json (subscription section)
+- frontend/src/locales/zh-CN/system.json (subscription section)
+- frontend/src/router/routes.tsx (added UpgradePlanPage route)
+
+=== Verification ===
+- TypeScript type checking: PASSED
+- ESLint: PASSED (no new errors)
+- Production build: PASSED
+
+=== Notes ===
+- Backend Stripe integration already exists in backend/internal/infrastructure/billing/
+- Page currently has placeholder for Stripe Checkout integration
+- TODO: Connect to backend API for creating Stripe Checkout sessions
+- TODO: Handle payment success/cancel callbacks
+- TODO: Integrate with feature flags for plan-based access control
+
+=== Next Steps ===
+- Implement Stripe Elements payment form integration
+- Create backend API endpoints for subscription management
+- Add subscription status display in user profile/settings

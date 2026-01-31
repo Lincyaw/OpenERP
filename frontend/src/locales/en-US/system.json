@@ -655,5 +655,86 @@
       "syncStarted": "Sync task started",
       "syncError": "Failed to start sync task"
     }
+  },
+  "subscription": {
+    "title": "Subscription Plans",
+    "subtitle": "Choose the plan that best fits your business needs",
+    "priceUnit": "month",
+    "currentPlan": "Current Plan",
+    "currentPlanBanner": "You are currently on the {{plan}} plan",
+    "popular": "Most Popular",
+    "current": "Current",
+    "customPricing": "Custom Pricing",
+    "upgrade": "Upgrade",
+    "downgrade": "Downgrade",
+    "contactSales": "Contact Sales",
+    "confirmUpgrade": "Upgrade to {{plan}}",
+    "upgradeDescription": "You will be redirected to our secure payment page to complete your subscription.",
+    "proceedToPayment": "Proceed to Payment",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "description": "Perfect for getting started with basic inventory management",
+        "features": {
+          "users": "1 user",
+          "products": "Up to 100 products",
+          "orders": "Up to 50 orders/month",
+          "support": "Community support"
+        }
+      },
+      "basic": {
+        "name": "Basic",
+        "description": "Great for small businesses with growing needs",
+        "features": {
+          "users": "Up to 5 users",
+          "products": "Up to 1,000 products",
+          "orders": "Up to 500 orders/month",
+          "support": "Email support",
+          "reports": "Basic reports"
+        }
+      },
+      "pro": {
+        "name": "Professional",
+        "description": "For established businesses requiring advanced features",
+        "features": {
+          "users": "Up to 20 users",
+          "products": "Up to 10,000 products",
+          "orders": "Unlimited orders",
+          "support": "Priority support",
+          "reports": "Advanced reports & analytics",
+          "api": "API access",
+          "integrations": "E-commerce integrations"
+        }
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "description": "Custom solutions for large organizations",
+        "features": {
+          "users": "Unlimited users",
+          "products": "Unlimited products",
+          "orders": "Unlimited orders",
+          "support": "24/7 dedicated support",
+          "reports": "Custom reports & dashboards",
+          "api": "Full API access",
+          "integrations": "Custom integrations",
+          "sla": "99.9% SLA guarantee",
+          "custom": "Custom development"
+        }
+      }
+    },
+    "messages": {
+      "upgradeSuccess": "Subscription upgraded successfully!",
+      "upgradeError": "Failed to upgrade subscription. Please try again.",
+      "contactSales": "Please contact our sales team for enterprise pricing."
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "Can I change my plan at any time?",
+      "a1": "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate your billing accordingly.",
+      "q2": "What payment methods do you accept?",
+      "a2": "We accept all major credit cards (Visa, MasterCard, American Express) and support secure payments through Stripe.",
+      "q3": "Is there a free trial for paid plans?",
+      "a3": "Yes, all paid plans come with a 14-day free trial. No credit card required to start."
+    }
   }
 }
