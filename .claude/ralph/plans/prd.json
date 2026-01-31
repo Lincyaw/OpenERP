@@ -12729,7 +12729,7 @@
       "清晰展示各计划差异",
       "升级流程入口明确"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SAAS-BE-005",

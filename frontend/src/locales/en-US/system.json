@@ -736,5 +736,39 @@
       "q3": "Is there a free trial for paid plans?",
       "a3": "Yes, all paid plans come with a 14-day free trial. No credit card required to start."
     }
+  },
+  "subscriptionPage": {
+    "title": "Subscription & Billing",
+    "subtitle": "Manage your subscription plan and view resource usage",
+    "tenantName": "Organization",
+    "status": "Status",
+    "expiresAt": "Expires At",
+    "noExpiration": "No expiration",
+    "trialBanner": "Your trial ends in {{days}} days. Upgrade now to keep all features.",
+    "expirationWarning": "Your subscription expires in {{days}} days. Please renew to avoid service interruption.",
+    "resourceUsage": "Resource Usage",
+    "includedFeatures": "Features Included in Your Plan",
+    "upgradeToUnlock": "Upgrade to Unlock More Features",
+    "planComparison": "Compare Plans",
+    "viewAllPlans": "View All Plans & Upgrade",
+    "comparison": {
+      "feature": "Feature",
+      "users": "Users",
+      "products": "Products",
+      "warehouses": "Warehouses",
+      "orders": "Monthly Orders",
+      "unlimited": "Unlimited",
+      "multiWarehouse": "Multi-Warehouse Management",
+      "batchManagement": "Batch/Lot Tracking",
+      "serialTracking": "Serial Number Tracking",
+      "multiCurrency": "Multi-Currency Support",
+      "advancedReporting": "Advanced Reports & Analytics",
+      "apiAccess": "API Access",
+      "integrations": "E-commerce Integrations",
+      "prioritySupport": "Priority Support",
+      "dedicatedSupport": "Dedicated Support Manager",
+      "sla": "99.9% SLA Guarantee",
+      "whiteLabeling": "White-Label Branding"
+    }
   }
 }

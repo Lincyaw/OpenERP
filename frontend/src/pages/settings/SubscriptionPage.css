@@ -1,0 +1,257 @@
+/* Subscription Page Styles */
+
+.subscription-page {
+  padding: var(--page-padding-mobile);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.subscription-header {
+  margin-bottom: var(--spacing-2);
+}
+
+.subscription-header h3 {
+  margin-bottom: var(--spacing-2);
+}
+
+/* Banners */
+.trial-banner,
+.expiration-banner {
+  margin-bottom: var(--spacing-2);
+}
+
+/* Current Plan Card */
+.current-plan-card {
+  background: linear-gradient(
+    135deg,
+    var(--semi-color-primary-light-default) 0%,
+    var(--semi-color-bg-0) 100%
+  );
+}
+
+.current-plan-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-6);
+  flex-wrap: wrap;
+}
+
+.current-plan-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  flex: 1;
+  min-width: 280px;
+}
+
+.current-plan-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: var(--semi-color-bg-0);
+  border-radius: var(--semi-border-radius-large);
+  box-shadow: var(--semi-shadow-elevated);
+}
+
+.current-plan-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.current-plan-name-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.current-plan-name-row h4 {
+  margin: 0;
+}
+
+.current-plan-meta {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Resource Usage Card */
+.resource-usage-card {
+  background: var(--semi-color-bg-0);
+}
+
+.section-title {
+  margin-bottom: var(--spacing-4);
+}
+
+.section-subtitle {
+  margin-top: var(--spacing-6);
+  margin-bottom: var(--spacing-3);
+  color: var(--semi-color-text-2);
+}
+
+.resource-usage-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-6);
+}
+
+.resource-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.resource-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.resource-icon {
+  color: var(--semi-color-primary);
+}
+
+/* Features Card */
+.features-card {
+  background: var(--semi-color-bg-0);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-3);
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--semi-border-radius-medium);
+  background: var(--semi-color-bg-1);
+}
+
+.feature-item--enabled {
+  background: var(--semi-color-success-light-default);
+}
+
+.feature-item--disabled {
+  background: var(--semi-color-bg-2);
+}
+
+.feature-check {
+  color: var(--semi-color-success);
+  flex-shrink: 0;
+}
+
+.feature-cross {
+  color: var(--semi-color-text-3);
+  flex-shrink: 0;
+}
+
+/* Comparison Card */
+.comparison-card {
+  background: var(--semi-color-bg-0);
+}
+
+.comparison-table {
+  margin-bottom: var(--spacing-4);
+}
+
+.comparison-table .semi-table-thead > tr > th {
+  background: var(--semi-color-bg-1);
+}
+
+.plan-column-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-2) 0;
+}
+
+.plan-column-header--highlighted {
+  background: linear-gradient(180deg, var(--semi-color-warning-light-default) 0%, transparent 100%);
+  border-radius: var(--semi-border-radius-medium);
+  padding: var(--spacing-2);
+  margin: calc(-1 * var(--spacing-2));
+}
+
+.plan-icon-free {
+  color: var(--semi-color-text-2);
+}
+
+.plan-icon-basic {
+  color: var(--semi-color-primary);
+}
+
+.plan-icon-pro {
+  color: var(--semi-color-warning);
+}
+
+.plan-icon-enterprise {
+  color: var(--semi-color-tertiary);
+}
+
+.comparison-actions {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--spacing-4);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .resource-usage-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .subscription-page {
+    padding: var(--spacing-4);
+  }
+
+  .current-plan-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .current-plan-info {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .current-plan-name-row {
+    justify-content: center;
+  }
+
+  .current-plan-meta {
+    text-align: center;
+  }
+
+  .resource-usage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-table {
+    overflow-x: auto;
+  }
+
+  .plan-column-header {
+    min-width: 100px;
+  }
+}

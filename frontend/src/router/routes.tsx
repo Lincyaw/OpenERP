@@ -110,6 +110,7 @@ const FeatureFlagDetailPage = () => lazyLoad(() => import('@/pages/admin/Feature
 const ProfilePage = () => lazyLoad(() => import('@/pages/user/Profile'))
 const SettingsPage = () => lazyLoad(() => import('@/pages/user/Settings'))
 const UpgradePlanPage = () => lazyLoad(() => import('@/pages/user/UpgradePlan'))
+const SubscriptionPage = () => lazyLoad(() => import('@/pages/settings/SubscriptionPage'))
 
 /**
  * Application routes with metadata
@@ -770,11 +771,12 @@ export function getRouteObjects(): RouteObject[] {
     }
   }
 
-  // Add user routes (profile & settings) - hidden from menu
+  // Add user routes (profile & settings) - hidden from menu, accessible to all authenticated users
   protectedChildRoutes.push(
     { path: 'profile', element: ProfilePage() },
     { path: 'settings', element: SettingsPage() },
-    { path: 'upgrade', element: UpgradePlanPage() }
+    { path: 'upgrade', element: UpgradePlanPage() },
+    { path: 'subscription', element: SubscriptionPage() } // Subscription management - all users can view their plan
   )
 
   return [

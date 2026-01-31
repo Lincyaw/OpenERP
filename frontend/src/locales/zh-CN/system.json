@@ -736,5 +736,39 @@
       "q3": "付费计划有免费试用吗？",
       "a3": "是的，所有付费计划都提供 14 天免费试用。开始试用无需信用卡。"
     }
+  },
+  "subscriptionPage": {
+    "title": "订阅与账单",
+    "subtitle": "管理您的订阅计划并查看资源使用情况",
+    "tenantName": "组织名称",
+    "status": "状态",
+    "expiresAt": "到期时间",
+    "noExpiration": "无到期时间",
+    "trialBanner": "您的试用期将在 {{days}} 天后结束。立即升级以保留所有功能。",
+    "expirationWarning": "您的订阅将在 {{days}} 天后到期。请及时续费以避免服务中断。",
+    "resourceUsage": "资源使用情况",
+    "includedFeatures": "当前计划包含的功能",
+    "upgradeToUnlock": "升级以解锁更多功能",
+    "planComparison": "计划对比",
+    "viewAllPlans": "查看所有计划并升级",
+    "comparison": {
+      "feature": "功能",
+      "users": "用户数",
+      "products": "商品数",
+      "warehouses": "仓库数",
+      "orders": "月订单数",
+      "unlimited": "无限制",
+      "multiWarehouse": "多仓库管理",
+      "batchManagement": "批次/批号追踪",
+      "serialTracking": "序列号追踪",
+      "multiCurrency": "多币种支持",
+      "advancedReporting": "高级报表与分析",
+      "apiAccess": "API 访问",
+      "integrations": "电商平台集成",
+      "prioritySupport": "优先支持",
+      "dedicatedSupport": "专属客户经理",
+      "sla": "99.9% SLA 保障",
+      "whiteLabeling": "白标品牌定制"
+    }
   }
 }

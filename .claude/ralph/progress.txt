@@ -42893,3 +42893,58 @@ PASS
 - Implement SubscriptionRepository for tenant subscription lookup
 - Add integration tests with Stripe test mode
 - Consider frontend dashboard for usage reporting status
+
+2025-01-31 - SAAS-FE-002: 订阅计划展示页面 (Subscription Plan Display Page)
+
+=== Implementation Details ===
+- Created frontend/src/pages/settings/SubscriptionPage.tsx
+  - Displays current tenant subscription plan with plan badge and status
+  - Shows trial/expiration banners when applicable
+  - Resource usage section with progress bars (users, warehouses, products)
+  - Enabled/disabled features list with upgrade prompts
+  - Plan comparison table (Free vs Basic vs Pro vs Enterprise)
+  - Upgrade button linking to /upgrade page
+  - Full error handling for API failures
+
+- Created frontend/src/pages/settings/SubscriptionPage.css
+  - Responsive design with breakpoints for mobile/tablet/desktop
+  - Uses Semi Design CSS variables for consistency
+  - Plan card styling with highlighted popular plan
+
+- Updated frontend/src/router/routes.tsx
+  - Added SubscriptionPage lazy import
+  - Added /subscription route to protected routes
+
+- Updated frontend/src/locales/en-US/system.json
+  - Added subscriptionPage namespace with all translations
+  - Includes comparison table labels, resource names, banners
+
+- Updated frontend/src/locales/zh-CN/system.json
+  - Added Chinese translations for subscriptionPage namespace
+
+=== Key Design Decisions ===
+- Used existing featureStore for plan/feature data (useTenantPlan, getEnabledFeatures)
+- Resource usage currently uses mock data (TODO: integrate with usage stats API when available)
+- Plan limits and pricing hardcoded (consider moving to backend config in future)
+- Route accessible to all authenticated users (no special permissions required)
+
+=== Verification ===
+- TypeScript type checking: PASSED
+- ESLint: PASSED (no errors, only pre-existing warnings in routes.tsx)
+- Code review: PASSED with recommendations addressed
+  - Added error handling for tenant API call
+  - Added route access policy comment
+
+=== Acceptance Criteria Met ===
+✓ 租户可以查看当前订阅状态 (Tenant can view current subscription status)
+✓ 清晰展示各计划差异 (Clear display of plan differences)
+✓ 升级流程入口明确 (Clear upgrade flow entry point)
+
+=== Notes ===
+- Mock resource usage data should be replaced with actual API data when SAAS-BE-008 (usage stats) is complete
+- Plan limits/pricing could be fetched from backend for better maintainability
+
+=== Next Steps ===
+- Integrate with tenant usage statistics API (SAAS-BE-008)
+- Consider adding billing history section
+- Add plan change confirmation modal
