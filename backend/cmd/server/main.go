@@ -731,6 +731,7 @@ func main() {
 	outboxHandler := handler.NewOutboxHandler(outboxService)
 	featureFlagHandler := handler.NewFeatureFlagHandler(flagService, evaluationService, overrideService)
 	printHandler := handler.NewPrintHandler(printService, pdfStorage)
+	planFeatureHandler := handler.NewPlanFeatureHandler(tenantRepo)
 
 	// Initialize Stripe webhook handler (if Stripe is enabled)
 	var stripeWebhookHandler *handler.StripeWebhookHandler
@@ -1354,6 +1355,20 @@ func main() {
 	identityRoutes.POST("/tenants/:id/deactivate", tenantHandler.Deactivate)
 	identityRoutes.POST("/tenants/:id/suspend", tenantHandler.Suspend)
 
+	// Current tenant feature routes (self-service)
+	identityRoutes.GET("/tenants/current/features", planFeatureHandler.GetCurrentTenantFeatures)
+
+	// Admin routes for plan and feature management
+	adminRoutes := router.NewDomainGroup("admin", "/admin")
+	adminRoutes.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "admin service ready"})
+	})
+
+	// Plan feature management routes (admin only)
+	adminRoutes.GET("/plans", middleware.RequirePermission("plan:read"), planFeatureHandler.ListPlans)
+	adminRoutes.GET("/plans/:plan/features", middleware.RequirePermission("plan:read"), planFeatureHandler.GetPlanFeatures)
+	adminRoutes.PUT("/plans/:plan/features", middleware.RequirePermission("plan:update"), planFeatureHandler.UpdatePlanFeatures)
+
 	// Register all domain groups
 	r.Register(catalogRoutes).
 		Register(partnerRoutes).
@@ -1362,7 +1377,8 @@ func main() {
 		Register(financeRoutes).
 		Register(reportRoutes).
 		Register(authRoutes).
-		Register(identityRoutes)
+		Register(identityRoutes).
+		Register(adminRoutes)
 
 	// Register system routes with swagger-documented handlers
 	systemHandler := handler.NewSystemHandler()

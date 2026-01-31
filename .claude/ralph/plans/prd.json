@@ -12686,7 +12686,7 @@
       "租户可以查看自己可用的功能列表",
       "API 文档完整"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SAAS-FE-001",
