@@ -12601,5 +12601,404 @@
       "客户端只需使用预签名 URL，不需要知道存储路径"
     ],
     "passes": true
+  },
+  {
+    "id": "SAAS-BE-001",
+    "story": "创建计划-功能映射表结构",
+    "priority": "high",
+    "category": "backend",
+    "phase": "short-term",
+    "requirements": [
+      "在 backend/internal/domain/identity/ 创建 plan_feature.go",
+      "定义 PlanFeature 实体：PlanID, FeatureKey, Enabled, Limit, Description",
+      "定义 PlanFeatureRepository 接口",
+      "创建数据库迁移：plan_features 表",
+      "为每个 TenantPlan (free/basic/pro/enterprise) 定义默认功能集",
+      "编写单元测试验证功能映射逻辑"
+    ],
+    "acceptance_criteria": [
+      "plan_features 表成功创建",
+      "可以查询指定计划包含的所有功能",
+      "可以检查指定计划是否包含某功能"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SAAS-BE-002",
+    "story": "Feature Flag 与订阅计划集成",
+    "priority": "high",
+    "category": "backend",
+    "phase": "short-term",
+    "requirements": [
+      "修改 backend/internal/domain/featureflag/feature_flag.go",
+      "添加 RequiredPlan 字段到 FeatureFlag 实体",
+      "修改 Evaluate() 方法，检查租户计划是否满足 RequiredPlan",
+      "创建数据库迁移：feature_flags 表添加 required_plan 列",
+      "更新 FeatureFlagService 支持计划检查",
+      "编写集成测试验证计划-功能联动"
+    ],
+    "acceptance_criteria": [
+      "Free 计划租户无法访问 Pro 功能",
+      "升级计划后自动获得对应功能权限",
+      "功能评估考虑租户当前计划"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-BE-003",
+    "story": "实现功能权限中间件",
+    "priority": "high",
+    "category": "backend",
+    "phase": "short-term",
+    "requirements": [
+      "创建 backend/internal/interfaces/http/middleware/feature_middleware.go",
+      "实现 RequireFeature(featureKey string) gin.HandlerFunc",
+      "从 context 获取租户信息，查询计划功能",
+      "功能不可用时返回 403 Forbidden 和明确错误信息",
+      "支持多功能检查 RequireAnyFeature / RequireAllFeatures",
+      "添加功能检查结果缓存（Redis）减少数据库查询",
+      "编写中间件单元测试"
+    ],
+    "acceptance_criteria": [
+      "受保护的 API 端点正确检查功能权限",
+      "无权限时返回友好的升级提示",
+      "缓存有效减少重复查询"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-BE-004",
+    "story": "创建功能权限管理 API",
+    "priority": "medium",
+    "category": "backend",
+    "phase": "short-term",
+    "requirements": [
+      "创建 backend/internal/interfaces/http/handler/plan_feature_handler.go",
+      "实现 GET /admin/plans - 获取所有计划列表",
+      "实现 GET /admin/plans/{plan}/features - 获取计划功能列表",
+      "实现 PUT /admin/plans/{plan}/features - 更新计划功能配置（管理员）",
+      "实现 GET /tenants/current/features - 获取当前租户可用功能",
+      "添加 Swagger 注解",
+      "注册路由"
+    ],
+    "acceptance_criteria": [
+      "管理员可以配置各计划的功能",
+      "租户可以查看自己可用的功能列表",
+      "API 文档完整"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-FE-001",
+    "story": "前端功能权限检查组件",
+    "priority": "high",
+    "category": "frontend",
+    "phase": "short-term",
+    "requirements": [
+      "生成 API Client (make api-docs && npm run api:generate)",
+      "创建 src/hooks/useFeature.ts - 功能权限检查 hook",
+      "创建 src/components/FeatureGate.tsx - 功能门控组件",
+      "创建 src/store/featureStore.ts - 功能权限状态管理",
+      "实现功能不可用时的升级提示 UI",
+      "支持功能预加载和缓存"
+    ],
+    "acceptance_criteria": [
+      "useFeature('advanced_reports') 返回功能可用状态",
+      "<FeatureGate feature='bulk_import'>...</FeatureGate> 正确控制显示",
+      "功能不可用时显示升级引导"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-FE-002",
+    "story": "订阅计划展示页面",
+    "priority": "medium",
+    "category": "frontend",
+    "phase": "short-term",
+    "requirements": [
+      "创建 src/pages/settings/SubscriptionPage.tsx",
+      "显示当前租户的订阅计划和到期时间",
+      "显示当前计划包含的功能列表",
+      "显示资源使用情况（用户数/仓库数/产品数）",
+      "显示计划对比表（Free vs Basic vs Pro vs Enterprise）",
+      "添加升级计划按钮（跳转到支付流程）",
+      "添加国际化支持"
+    ],
+    "acceptance_criteria": [
+      "租户可以查看当前订阅状态",
+      "清晰展示各计划差异",
+      "升级流程入口明确"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-BE-005",
+    "story": "创建使用量计量领域模型",
+    "priority": "high",
+    "category": "backend",
+    "phase": "medium-term",
+    "requirements": [
+      "创建 backend/internal/domain/billing/ 目录",
+      "创建 usage_record.go - 使用量记录实体",
+      "创建 usage_meter.go - 使用量聚合值对象",
+      "创建 usage_quota.go - 配额定义实体",
+      "创建 usage_repository.go - 仓储接口",
+      "定义使用量类型枚举：API_CALLS, STORAGE_BYTES, ACTIVE_USERS, ORDERS_CREATED 等",
+      "创建数据库迁移：usage_records, usage_quotas 表",
+      "编写领域模型单元测试"
+    ],
+    "acceptance_criteria": [
+      "可以记录各类使用量",
+      "可以按租户、时间段聚合使用量",
+      "配额定义支持不同计量单位"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-BE-006",
+    "story": "实现使用量追踪中间件",
+    "priority": "high",
+    "category": "backend",
+    "phase": "medium-term",
+    "requirements": [
+      "创建 backend/internal/interfaces/http/middleware/usage_middleware.go",
+      "实现 TrackAPIUsage() - 追踪 API 调用次数",
+      "实现 TrackResourceCreation(resourceType) - 追踪资源创建",
+      "使用异步写入避免影响请求性能",
+      "支持批量写入减少数据库压力",
+      "集成 OpenTelemetry 指标导出",
+      "编写中间件测试"
+    ],
+    "acceptance_criteria": [
+      "API 调用自动记录到 usage_records",
+      "资源创建（订单、产品等）自动计数",
+      "追踪不影响 API 响应时间（<5ms 开销）"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-BE-007",
+    "story": "实现配额检查和执行",
+    "priority": "high",
+    "category": "backend",
+    "phase": "medium-term",
+    "requirements": [
+      "创建 backend/internal/application/billing/quota_service.go",
+      "实现 CheckQuota(tenantID, quotaType) - 检查是否超出配额",
+      "实现 GetUsageSummary(tenantID, period) - 获取使用量汇总",
+      "创建 QuotaExceededError 自定义错误类型",
+      "在资源创建前调用配额检查",
+      "超出配额返回 429 Too Many Requests",
+      "支持软限制（警告）和硬限制（阻止）",
+      "编写服务层测试"
+    ],
+    "acceptance_criteria": [
+      "超出产品数限制时无法创建新产品",
+      "超出用户数限制时无法邀请新用户",
+      "接近限制时返回警告信息"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-BE-008",
+    "story": "使用量统计 API",
+    "priority": "medium",
+    "category": "backend",
+    "phase": "medium-term",
+    "requirements": [
+      "创建 backend/internal/interfaces/http/handler/usage_handler.go",
+      "实现 GET /tenants/current/usage - 获取当前租户使用量汇总",
+      "实现 GET /tenants/current/usage/history - 获取历史使用量趋势",
+      "实现 GET /tenants/current/quotas - 获取配额和剩余量",
+      "实现 GET /admin/tenants/{id}/usage - 管理员查看租户使用量",
+      "添加 Swagger 注解",
+      "注册路由"
+    ],
+    "acceptance_criteria": [
+      "租户可以查看自己的使用量",
+      "管理员可以查看所有租户使用量",
+      "支持按日/周/月查看历史趋势"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-FE-003",
+    "story": "使用量仪表盘组件",
+    "priority": "medium",
+    "category": "frontend",
+    "phase": "medium-term",
+    "requirements": [
+      "生成 API Client",
+      "创建 src/components/usage/UsageGauge.tsx - 使用量进度条组件",
+      "创建 src/components/usage/UsageChart.tsx - 使用量趋势图表",
+      "创建 src/components/usage/QuotaAlert.tsx - 配额警告组件",
+      "在 SubscriptionPage 中集成使用量展示",
+      "在 Dashboard 中添加使用量概览卡片",
+      "接近配额时显示警告通知"
+    ],
+    "acceptance_criteria": [
+      "清晰展示各项使用量和配额",
+      "趋势图表支持时间范围选择",
+      "配额警告醒目且可操作"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-BE-009",
+    "story": "Stripe Billing 集成 - 订阅管理",
+    "priority": "high",
+    "category": "backend",
+    "phase": "long-term",
+    "requirements": [
+      "创建 backend/internal/infrastructure/billing/stripe_adapter.go",
+      "实现 CreateCustomer() - 创建 Stripe 客户",
+      "实现 CreateSubscription() - 创建订阅",
+      "实现 UpdateSubscription() - 升级/降级订阅",
+      "实现 CancelSubscription() - 取消订阅",
+      "实现 GetSubscriptionStatus() - 查询订阅状态",
+      "存储 Stripe Customer ID 到 tenant 表",
+      "编写集成测试（使用 Stripe Test Mode）"
+    ],
+    "acceptance_criteria": [
+      "可以通过 Stripe 创建订阅",
+      "订阅状态与 Stripe 同步",
+      "支持升级/降级/取消操作"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-BE-010",
+    "story": "Stripe Webhook 处理",
+    "priority": "high",
+    "category": "backend",
+    "phase": "long-term",
+    "requirements": [
+      "创建 backend/internal/interfaces/http/handler/stripe_webhook_handler.go",
+      "实现 POST /webhooks/stripe - Webhook 接收端点",
+      "处理 customer.subscription.created - 订阅创建",
+      "处理 customer.subscription.updated - 订阅更新",
+      "处理 customer.subscription.deleted - 订阅取消",
+      "处理 invoice.paid - 发票支付成功",
+      "处理 invoice.payment_failed - 支付失败",
+      "实现 Webhook 签名验证",
+      "同步订阅状态到 tenant.plan 和 tenant.expires_at",
+      "发送领域事件通知其他模块"
+    ],
+    "acceptance_criteria": [
+      "Webhook 正确验证签名",
+      "订阅变更自动同步到系统",
+      "支付失败时租户状态变为 suspended"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-BE-011",
+    "story": "Stripe 使用量上报",
+    "priority": "medium",
+    "category": "backend",
+    "phase": "long-term",
+    "requirements": [
+      "实现 ReportUsage() - 上报使用量到 Stripe",
+      "创建定时任务每小时/每日上报使用量",
+      "支持 metered billing 计费模式",
+      "处理上报失败重试",
+      "记录上报日志便于对账"
+    ],
+    "acceptance_criteria": [
+      "使用量定期同步到 Stripe",
+      "Stripe 账单反映实际使用量",
+      "上报失败有重试机制"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-FE-004",
+    "story": "订阅支付流程页面",
+    "priority": "high",
+    "category": "frontend",
+    "phase": "long-term",
+    "requirements": [
+      "生成 API Client",
+      "创建 src/pages/settings/UpgradePlanPage.tsx",
+      "集成 Stripe Elements 支付组件",
+      "实现计划选择和价格展示",
+      "实现支付表单和卡片信息输入",
+      "实现支付成功/失败处理",
+      "实现订阅确认页面",
+      "添加国际化支持"
+    ],
+    "acceptance_criteria": [
+      "用户可以选择计划并完成支付",
+      "支付流程安全合规（PCI DSS）",
+      "支付成功后自动刷新权限"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-FE-005",
+    "story": "账单历史和发票页面",
+    "priority": "medium",
+    "category": "frontend",
+    "phase": "long-term",
+    "requirements": [
+      "创建 src/pages/settings/BillingHistoryPage.tsx",
+      "显示历史账单列表",
+      "支持下载 PDF 发票",
+      "显示支付方式管理",
+      "显示下次扣款日期和金额",
+      "添加国际化支持"
+    ],
+    "acceptance_criteria": [
+      "用户可以查看所有历史账单",
+      "可以下载发票 PDF",
+      "可以更新支付方式"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-TEST-001",
+    "story": "SaaS 计费功能测试",
+    "priority": "high",
+    "category": "testing",
+    "phase": "all",
+    "requirements": [
+      "编写 plan_feature_test.go 单元测试",
+      "编写 feature_middleware_test.go 中间件测试",
+      "编写 quota_service_test.go 配额服务测试",
+      "编写 stripe_adapter_test.go 集成测试（Mock）",
+      "编写 stripe_webhook_handler_test.go Webhook 测试",
+      "创建 e2e/saas/subscription.spec.ts E2E 测试",
+      "创建 e2e/saas/feature-gate.spec.ts 功能门控测试",
+      "创建 e2e/saas/usage-quota.spec.ts 配额测试",
+      "测试覆盖率 >= 80%"
+    ],
+    "acceptance_criteria": [
+      "所有 SaaS 相关代码测试覆盖 >= 80%",
+      "E2E 测试覆盖关键用户流程",
+      "Stripe 集成有完整的 Mock 测试"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SAAS-DOC-001",
+    "story": "SaaS 计费功能文档",
+    "priority": "low",
+    "category": "documentation",
+    "phase": "all",
+    "requirements": [
+      "更新 spec.md 添加 SaaS 计费架构说明",
+      "创建 docs/saas-billing.md 计费系统文档",
+      "文档包含：功能计费配置指南",
+      "文档包含：使用量计费配置指南",
+      "文档包含：Stripe 集成配置指南",
+      "文档包含：Webhook 配置说明",
+      "更新 API 文档（Swagger）"
+    ],
+    "acceptance_criteria": [
+      "开发者可以根据文档配置计费功能",
+      "运维可以根据文档配置 Stripe",
+      "API 文档完整准确"
+    ],
+    "passes": false
   }
 ]
