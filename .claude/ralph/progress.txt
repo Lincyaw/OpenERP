@@ -41633,3 +41633,105 @@ to be restricted based on tenant subscription plans (free, basic, pro, enterpris
 - SAAS-BE-003: Create feature check middleware for HTTP handlers
 - Consider adding plan restriction to cached evaluator
 - Add API endpoints for managing feature flag required_plan field
+
+2026-01-31 - SAAS-BE-003: 实现功能权限中间件
+
+=== Implementation Details ===
+
+Created feature middleware for subscription plan-based feature gating in a multi-tenant SaaS application.
+
+**Files Created:**
+
+1. `backend/internal/interfaces/http/middleware/feature_middleware.go` (540 lines)
+   - `RequireFeature(featureKey)` - Middleware requiring a specific feature
+   - `RequireFeatureWithConfig(featureKey, cfg)` - With custom configuration
+   - `RequireAnyFeature(featureKeys...)` - Requires any of the specified features
+   - `RequireAnyFeatureWithConfig(cfg, featureKeys...)` - With custom configuration
+   - `RequireAllFeatures(featureKeys...)` - Requires all specified features
+   - `RequireAllFeaturesWithConfig(cfg, featureKeys...)` - With custom configuration
+   - `GetTenantPlan(c)` - Helper to get tenant plan from context
+   - `HasFeature(c, cfg, featureKey)` - Helper to check feature in handlers
+   - `MustHaveFeature(c, cfg, featureKey)` - Aborts if feature not available
+   - `WithFeature(featureKey, cfg, handler)` - Wraps handler with feature check
+
+2. `backend/internal/interfaces/http/middleware/feature_middleware_test.go` (980 lines)
+   - 30+ test cases covering all middleware functions
+   - Mock implementations for FeatureChecker, TenantPlanProvider, FeatureCache
+   - Tests for error handling, caching, validation, and edge cases
+
+**Key Features:**
+
+1. **Feature Checking**: Checks if tenant's subscription plan has a feature enabled
+2. **Multi-Feature Support**: RequireAnyFeature (OR) and RequireAllFeatures (AND)
+3. **Redis Caching**: Optional caching with configurable TTL to reduce DB queries
+4. **Fail-Secure**: Denies access when feature checks fail with errors
+5. **Input Validation**: Panics at startup for invalid feature keys (fail fast)
+6. **Customizable**: OnDenied callback, custom logger, configurable cache TTL
+7. **User-Friendly Errors**: Returns 403 with upgrade hints and feature details
+
+**Interfaces Defined:**
+
+- `FeatureChecker` - For checking plan features
+- `TenantPlanProvider` - For getting tenant's subscription plan
+- `FeatureCache` - For caching feature check results
+
+**Error Response Format:**
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERR_FEATURE_NOT_AVAILABLE",
+    "message": "The Multi Warehouse feature is not available in your current plan (free). Please upgrade to access this feature.",
+    "details": {
+      "feature": "multi_warehouse",
+      "current_plan": "free",
+      "upgrade_hint": "Please upgrade your subscription plan to access this feature"
+    }
+  }
+}
+```
+
+=== Key Design Decisions ===
+
+1. **Fail-Fast Validation**: Feature keys are validated at middleware creation time (startup), not at request time. Invalid keys cause a panic, ensuring configuration errors are caught early.
+
+2. **Fail-Secure Error Handling**: When feature checks fail with errors, access is denied rather than granted. This prevents accidental access to premium features during outages.
+
+3. **Plan-Level Caching**: Cache keys are based on plan + feature, not tenant + feature, because all tenants on the same plan have the same features. This improves cache hit rate.
+
+4. **Default Plan Fallback**: When no TenantPlanProvider is configured, defaults to "free" plan for secure defaults.
+
+5. **Context Reuse**: If tenant plan is already in context (set by previous middleware), it's reused to avoid redundant lookups.
+
+=== Verification ===
+
+- ✅ All middleware tests pass (go test ./internal/interfaces/http/middleware/...)
+- ✅ Test coverage: 83.2% (above 80% threshold)
+- ✅ Go build succeeds (go build ./...)
+- ✅ Code review completed - addressed HIGH priority issues:
+  - Fixed fail-open security risk in RequireAnyFeature
+  - Added input validation for feature keys
+  - Improved error handling distinction in RequireAllFeatures
+  - Added tests for cache error handling
+
+=== Acceptance Criteria Verification ===
+
+✅ 受保护的 API 端点正确检查功能权限
+   - RequireFeature middleware checks feature against tenant's plan
+   - Uses FeatureChecker interface or defaults to PlanHasFeature
+
+✅ 无权限时返回友好的升级提示
+   - Returns 403 Forbidden with ERR_FEATURE_NOT_AVAILABLE code
+   - Includes feature name, current plan, and upgrade hint in response
+
+✅ 缓存有效减少重复查询
+   - FeatureCache interface supports Redis caching
+   - Configurable TTL (default 5 minutes)
+   - Cache key: feature_check:{plan}:{feature}
+
+=== Next Steps ===
+
+- SAAS-BE-004: Implement TenantPlanProvider using TenantRepository
+- SAAS-BE-005: Implement FeatureCache using Redis
+- Consider adding tenant-specific feature overrides in the future
