@@ -12977,7 +12977,7 @@
       "E2E 测试覆盖关键用户流程",
       "Stripe 集成有完整的 Mock 测试"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SAAS-DOC-001",

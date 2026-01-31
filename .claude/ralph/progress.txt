@@ -42390,3 +42390,127 @@ useFeatureStore.getState().initialize(tenant.plan, tenant.id)
 - Implement Stripe Elements payment form integration
 - Create backend API endpoints for subscription management
 - Add subscription status display in user profile/settings
+
+2025-01-31 - SAAS-TEST-001: SaaS 计费功能测试 PASSED
+
+=== Test Execution Summary ===
+
+Backend Unit Tests:
+- domain/billing: 84.1% coverage ✅
+- application/billing: 80.5% coverage ✅
+- infrastructure/billing: 99.1% coverage ✅
+- domain/identity: 87.7% coverage ✅
+- interfaces/http/middleware: 81.7% coverage ✅
+
+Overall SaaS Test Coverage: 86.6% (exceeds 80% requirement)
+
+=== Test Files Verified/Created ===
+
+Backend Tests (Already Existed - Verified):
+✅ backend/internal/domain/identity/plan_feature_test.go
+   - Tests for PlanFeature entity creation
+   - Tests for plan feature limits
+   - Tests for default plan features
+   - Tests for feature key validation
+   - Tests for plan feature progression
+
+✅ backend/internal/interfaces/http/middleware/feature_middleware_test.go
+   - Tests for RequireFeature middleware
+   - Tests for RequireAnyFeature middleware
+   - Tests for RequireAllFeatures middleware
+   - Tests for feature cache integration
+   - Tests for custom OnDenied handlers
+   - Tests for tenant plan context
+
+✅ backend/internal/application/billing/quota_service_test.go
+   - Tests for CheckQuota functionality
+   - Tests for quota exceeded handling
+   - Tests for soft limit warnings
+   - Tests for unlimited quotas
+   - Tests for GetUsageSummary
+   - Tests for convenience methods (CheckProductQuota, CheckUserQuota, etc.)
+   - Tests for period boundary calculations
+
+✅ backend/internal/infrastructure/billing/stripe_adapter_test.go
+   - Tests for CreateCustomer
+   - Tests for GetCustomer
+   - Tests for UpdateCustomer
+   - Tests for DeleteCustomer
+   - Tests for CreateSubscription
+   - Tests for UpdateSubscription
+   - Tests for CancelSubscription
+   - Tests for GetSubscriptionStatus
+   - Tests for ListSubscriptions
+   - Tests for ResumeSubscription
+   - Tests for StripeConfig validation
+
+✅ backend/internal/application/billing/stripe_webhook_service_test.go
+   - Tests for handleSubscriptionCreated
+   - Tests for handleSubscriptionUpdated
+   - Tests for handleSubscriptionDeleted
+   - Tests for handleInvoicePaid
+   - Tests for handleInvoicePaymentFailed
+   - Tests for StripeSubscriptionEvent
+   - Tests for StripePaymentEvent
+
+E2E Tests (Created):
+✅ frontend/tests/e2e/saas/subscription.spec.ts
+   - Tests for subscription status display
+   - Tests for upgrade page navigation
+   - Tests for plan comparison display
+   - Tests for subscription API endpoints
+
+✅ frontend/tests/e2e/saas/feature-gate.spec.ts
+   - Tests for feature availability API
+   - Tests for feature gate UI
+   - Tests for basic feature access
+   - Tests for feature flag integration
+
+✅ frontend/tests/e2e/saas/usage-quota.spec.ts
+   - Tests for quota status API
+   - Tests for quota enforcement
+   - Tests for quota display
+   - Tests for quota reset tracking
+
+=== Tests Added to Improve Coverage ===
+
+quota_service_test.go:
+- TestCheckProductQuota
+- TestCheckUserQuota
+- TestCheckWarehouseQuota
+- TestCheckCustomerQuota
+- TestCheckSupplierQuota
+
+stripe_webhook_service_test.go:
+- TestStripeWebhookService_handleSubscriptionUpdated_StatusChanges
+- TestStripeWebhookService_handleSubscriptionUpdated_TenantNotFound
+- TestStripeWebhookService_handleSubscriptionDeleted_TenantNotFound
+- TestStripeWebhookService_handleInvoicePaymentFailed_TenantNotFound
+- TestStripeWebhookService_handleInvoicePaid_TenantNotFound
+- TestStripeWebhookService_handleSubscriptionUpdated_WithPlanChange
+- TestStripeWebhookService_handleSubscriptionUpdated_FallbackToCustomerID
+- TestStripeWebhookService_handleSubscriptionUpdated_NoCustomerID
+- TestStripeWebhookService_handleSubscriptionUpdated_DatabaseError
+- TestStripeWebhookService_handleSubscriptionDeleted_DatabaseError
+- TestStripeWebhookService_handleInvoicePaid_DatabaseError
+- TestStripeWebhookService_handleInvoicePaymentFailed_DatabaseError
+- TestStripeWebhookService_handleInvoicePaymentFailed_NonSubscriptionInvoice
+
+=== Acceptance Criteria Verification ===
+
+✅ 所有 SaaS 相关代码测试覆盖 >= 80%
+   - All packages exceed 80% coverage threshold
+   - Weighted average: 86.6%
+
+✅ E2E 测试覆盖关键用户流程
+   - Subscription management flow
+   - Feature gate functionality
+   - Usage quota tracking
+
+✅ Stripe 集成有完整的 Mock 测试
+   - stripe_adapter_test.go: 99.1% coverage
+   - All Stripe API operations mocked and tested
+   - Webhook handlers tested with mock events
+
+=== Decision ===
+[PASSED]: All acceptance criteria met

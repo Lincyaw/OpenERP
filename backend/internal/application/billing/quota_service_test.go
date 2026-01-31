@@ -286,6 +286,22 @@ func (m *mockTenantRepository) FindSubscriptionExpiring(ctx context.Context, wit
 	return args.Get(0).([]identity.Tenant), args.Error(1)
 }
 
+func (m *mockTenantRepository) FindByStripeCustomerID(ctx context.Context, customerID string) (*identity.Tenant, error) {
+	args := m.Called(ctx, customerID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*identity.Tenant), args.Error(1)
+}
+
+func (m *mockTenantRepository) FindByStripeSubscriptionID(ctx context.Context, subscriptionID string) (*identity.Tenant, error) {
+	args := m.Called(ctx, subscriptionID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*identity.Tenant), args.Error(1)
+}
+
 type mockUsageEventPublisher struct {
 	mock.Mock
 }
@@ -1115,6 +1131,133 @@ func TestGetUsageSummary_RepositoryErrors(t *testing.T) {
 
 		assert.Nil(t, summary)
 		assert.Error(t, err)
+	})
+}
+
+// Tests for convenience quota check methods
+
+func TestCheckProductQuota(t *testing.T) {
+	t.Run("returns nil when within quota", func(t *testing.T) {
+		quotaRepo := new(mockUsageQuotaRepository)
+		usageRepo := new(mockUsageRecordRepository)
+		tenantRepo := new(mockTenantRepository)
+		eventPublisher := new(mockUsageEventPublisher)
+
+		tenantID := uuid.New()
+		tenant := createTestTenant(identity.TenantPlanBasic)
+		tenant.ID = tenantID
+
+		quota := createTestQuota(billing.UsageTypeProductsSKU, 100, billing.OveragePolicyBlock)
+
+		tenantRepo.On("FindByID", mock.Anything, tenantID).Return(tenant, nil)
+		quotaRepo.On("FindEffectiveQuota", mock.Anything, tenantID, "basic", billing.UsageTypeProductsSKU).Return(quota, nil)
+		usageRepo.On("SumByTenantAndType", mock.Anything, tenantID, billing.UsageTypeProductsSKU, mock.Anything, mock.Anything).Return(int64(50), nil)
+
+		service := newTestQuotaService(quotaRepo, usageRepo, tenantRepo, eventPublisher)
+
+		err := service.CheckProductQuota(context.Background(), tenantID)
+
+		assert.NoError(t, err)
+	})
+}
+
+func TestCheckUserQuota(t *testing.T) {
+	t.Run("returns nil when within quota", func(t *testing.T) {
+		quotaRepo := new(mockUsageQuotaRepository)
+		usageRepo := new(mockUsageRecordRepository)
+		tenantRepo := new(mockTenantRepository)
+		eventPublisher := new(mockUsageEventPublisher)
+
+		tenantID := uuid.New()
+		tenant := createTestTenant(identity.TenantPlanBasic)
+		tenant.ID = tenantID
+
+		quota := createTestQuota(billing.UsageTypeActiveUsers, 10, billing.OveragePolicyBlock)
+
+		tenantRepo.On("FindByID", mock.Anything, tenantID).Return(tenant, nil)
+		quotaRepo.On("FindEffectiveQuota", mock.Anything, tenantID, "basic", billing.UsageTypeActiveUsers).Return(quota, nil)
+		usageRepo.On("SumByTenantAndType", mock.Anything, tenantID, billing.UsageTypeActiveUsers, mock.Anything, mock.Anything).Return(int64(5), nil)
+
+		service := newTestQuotaService(quotaRepo, usageRepo, tenantRepo, eventPublisher)
+
+		err := service.CheckUserQuota(context.Background(), tenantID)
+
+		assert.NoError(t, err)
+	})
+}
+
+func TestCheckWarehouseQuota(t *testing.T) {
+	t.Run("returns nil when within quota", func(t *testing.T) {
+		quotaRepo := new(mockUsageQuotaRepository)
+		usageRepo := new(mockUsageRecordRepository)
+		tenantRepo := new(mockTenantRepository)
+		eventPublisher := new(mockUsageEventPublisher)
+
+		tenantID := uuid.New()
+		tenant := createTestTenant(identity.TenantPlanBasic)
+		tenant.ID = tenantID
+
+		quota := createTestQuota(billing.UsageTypeWarehouses, 5, billing.OveragePolicyBlock)
+
+		tenantRepo.On("FindByID", mock.Anything, tenantID).Return(tenant, nil)
+		quotaRepo.On("FindEffectiveQuota", mock.Anything, tenantID, "basic", billing.UsageTypeWarehouses).Return(quota, nil)
+		usageRepo.On("SumByTenantAndType", mock.Anything, tenantID, billing.UsageTypeWarehouses, mock.Anything, mock.Anything).Return(int64(2), nil)
+
+		service := newTestQuotaService(quotaRepo, usageRepo, tenantRepo, eventPublisher)
+
+		err := service.CheckWarehouseQuota(context.Background(), tenantID)
+
+		assert.NoError(t, err)
+	})
+}
+
+func TestCheckCustomerQuota(t *testing.T) {
+	t.Run("returns nil when within quota", func(t *testing.T) {
+		quotaRepo := new(mockUsageQuotaRepository)
+		usageRepo := new(mockUsageRecordRepository)
+		tenantRepo := new(mockTenantRepository)
+		eventPublisher := new(mockUsageEventPublisher)
+
+		tenantID := uuid.New()
+		tenant := createTestTenant(identity.TenantPlanBasic)
+		tenant.ID = tenantID
+
+		quota := createTestQuota(billing.UsageTypeCustomers, 500, billing.OveragePolicyBlock)
+
+		tenantRepo.On("FindByID", mock.Anything, tenantID).Return(tenant, nil)
+		quotaRepo.On("FindEffectiveQuota", mock.Anything, tenantID, "basic", billing.UsageTypeCustomers).Return(quota, nil)
+		usageRepo.On("SumByTenantAndType", mock.Anything, tenantID, billing.UsageTypeCustomers, mock.Anything, mock.Anything).Return(int64(100), nil)
+
+		service := newTestQuotaService(quotaRepo, usageRepo, tenantRepo, eventPublisher)
+
+		err := service.CheckCustomerQuota(context.Background(), tenantID)
+
+		assert.NoError(t, err)
+	})
+}
+
+func TestCheckSupplierQuota(t *testing.T) {
+	t.Run("returns nil when within quota", func(t *testing.T) {
+		quotaRepo := new(mockUsageQuotaRepository)
+		usageRepo := new(mockUsageRecordRepository)
+		tenantRepo := new(mockTenantRepository)
+		eventPublisher := new(mockUsageEventPublisher)
+
+		tenantID := uuid.New()
+		tenant := createTestTenant(identity.TenantPlanBasic)
+		tenant.ID = tenantID
+
+		quota := createTestQuota(billing.UsageTypeSuppliers, 200, billing.OveragePolicyBlock)
+
+		tenantRepo.On("FindByID", mock.Anything, tenantID).Return(tenant, nil)
+		quotaRepo.On("FindEffectiveQuota", mock.Anything, tenantID, "basic", billing.UsageTypeSuppliers).Return(quota, nil)
+		usageRepo.On("SumByTenantAndType", mock.Anything, tenantID, billing.UsageTypeSuppliers, mock.Anything, mock.Anything).Return(int64(50), nil)
+
+		service := newTestQuotaService(quotaRepo, usageRepo, tenantRepo, eventPublisher)
+
+		err := service.CheckSupplierQuota(context.Background(), tenantID)
+
+		assert.NoError(t, err)
 	})
 }
 

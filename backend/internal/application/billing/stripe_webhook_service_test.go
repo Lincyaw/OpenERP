@@ -3,6 +3,7 @@ package billing
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"testing"
 	"time"
 
@@ -471,6 +472,510 @@ func TestStripeWebhookService_handleInvoicePaymentFailed_AlreadySuspended(t *tes
 	assert.NoError(t, err)
 	assert.True(t, tenant.IsSuspended())
 	mockRepo.AssertExpectations(t)
+}
+
+func TestStripeWebhookService_handleSubscriptionUpdated_StatusChanges(t *testing.T) {
+	mockRepo := new(MockTenantRepository)
+	service := createWebhookTestService(t, mockRepo)
+	ctx := context.Background()
+
+	t.Run("activates suspended tenant on active status", func(t *testing.T) {
+		tenant := createWebhookTestTenant(t)
+		_ = tenant.Suspend()
+
+		subscription := stripe.Subscription{
+			ID: "sub_test123",
+			Customer: &stripe.Customer{
+				ID: "cus_test123",
+			},
+			Status:             stripe.SubscriptionStatusActive,
+			CurrentPeriodStart: time.Now().Unix(),
+			CurrentPeriodEnd:   time.Now().Add(30 * 24 * time.Hour).Unix(),
+		}
+
+		subscriptionJSON, _ := json.Marshal(subscription)
+		event := stripe.Event{
+			ID:   "evt_test123",
+			Type: "customer.subscription.updated",
+			Data: &stripe.EventData{
+				Raw: subscriptionJSON,
+			},
+		}
+
+		mockRepo.On("FindByStripeSubscriptionID", ctx, "sub_test123").Return(tenant, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*identity.Tenant")).Return(nil)
+
+		err := service.handleSubscriptionUpdated(ctx, event)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("handles past_due status", func(t *testing.T) {
+		mockRepo := new(MockTenantRepository)
+		service := createWebhookTestService(t, mockRepo)
+		tenant := createWebhookTestTenant(t)
+
+		subscription := stripe.Subscription{
+			ID: "sub_test123",
+			Customer: &stripe.Customer{
+				ID: "cus_test123",
+			},
+			Status:             stripe.SubscriptionStatusPastDue,
+			CurrentPeriodStart: time.Now().Unix(),
+			CurrentPeriodEnd:   time.Now().Add(30 * 24 * time.Hour).Unix(),
+		}
+
+		subscriptionJSON, _ := json.Marshal(subscription)
+		event := stripe.Event{
+			ID:   "evt_test123",
+			Type: "customer.subscription.updated",
+			Data: &stripe.EventData{
+				Raw: subscriptionJSON,
+			},
+		}
+
+		mockRepo.On("FindByStripeSubscriptionID", ctx, "sub_test123").Return(tenant, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*identity.Tenant")).Return(nil)
+
+		err := service.handleSubscriptionUpdated(ctx, event)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("handles canceled status", func(t *testing.T) {
+		mockRepo := new(MockTenantRepository)
+		service := createWebhookTestService(t, mockRepo)
+		tenant := createWebhookTestTenant(t)
+
+		subscription := stripe.Subscription{
+			ID: "sub_test123",
+			Customer: &stripe.Customer{
+				ID: "cus_test123",
+			},
+			Status:             stripe.SubscriptionStatusCanceled,
+			CurrentPeriodStart: time.Now().Unix(),
+			CurrentPeriodEnd:   time.Now().Add(30 * 24 * time.Hour).Unix(),
+		}
+
+		subscriptionJSON, _ := json.Marshal(subscription)
+		event := stripe.Event{
+			ID:   "evt_test123",
+			Type: "customer.subscription.updated",
+			Data: &stripe.EventData{
+				Raw: subscriptionJSON,
+			},
+		}
+
+		mockRepo.On("FindByStripeSubscriptionID", ctx, "sub_test123").Return(tenant, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*identity.Tenant")).Return(nil)
+
+		err := service.handleSubscriptionUpdated(ctx, event)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+func TestStripeWebhookService_handleSubscriptionUpdated_TenantNotFound(t *testing.T) {
+	mockRepo := new(MockTenantRepository)
+	service := createWebhookTestService(t, mockRepo)
+	ctx := context.Background()
+
+	subscription := stripe.Subscription{
+		ID: "sub_unknown",
+		Customer: &stripe.Customer{
+			ID: "cus_unknown",
+		},
+		Status: stripe.SubscriptionStatusActive,
+	}
+
+	subscriptionJSON, _ := json.Marshal(subscription)
+	event := stripe.Event{
+		ID:   "evt_test123",
+		Type: "customer.subscription.updated",
+		Data: &stripe.EventData{
+			Raw: subscriptionJSON,
+		},
+	}
+
+	// First lookup by subscription ID fails
+	mockRepo.On("FindByStripeSubscriptionID", ctx, "sub_unknown").Return(nil, shared.ErrNotFound)
+	// Then lookup by customer ID also fails
+	mockRepo.On("FindByStripeCustomerID", ctx, "cus_unknown").Return(nil, shared.ErrNotFound)
+
+	err := service.handleSubscriptionUpdated(ctx, event)
+
+	// Should not error, just skip
+	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestStripeWebhookService_handleSubscriptionDeleted_TenantNotFound(t *testing.T) {
+	mockRepo := new(MockTenantRepository)
+	service := createWebhookTestService(t, mockRepo)
+	ctx := context.Background()
+
+	subscription := stripe.Subscription{
+		ID: "sub_unknown",
+		Customer: &stripe.Customer{
+			ID: "cus_unknown",
+		},
+		Status: stripe.SubscriptionStatusCanceled,
+	}
+
+	subscriptionJSON, _ := json.Marshal(subscription)
+	event := stripe.Event{
+		ID:   "evt_test123",
+		Type: "customer.subscription.deleted",
+		Data: &stripe.EventData{
+			Raw: subscriptionJSON,
+		},
+	}
+
+	mockRepo.On("FindByStripeSubscriptionID", ctx, "sub_unknown").Return(nil, shared.ErrNotFound)
+
+	err := service.handleSubscriptionDeleted(ctx, event)
+
+	// Should not error, just skip
+	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestStripeWebhookService_handleInvoicePaymentFailed_TenantNotFound(t *testing.T) {
+	mockRepo := new(MockTenantRepository)
+	service := createWebhookTestService(t, mockRepo)
+	ctx := context.Background()
+
+	invoice := stripe.Invoice{
+		ID: "in_test123",
+		Customer: &stripe.Customer{
+			ID: "cus_unknown",
+		},
+		Subscription: &stripe.Subscription{
+			ID: "sub_test123",
+		},
+	}
+
+	invoiceJSON, _ := json.Marshal(invoice)
+	event := stripe.Event{
+		ID:   "evt_test123",
+		Type: "invoice.payment_failed",
+		Data: &stripe.EventData{
+			Raw: invoiceJSON,
+		},
+	}
+
+	mockRepo.On("FindByStripeCustomerID", ctx, "cus_unknown").Return(nil, shared.ErrNotFound)
+
+	err := service.handleInvoicePaymentFailed(ctx, event)
+
+	// Should not error, just skip
+	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestStripeWebhookService_handleInvoicePaid_TenantNotFound(t *testing.T) {
+	mockRepo := new(MockTenantRepository)
+	service := createWebhookTestService(t, mockRepo)
+	ctx := context.Background()
+
+	invoice := stripe.Invoice{
+		ID: "in_test123",
+		Customer: &stripe.Customer{
+			ID: "cus_unknown",
+		},
+		Subscription: &stripe.Subscription{
+			ID: "sub_test123",
+		},
+		PeriodEnd: time.Now().Add(30 * 24 * time.Hour).Unix(),
+	}
+
+	invoiceJSON, _ := json.Marshal(invoice)
+	event := stripe.Event{
+		ID:   "evt_test123",
+		Type: "invoice.paid",
+		Data: &stripe.EventData{
+			Raw: invoiceJSON,
+		},
+	}
+
+	mockRepo.On("FindByStripeCustomerID", ctx, "cus_unknown").Return(nil, shared.ErrNotFound)
+
+	err := service.handleInvoicePaid(ctx, event)
+
+	// Should not error, just skip
+	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestStripeWebhookService_handleSubscriptionUpdated_WithPlanChange(t *testing.T) {
+	mockRepo := new(MockTenantRepository)
+	service := createWebhookTestService(t, mockRepo)
+	ctx := context.Background()
+
+	tenant := createWebhookTestTenant(t)
+	_ = tenant.SetPlan(identity.TenantPlanBasic)
+
+	subscription := stripe.Subscription{
+		ID: "sub_test123",
+		Customer: &stripe.Customer{
+			ID: "cus_test123",
+		},
+		Status:             stripe.SubscriptionStatusActive,
+		CurrentPeriodStart: time.Now().Unix(),
+		CurrentPeriodEnd:   time.Now().Add(30 * 24 * time.Hour).Unix(),
+		Metadata: map[string]string{
+			"plan_id": "pro",
+		},
+	}
+
+	subscriptionJSON, _ := json.Marshal(subscription)
+	event := stripe.Event{
+		ID:   "evt_test123",
+		Type: "customer.subscription.updated",
+		Data: &stripe.EventData{
+			Raw: subscriptionJSON,
+		},
+	}
+
+	mockRepo.On("FindByStripeSubscriptionID", ctx, "sub_test123").Return(tenant, nil)
+	mockRepo.On("Save", ctx, mock.AnythingOfType("*identity.Tenant")).Return(nil)
+
+	err := service.handleSubscriptionUpdated(ctx, event)
+
+	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestStripeWebhookService_handleSubscriptionUpdated_FallbackToCustomerID(t *testing.T) {
+	mockRepo := new(MockTenantRepository)
+	service := createWebhookTestService(t, mockRepo)
+	ctx := context.Background()
+
+	tenant := createWebhookTestTenant(t)
+
+	subscription := stripe.Subscription{
+		ID: "sub_new123",
+		Customer: &stripe.Customer{
+			ID: "cus_test123",
+		},
+		Status:             stripe.SubscriptionStatusActive,
+		CurrentPeriodStart: time.Now().Unix(),
+		CurrentPeriodEnd:   time.Now().Add(30 * 24 * time.Hour).Unix(),
+	}
+
+	subscriptionJSON, _ := json.Marshal(subscription)
+	event := stripe.Event{
+		ID:   "evt_test123",
+		Type: "customer.subscription.updated",
+		Data: &stripe.EventData{
+			Raw: subscriptionJSON,
+		},
+	}
+
+	// First lookup by subscription ID fails
+	mockRepo.On("FindByStripeSubscriptionID", ctx, "sub_new123").Return(nil, shared.ErrNotFound)
+	// Then lookup by customer ID succeeds
+	mockRepo.On("FindByStripeCustomerID", ctx, "cus_test123").Return(tenant, nil)
+	mockRepo.On("Save", ctx, mock.AnythingOfType("*identity.Tenant")).Return(nil)
+
+	err := service.handleSubscriptionUpdated(ctx, event)
+
+	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestStripeWebhookService_handleSubscriptionUpdated_NoCustomerID(t *testing.T) {
+	mockRepo := new(MockTenantRepository)
+	service := createWebhookTestService(t, mockRepo)
+	ctx := context.Background()
+
+	subscription := stripe.Subscription{
+		ID:                 "sub_new123",
+		Customer:           nil, // No customer
+		Status:             stripe.SubscriptionStatusActive,
+		CurrentPeriodStart: time.Now().Unix(),
+		CurrentPeriodEnd:   time.Now().Add(30 * 24 * time.Hour).Unix(),
+	}
+
+	subscriptionJSON, _ := json.Marshal(subscription)
+	event := stripe.Event{
+		ID:   "evt_test123",
+		Type: "customer.subscription.updated",
+		Data: &stripe.EventData{
+			Raw: subscriptionJSON,
+		},
+	}
+
+	// First lookup by subscription ID fails
+	mockRepo.On("FindByStripeSubscriptionID", ctx, "sub_new123").Return(nil, shared.ErrNotFound)
+
+	err := service.handleSubscriptionUpdated(ctx, event)
+
+	// Should not error, just skip
+	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestStripeWebhookService_handleSubscriptionUpdated_DatabaseError(t *testing.T) {
+	mockRepo := new(MockTenantRepository)
+	service := createWebhookTestService(t, mockRepo)
+	ctx := context.Background()
+
+	subscription := stripe.Subscription{
+		ID: "sub_test123",
+		Customer: &stripe.Customer{
+			ID: "cus_test123",
+		},
+		Status: stripe.SubscriptionStatusActive,
+	}
+
+	subscriptionJSON, _ := json.Marshal(subscription)
+	event := stripe.Event{
+		ID:   "evt_test123",
+		Type: "customer.subscription.updated",
+		Data: &stripe.EventData{
+			Raw: subscriptionJSON,
+		},
+	}
+
+	mockRepo.On("FindByStripeSubscriptionID", ctx, "sub_test123").Return(nil, errors.New("database error"))
+
+	err := service.handleSubscriptionUpdated(ctx, event)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to find tenant")
+	mockRepo.AssertExpectations(t)
+}
+
+func TestStripeWebhookService_handleSubscriptionDeleted_DatabaseError(t *testing.T) {
+	mockRepo := new(MockTenantRepository)
+	service := createWebhookTestService(t, mockRepo)
+	ctx := context.Background()
+
+	subscription := stripe.Subscription{
+		ID: "sub_test123",
+		Customer: &stripe.Customer{
+			ID: "cus_test123",
+		},
+		Status: stripe.SubscriptionStatusCanceled,
+	}
+
+	subscriptionJSON, _ := json.Marshal(subscription)
+	event := stripe.Event{
+		ID:   "evt_test123",
+		Type: "customer.subscription.deleted",
+		Data: &stripe.EventData{
+			Raw: subscriptionJSON,
+		},
+	}
+
+	mockRepo.On("FindByStripeSubscriptionID", ctx, "sub_test123").Return(nil, errors.New("database error"))
+
+	err := service.handleSubscriptionDeleted(ctx, event)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to find tenant")
+	mockRepo.AssertExpectations(t)
+}
+
+func TestStripeWebhookService_handleInvoicePaid_DatabaseError(t *testing.T) {
+	mockRepo := new(MockTenantRepository)
+	service := createWebhookTestService(t, mockRepo)
+	ctx := context.Background()
+
+	invoice := stripe.Invoice{
+		ID: "in_test123",
+		Customer: &stripe.Customer{
+			ID: "cus_test123",
+		},
+		Subscription: &stripe.Subscription{
+			ID: "sub_test123",
+		},
+		PeriodEnd: time.Now().Add(30 * 24 * time.Hour).Unix(),
+	}
+
+	invoiceJSON, _ := json.Marshal(invoice)
+	event := stripe.Event{
+		ID:   "evt_test123",
+		Type: "invoice.paid",
+		Data: &stripe.EventData{
+			Raw: invoiceJSON,
+		},
+	}
+
+	mockRepo.On("FindByStripeCustomerID", ctx, "cus_test123").Return(nil, errors.New("database error"))
+
+	err := service.handleInvoicePaid(ctx, event)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to find tenant")
+	mockRepo.AssertExpectations(t)
+}
+
+func TestStripeWebhookService_handleInvoicePaymentFailed_DatabaseError(t *testing.T) {
+	mockRepo := new(MockTenantRepository)
+	service := createWebhookTestService(t, mockRepo)
+	ctx := context.Background()
+
+	invoice := stripe.Invoice{
+		ID: "in_test123",
+		Customer: &stripe.Customer{
+			ID: "cus_test123",
+		},
+		Subscription: &stripe.Subscription{
+			ID: "sub_test123",
+		},
+	}
+
+	invoiceJSON, _ := json.Marshal(invoice)
+	event := stripe.Event{
+		ID:   "evt_test123",
+		Type: "invoice.payment_failed",
+		Data: &stripe.EventData{
+			Raw: invoiceJSON,
+		},
+	}
+
+	mockRepo.On("FindByStripeCustomerID", ctx, "cus_test123").Return(nil, errors.New("database error"))
+
+	err := service.handleInvoicePaymentFailed(ctx, event)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to find tenant")
+	mockRepo.AssertExpectations(t)
+}
+
+func TestStripeWebhookService_handleInvoicePaymentFailed_NonSubscriptionInvoice(t *testing.T) {
+	mockRepo := new(MockTenantRepository)
+	service := createWebhookTestService(t, mockRepo)
+	ctx := context.Background()
+
+	// Invoice without subscription (one-time payment)
+	invoice := stripe.Invoice{
+		ID: "in_test123",
+		Customer: &stripe.Customer{
+			ID: "cus_test123",
+		},
+		Subscription: nil, // No subscription
+	}
+
+	invoiceJSON, _ := json.Marshal(invoice)
+	event := stripe.Event{
+		ID:   "evt_test123",
+		Type: "invoice.payment_failed",
+		Data: &stripe.EventData{
+			Raw: invoiceJSON,
+		},
+	}
+
+	// Should skip without calling repo
+	err := service.handleInvoicePaymentFailed(ctx, event)
+
+	assert.NoError(t, err)
+	mockRepo.AssertNotCalled(t, "FindByStripeCustomerID")
 }
 
 func TestStripeSubscriptionEvent(t *testing.T) {
