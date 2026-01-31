@@ -154,6 +154,9 @@ type TenantModel struct {
 	ConfigTimezone      string `gorm:"column:config_timezone;type:varchar(50);default:'Asia/Shanghai'"`
 	ConfigLocale        string `gorm:"column:config_locale;type:varchar(20);default:'zh-CN'"`
 	Notes               string `gorm:"type:text"`
+	// Stripe billing fields
+	StripeCustomerID     string `gorm:"column:stripe_customer_id;type:varchar(255);index"`
+	StripeSubscriptionID string `gorm:"column:stripe_subscription_id;type:varchar(255);index"`
 }
 
 // TableName returns the table name for GORM
@@ -196,7 +199,9 @@ func (m *TenantModel) ToDomain() *identity.Tenant {
 			Timezone:      m.ConfigTimezone,
 			Locale:        m.ConfigLocale,
 		},
-		Notes: m.Notes,
+		Notes:                m.Notes,
+		StripeCustomerID:     m.StripeCustomerID,
+		StripeSubscriptionID: m.StripeSubscriptionID,
 	}
 }
 
@@ -226,6 +231,8 @@ func (m *TenantModel) FromDomain(t *identity.Tenant) {
 	m.ConfigTimezone = t.Config.Timezone
 	m.ConfigLocale = t.Config.Locale
 	m.Notes = t.Notes
+	m.StripeCustomerID = t.StripeCustomerID
+	m.StripeSubscriptionID = t.StripeSubscriptionID
 }
 
 // TenantModelFromDomain creates a new persistence model from a domain Tenant entity.

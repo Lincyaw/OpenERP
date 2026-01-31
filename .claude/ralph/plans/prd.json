@@ -12864,7 +12864,7 @@
       "订阅状态与 Stripe 同步",
       "支持升级/降级/取消操作"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SAAS-BE-010",

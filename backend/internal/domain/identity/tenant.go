@@ -60,21 +60,23 @@ func DefaultTenantConfig() TenantConfig {
 // It is the aggregate root for tenant-related operations
 type Tenant struct {
 	shared.BaseAggregateRoot
-	Code         string
-	Name         string
-	ShortName    string
-	Status       TenantStatus
-	Plan         TenantPlan
-	ContactName  string
-	ContactPhone string
-	ContactEmail string
-	Address      string
-	LogoURL      string
-	Domain       string // Custom subdomain
-	ExpiresAt    *time.Time
-	TrialEndsAt  *time.Time // Trial period end date
-	Config       TenantConfig
-	Notes        string
+	Code                 string
+	Name                 string
+	ShortName            string
+	Status               TenantStatus
+	Plan                 TenantPlan
+	ContactName          string
+	ContactPhone         string
+	ContactEmail         string
+	Address              string
+	LogoURL              string
+	Domain               string // Custom subdomain
+	ExpiresAt            *time.Time
+	TrialEndsAt          *time.Time // Trial period end date
+	Config               TenantConfig
+	Notes                string
+	StripeCustomerID     string // Stripe customer ID for billing
+	StripeSubscriptionID string // Active Stripe subscription ID
 }
 
 // NewTenant creates a new tenant with required fields
@@ -404,6 +406,37 @@ func (t *Tenant) CanAddProduct(currentProductCount int) bool {
 // GetID returns the tenant ID (implements a helper for getting UUID)
 func (t *Tenant) GetTenantID() uuid.UUID {
 	return t.ID
+}
+
+// SetStripeCustomerID sets the Stripe customer ID for billing
+func (t *Tenant) SetStripeCustomerID(customerID string) {
+	t.StripeCustomerID = customerID
+	t.UpdatedAt = time.Now()
+	t.IncrementVersion()
+}
+
+// SetStripeSubscriptionID sets the active Stripe subscription ID
+func (t *Tenant) SetStripeSubscriptionID(subscriptionID string) {
+	t.StripeSubscriptionID = subscriptionID
+	t.UpdatedAt = time.Now()
+	t.IncrementVersion()
+}
+
+// HasStripeCustomer returns true if the tenant has a Stripe customer ID
+func (t *Tenant) HasStripeCustomer() bool {
+	return t.StripeCustomerID != ""
+}
+
+// HasActiveSubscription returns true if the tenant has an active Stripe subscription
+func (t *Tenant) HasActiveSubscription() bool {
+	return t.StripeSubscriptionID != ""
+}
+
+// ClearStripeSubscription clears the Stripe subscription ID (e.g., after cancellation)
+func (t *Tenant) ClearStripeSubscription() {
+	t.StripeSubscriptionID = ""
+	t.UpdatedAt = time.Now()
+	t.IncrementVersion()
 }
 
 // Validation functions

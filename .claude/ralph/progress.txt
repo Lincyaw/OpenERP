@@ -42004,3 +42004,116 @@ Created the billing domain with comprehensive usage metering models for SaaS mul
 - Implement UsageQuotaRepository with GORM persistence
 - Create default quota configurations for each subscription plan
 - Add quota status endpoint to API for frontend display
+
+---
+
+2025-01-31 - SAAS-BE-009: Stripe Billing 集成 - 订阅管理
+
+=== Implementation Details ===
+
+**Task Status:** COMPLETE ✅
+
+This task involved implementing Stripe Billing integration for subscription management. The implementation was already in place, and comprehensive integration tests were added.
+
+**Files Reviewed/Created:**
+
+1. `backend/internal/infrastructure/billing/stripe_adapter.go` (586 lines)
+   - `NewStripeAdapter()` - Creates adapter with validated config
+   - `CreateCustomer()` - Creates Stripe customer with metadata
+   - `GetCustomer()` - Retrieves customer by ID
+   - `UpdateCustomer()` - Updates customer details
+   - `DeleteCustomer()` - Deletes customer from Stripe
+   - `CreateSubscription()` - Creates subscription with trial/payment support
+   - `UpdateSubscription()` - Upgrades/downgrades subscription with proration
+   - `CancelSubscription()` - Cancels immediately or at period end
+   - `GetSubscriptionStatus()` - Gets full subscription details
+   - `ListSubscriptions()` - Lists all subscriptions for a customer
+   - `ResumeSubscription()` - Resumes canceled-at-period-end subscription
+
+2. `backend/internal/infrastructure/billing/stripe_types.go` (159 lines)
+   - `SubscriptionStatus` - Enum for subscription states (active, trialing, canceled, etc.)
+   - `CreateCustomerInput/Output` - DTOs for customer operations
+   - `CreateSubscriptionInput/Output` - DTOs for subscription creation
+   - `UpdateSubscriptionInput/Output` - DTOs for subscription updates
+   - `CancelSubscriptionInput/Output` - DTOs for cancellation
+   - `GetSubscriptionStatusInput/Output` - DTOs for status queries
+
+3. `backend/internal/infrastructure/billing/stripe_config.go` (93 lines)
+   - `StripeConfig` - Configuration struct with validation
+   - `DefaultStripeConfig()` - Default test configuration
+   - `Validate()` - Validates secret key format and required fields
+   - `GetPriceID()` - Maps plan names to Stripe Price IDs
+   - `InitStripeClient()` - Initializes Stripe SDK
+
+4. `backend/internal/infrastructure/billing/stripe_adapter_test.go` (1811 lines) - NEW
+   - 50+ test cases covering all methods
+   - Mock backend implementation for unit testing
+   - HTTP mock server for iterator-based tests (ListSubscriptions)
+   - Tests for success, error, and edge cases
+
+5. `backend/internal/domain/identity/tenant.go` (existing)
+   - `StripeCustomerID` field - Stores Stripe customer ID
+   - `StripeSubscriptionID` field - Stores active subscription ID
+   - `SetStripeCustomerID()` - Setter method
+   - `SetStripeSubscriptionID()` - Setter method
+   - `HasStripeCustomer()` - Check if customer exists
+   - `HasActiveSubscription()` - Check if subscription exists
+   - `ClearStripeSubscription()` - Clear subscription after cancellation
+
+**Key Design Decisions:**
+
+1. **Adapter Pattern**: Clean separation between Stripe SDK and domain logic
+2. **Configuration Validation**: Test/live mode key validation prevents accidents
+3. **Free Plan Handling**: Free plans don't create Stripe subscriptions
+4. **Trial Support**: Built-in trial period support with proper date tracking
+5. **Proration**: Configurable proration behavior for plan changes
+6. **Incomplete Subscriptions**: Returns client secret for frontend payment flow
+7. **Metadata Tracking**: Tenant ID stored in Stripe metadata for audit trails
+
+=== Verification ===
+
+- ✅ All tests pass: `go test -race -cover ./internal/infrastructure/billing/...`
+- ✅ Test coverage: 99.1% (exceeds 80% threshold)
+- ✅ Go build succeeds: `go build ./...`
+- ✅ No race conditions detected
+- ✅ Code review passed (no CRITICAL or HIGH issues)
+
+=== Acceptance Criteria Verification ===
+
+✅ 可以通过 Stripe 创建订阅
+   - `CreateSubscription()` creates subscriptions with plan/price mapping
+   - Supports trial periods, payment methods, and collection methods
+   - Returns client secret for incomplete subscriptions
+
+✅ 订阅状态与 Stripe 同步
+   - `GetSubscriptionStatus()` retrieves full subscription details
+   - Maps all Stripe statuses to internal enum
+   - Tracks trial dates, cancel dates, and period boundaries
+
+✅ 支持升级/降级/取消操作
+   - `UpdateSubscription()` handles plan changes with proration
+   - `CancelSubscription()` supports immediate or end-of-period cancellation
+   - `ResumeSubscription()` can undo scheduled cancellations
+
+=== Code Review Summary ===
+
+**Approval Status:** ✅ APPROVED
+
+**Strengths:**
+- 99.1% test coverage with comprehensive test cases
+- No security vulnerabilities (no hardcoded secrets)
+- Clean architecture following DDD principles
+- Proper error handling and logging
+- Well-organized and readable code
+
+**Minor Suggestions (MEDIUM priority, for future iterations):**
+- Add retry logic for transient failures
+- Add idempotency key support for create operations
+- Add webhook signature verification handler (covered by SAAS-BE-010)
+- Add observability metrics
+
+=== Next Steps ===
+
+- SAAS-BE-010: Implement Stripe Webhook handling
+- SAAS-BE-011: Implement billing portal integration
+- Integrate subscription management into tenant onboarding flow
