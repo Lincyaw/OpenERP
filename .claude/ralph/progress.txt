@@ -43274,3 +43274,63 @@ Created comprehensive documentation for the SaaS billing system covering:
 === Next Steps ===
 - Consider adding API endpoint to query audit logs
 - May want to add cache layer for frequently accessed plan features
+
+2026-01-31 - SAAS-FE-007: 在设置页面添加订阅与计费分区
+
+=== Implementation Details ===
+- Modified frontend/src/pages/user/Settings.tsx
+  - Added imports: useNavigate, Tag, Skeleton, IconCreditCard
+  - Added useGetCurrentUsage hook to fetch current plan data
+  - Added handleManageSubscription callback (navigates to /subscription)
+  - Added handleViewBilling callback (navigates to /billing)
+  - Added new "Subscription & Billing" Card section with:
+    - IconCreditCard icon in section header
+    - Current plan display with Tag component (shows Free/Basic/Pro/Enterprise)
+    - Loading skeleton while fetching plan data
+    - "Manage Subscription" button (primary, navigates to /subscription)
+    - "View Billing" button (navigates to /billing)
+    - Consistent styling with other settings sections
+
+- Added translation keys in both locale files:
+  - frontend/src/locales/en-US/system.json
+  - frontend/src/locales/zh-CN/system.json
+  - Keys added under settings.subscription:
+    - title: "Subscription & Billing" / "订阅与计费"
+    - description: "Manage your subscription plan and billing" / "管理您的订阅计划和账单"
+    - currentPlan: "Current Plan" / "当前计划"
+    - manage: "Manage Subscription" / "管理订阅"
+    - billingHistory: "Billing History" / "账单历史"
+    - billingHistoryDesc: "View invoices and payment history" / "查看发票和付款记录"
+    - viewBilling: "View Billing" / "查看账单"
+
+=== Files Modified ===
+- frontend/src/pages/user/Settings.tsx
+- frontend/src/locales/en-US/system.json
+- frontend/src/locales/zh-CN/system.json
+
+=== Verification ===
+- TypeScript type-check: PASSED (tsc --noEmit)
+- ESLint: PASSED (no errors in Settings.tsx)
+- Routes /subscription and /billing already exist (implemented in previous tasks)
+
+=== Acceptance Criteria Met ===
+✓ 设置页面显示「订阅与计费」分区
+✓ 显示当前计划名称（Free/Basic/Pro/Enterprise）via getPlanDisplayName()
+✓ 按钮点击正确跳转 (/subscription, /billing)
+✓ 样式与其他设置分区一致 (uses same CSS classes and layout)
+
+=== Design Decisions ===
+1. Used useGetCurrentUsage API to fetch plan data (consistent with SubscriptionPage)
+2. Used getPlanDisplayName() for localized plan names
+3. Added loading skeleton for better UX while fetching data
+4. Placed subscription section before Data Management (more important for users)
+5. Used IconCreditCard icon (consistent with billing/payment theme)
+
+=== Notes ===
+- The subscription section integrates with existing /subscription and /billing pages
+- Plan data is fetched from the same API used by Dashboard and SubscriptionPage
+- Fallback to 'free' plan if API fails or returns no data
+
+=== Next Steps ===
+- Consider adding subscription status indicator (active/expired/trial)
+- May want to show days remaining for trial users

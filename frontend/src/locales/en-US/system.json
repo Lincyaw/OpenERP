@@ -559,6 +559,15 @@
       "clearCacheDesc": "Clear locally cached data without affecting account information",
       "clearCacheBtn": "Clear Cache"
     },
+    "subscription": {
+      "title": "Subscription & Billing",
+      "description": "Manage your subscription plan and billing",
+      "currentPlan": "Current Plan",
+      "manage": "Manage Subscription",
+      "billingHistory": "Billing History",
+      "billingHistoryDesc": "View invoices and payment history",
+      "viewBilling": "View Billing"
+    },
     "messages": {
       "languageChanged": "Language changed",
       "themeChanged": "Theme changed",

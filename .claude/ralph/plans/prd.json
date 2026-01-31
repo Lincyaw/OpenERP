@@ -13047,7 +13047,7 @@
       "样式与其他设置分区一致"
     ],
     "context": "Settings页面是用户管理账户的主要入口，添加计费分区符合用户心智模型，与Notion、Slack等SaaS产品的设计一致。",
-    "passes": false
+    "passes": true
   },
   {
     "id": "SAAS-FE-008",

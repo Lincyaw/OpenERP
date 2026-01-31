@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import {
   Card,
   Typography,
@@ -10,11 +11,22 @@ import {
   Divider,
   RadioGroup,
   Radio,
+  Tag,
+  Skeleton,
 } from '@douyinfe/semi-ui-19'
-import { IconLanguage, IconMoon, IconSun, IconBell, IconDelete } from '@douyinfe/semi-icons'
+import {
+  IconLanguage,
+  IconMoon,
+  IconSun,
+  IconBell,
+  IconDelete,
+  IconCreditCard,
+} from '@douyinfe/semi-icons'
 
 import { Container } from '@/components/common/layout'
 import { useAppStore } from '@/store'
+import { useGetCurrentUsage } from '@/api/usage'
+import { getPlanDisplayName, type TenantPlan } from '@/store/featureStore'
 
 import './Settings.css'
 
@@ -31,6 +43,7 @@ const { Title, Text } = Typography
  */
 export default function SettingsPage() {
   const { t, i18n } = useTranslation('system')
+  const navigate = useNavigate()
 
   // App store
   const theme = useAppStore((state) => state.theme)
@@ -42,6 +55,11 @@ export default function SettingsPage() {
   const [notifications, setNotifications] = useState(true)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [autoRefresh, setAutoRefresh] = useState(true)
+
+  // Fetch current usage/plan data
+  const { data: usageResponse, isLoading: isUsageLoading } = useGetCurrentUsage()
+  const usageData = usageResponse?.status === 200 ? usageResponse.data.data : null
+  const currentPlan = (usageData?.plan || 'free') as TenantPlan
 
   // Language options
   const languageOptions = useMemo(
@@ -87,6 +105,16 @@ export default function SettingsPage() {
 
     Toast.success(t('settings.messages.cacheCleared'))
   }, [t])
+
+  // Navigate to subscription page
+  const handleManageSubscription = useCallback(() => {
+    navigate('/subscription')
+  }, [navigate])
+
+  // Navigate to billing history page
+  const handleViewBilling = useCallback(() => {
+    navigate('/billing')
+  }, [navigate])
 
   return (
     <Container size="md" className="settings-page">
@@ -205,6 +233,49 @@ export default function SettingsPage() {
               </Text>
             </div>
             <Switch checked={autoRefresh} onChange={setAutoRefresh} />
+          </div>
+        </div>
+      </Card>
+
+      {/* Subscription & Billing */}
+      <Card className="settings-card">
+        <div className="settings-section-header">
+          <IconCreditCard className="settings-section-icon" />
+          <div>
+            <Title heading={5} style={{ margin: 0 }}>
+              {t('settings.subscription.title')}
+            </Title>
+            <Text type="tertiary">{t('settings.subscription.description')}</Text>
+          </div>
+        </div>
+
+        <div className="settings-section-content">
+          <div className="settings-item">
+            <div className="settings-item-info">
+              <Text>{t('settings.subscription.currentPlan')}</Text>
+              {isUsageLoading ? (
+                <Skeleton.Paragraph rows={1} style={{ width: 100 }} />
+              ) : (
+                <Tag color="blue" size="large">
+                  {getPlanDisplayName(currentPlan)}
+                </Tag>
+              )}
+            </div>
+            <Button theme="solid" type="primary" onClick={handleManageSubscription}>
+              {t('settings.subscription.manage')}
+            </Button>
+          </div>
+
+          <Divider margin={16} />
+
+          <div className="settings-item">
+            <div className="settings-item-info">
+              <Text>{t('settings.subscription.billingHistory')}</Text>
+              <Text type="tertiary" size="small">
+                {t('settings.subscription.billingHistoryDesc')}
+              </Text>
+            </div>
+            <Button onClick={handleViewBilling}>{t('settings.subscription.viewBilling')}</Button>
           </div>
         </div>
       </Card>

@@ -559,6 +559,15 @@
       "clearCacheDesc": "清除本地存储的缓存数据，不影响账户信息",
       "clearCacheBtn": "清除缓存"
     },
+    "subscription": {
+      "title": "订阅与计费",
+      "description": "管理您的订阅计划和账单",
+      "currentPlan": "当前计划",
+      "manage": "管理订阅",
+      "billingHistory": "账单历史",
+      "billingHistoryDesc": "查看发票和付款记录",
+      "viewBilling": "查看账单"
+    },
     "messages": {
       "languageChanged": "语言已切换",
       "themeChanged": "主题已切换",
