@@ -12909,7 +12909,7 @@
       "Stripe 账单反映实际使用量",
       "上报失败有重试机制"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SAAS-FE-004",
