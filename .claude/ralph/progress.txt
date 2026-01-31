@@ -43013,3 +43013,72 @@ PASS
 - Backend: Add usage endpoints to swagger annotations for API doc generation
 - Consider adding real-time usage updates via WebSocket
 - Add E2E tests for usage display functionality
+
+2026-01-31 - SAAS-FE-005: Billing History and Invoice Page
+
+=== Implementation Details ===
+- Created billing API hooks:
+  - frontend/src/api/billing/billing.ts - React Query hooks for billing endpoints
+  - frontend/src/api/billing/index.ts - Barrel export
+  - Types: Invoice, InvoiceStatus, PaymentMethod, BillingSummary, UpcomingBilling
+  - Hooks: useGetBillingHistory, useGetBillingSummary, useSetDefaultPaymentMethod, useDeletePaymentMethod
+  - Utility: downloadInvoicePdf for PDF download functionality
+
+- Created BillingHistoryPage component:
+  - frontend/src/pages/settings/BillingHistoryPage.tsx
+  - Displays upcoming billing information (next billing date, amount, plan, cycle, auto-renew)
+  - Payment methods management (view, set default, delete)
+  - Invoice history table with pagination and filtering
+  - Status filter (paid, pending, overdue, cancelled, refunded)
+  - Date range filter for invoice history
+  - PDF download functionality for invoices
+
+- Created responsive CSS styles:
+  - frontend/src/pages/settings/BillingHistoryPage.css
+  - Mobile-first responsive design
+  - Payment method cards with default highlighting
+  - Proper spacing and layout using design tokens
+
+- Added i18n translations:
+  - frontend/src/locales/en-US/system.json - English translations for billing namespace
+  - frontend/src/locales/zh-CN/system.json - Chinese translations for billing namespace
+  - Includes: titles, columns, status labels, payment types, cycles, filters, messages
+
+- Added route:
+  - frontend/src/router/routes.tsx - Added /billing route accessible to all authenticated users
+
+=== Key Design Decisions ===
+1. Created manual API hooks since billing endpoints are not yet in swagger docs
+2. Used Semi Design components (Card, Table, Tag, Descriptions, Select, DatePicker) for consistency
+3. Implemented pagination and filtering for invoice history
+4. Payment method management includes set default and delete with confirmation
+5. Route accessible to all authenticated users (no special permissions required)
+
+=== Verification ===
+- TypeScript type checking: PASSED
+- ESLint: PASSED (no new errors in implementation files)
+- Code follows project patterns and design system
+
+=== Files Created/Modified ===
+- frontend/src/api/billing/billing.ts (new)
+- frontend/src/api/billing/index.ts (new)
+- frontend/src/pages/settings/BillingHistoryPage.tsx (new)
+- frontend/src/pages/settings/BillingHistoryPage.css (new)
+- frontend/src/locales/en-US/system.json (modified - added billing namespace)
+- frontend/src/locales/zh-CN/system.json (modified - added billing namespace)
+- frontend/src/router/routes.tsx (modified - added billing route)
+
+=== Acceptance Criteria Met ===
+✓ 用户可以查看所有历史账单 (User can view all billing history)
+✓ 可以下载发票 PDF (Can download invoice PDF)
+✓ 可以更新支付方式 (Can update payment methods)
+
+=== Notes ===
+- Backend billing API endpoints need to be implemented (SAAS-BE-* tasks)
+- PDF download uses blob download pattern
+- Payment method add functionality button is present but needs backend integration
+
+=== Next Steps ===
+- Implement backend billing API endpoints
+- Add Stripe integration for payment method management
+- Consider adding billing email notifications

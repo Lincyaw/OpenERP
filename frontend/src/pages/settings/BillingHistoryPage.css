@@ -1,0 +1,213 @@
+/**
+ * Billing History Page Styles
+ */
+
+.billing-history-page {
+  padding: var(--spacing-6) 0;
+}
+
+/* Header */
+.billing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-6);
+}
+
+.billing-header-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+/* Section titles */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-4);
+}
+
+.section-icon {
+  color: var(--semi-color-primary);
+}
+
+/* Error banner */
+.error-banner {
+  margin-bottom: var(--spacing-4);
+}
+
+/* Upcoming Billing Card */
+.upcoming-billing-card {
+  margin-bottom: var(--spacing-4);
+}
+
+.upcoming-billing-content {
+  padding: var(--spacing-2) 0;
+}
+
+.upcoming-amount {
+  font-size: var(--font-size-lg);
+  color: var(--semi-color-primary);
+}
+
+/* Payment Methods Card */
+.payment-methods-card {
+  margin-bottom: var(--spacing-4);
+}
+
+.payment-methods-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.payment-methods-header .section-title {
+  margin-bottom: 0;
+}
+
+.payment-methods-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.payment-method-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+  border: 1px solid var(--semi-color-border);
+  border-radius: var(--border-radius-medium);
+  background: var(--semi-color-bg-2);
+  transition: border-color 0.2s ease;
+}
+
+.payment-method-card:hover {
+  border-color: var(--semi-color-primary);
+}
+
+.payment-method-card--default {
+  border-color: var(--semi-color-success);
+  background: var(--semi-color-success-light-default);
+}
+
+.payment-method-icon {
+  font-size: 32px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--semi-color-bg-0);
+  border-radius: var(--border-radius-medium);
+}
+
+.payment-method-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.payment-method-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.payment-method-expiry {
+  color: var(--semi-color-text-2);
+}
+
+.payment-method-actions {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+/* Billing History Card */
+.billing-history-card {
+  margin-bottom: var(--spacing-4);
+}
+
+.billing-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+}
+
+.billing-history-header .section-title {
+  margin-bottom: 0;
+}
+
+.billing-filters {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+.billing-table {
+  margin-top: var(--spacing-4);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .billing-header {
+    flex-direction: column;
+    gap: var(--spacing-3);
+  }
+
+  .payment-methods-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+
+  .payment-method-card {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .payment-method-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .billing-history-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .billing-filters {
+    width: 100%;
+  }
+
+  .billing-filters > * {
+    flex: 1;
+    min-width: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-method-actions {
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  .payment-method-actions button {
+    width: 100%;
+  }
+
+  .billing-filters {
+    flex-direction: column;
+  }
+
+  .billing-filters > * {
+    width: 100%;
+  }
+}

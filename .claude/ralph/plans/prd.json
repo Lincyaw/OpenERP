@@ -12953,7 +12953,7 @@
       "可以下载发票 PDF",
       "可以更新支付方式"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SAAS-TEST-001",

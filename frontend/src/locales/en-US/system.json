@@ -799,5 +799,70 @@
       "exceeded": "{{resource}} limit exceeded! Current: {{current}}, Limit: {{limit}}",
       "upgradeNow": "Upgrade Now"
     }
+  },
+  "billing": {
+    "title": "Billing History",
+    "subtitle": "View your billing history, invoices, and manage payment methods",
+    "upcomingBilling": "Upcoming Billing",
+    "nextBillingDate": "Next Billing Date",
+    "amount": "Amount",
+    "plan": "Plan",
+    "billingCycle": "Billing Cycle",
+    "autoRenew": "Auto Renew",
+    "noUpcomingBilling": "No upcoming billing scheduled",
+    "paymentMethods": "Payment Methods",
+    "addPaymentMethod": "Add Payment Method",
+    "noPaymentMethods": "No payment methods configured",
+    "defaultMethod": "Default",
+    "setAsDefault": "Set as Default",
+    "invoiceHistory": "Invoice History",
+    "noInvoices": "No invoices found",
+    "downloadPdf": "Download",
+    "columns": {
+      "invoiceNumber": "Invoice #",
+      "description": "Description",
+      "amount": "Amount",
+      "period": "Billing Period",
+      "status": "Status",
+      "dueDate": "Due Date",
+      "paidAt": "Paid At",
+      "actions": "Actions"
+    },
+    "status": {
+      "paid": "Paid",
+      "pending": "Pending",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded"
+    },
+    "paymentTypes": {
+      "card": "Credit Card",
+      "bank_transfer": "Bank Transfer",
+      "alipay": "Alipay",
+      "wechat": "WeChat Pay"
+    },
+    "cycles": {
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "filters": {
+      "status": "Filter by Status",
+      "allStatus": "All Status",
+      "startDate": "Start Date",
+      "endDate": "End Date"
+    },
+    "confirm": {
+      "deleteTitle": "Delete Payment Method",
+      "deleteContent": "Are you sure you want to delete this payment method? This action cannot be undone."
+    },
+    "messages": {
+      "loadError": "Failed to load billing data",
+      "downloadSuccess": "Invoice downloaded successfully",
+      "downloadError": "Failed to download invoice",
+      "setDefaultSuccess": "Default payment method updated",
+      "setDefaultError": "Failed to update default payment method",
+      "deleteSuccess": "Payment method deleted",
+      "deleteError": "Failed to delete payment method"
+    }
   }
 }

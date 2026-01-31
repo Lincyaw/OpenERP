@@ -799,5 +799,70 @@
       "exceeded": "{{resource}} 已超出限制！当前: {{current}}，限制: {{limit}}",
       "upgradeNow": "立即升级"
     }
+  },
+  "billing": {
+    "title": "账单历史",
+    "subtitle": "查看账单历史、发票和管理支付方式",
+    "upcomingBilling": "即将扣款",
+    "nextBillingDate": "下次扣款日期",
+    "amount": "金额",
+    "plan": "计划",
+    "billingCycle": "计费周期",
+    "autoRenew": "自动续费",
+    "noUpcomingBilling": "暂无计划扣款",
+    "paymentMethods": "支付方式",
+    "addPaymentMethod": "添加支付方式",
+    "noPaymentMethods": "暂未配置支付方式",
+    "defaultMethod": "默认",
+    "setAsDefault": "设为默认",
+    "invoiceHistory": "发票历史",
+    "noInvoices": "暂无发票记录",
+    "downloadPdf": "下载",
+    "columns": {
+      "invoiceNumber": "发票号",
+      "description": "描述",
+      "amount": "金额",
+      "period": "账单周期",
+      "status": "状态",
+      "dueDate": "到期日",
+      "paidAt": "支付时间",
+      "actions": "操作"
+    },
+    "status": {
+      "paid": "已支付",
+      "pending": "待支付",
+      "overdue": "已逾期",
+      "cancelled": "已取消",
+      "refunded": "已退款"
+    },
+    "paymentTypes": {
+      "card": "信用卡",
+      "bank_transfer": "银行转账",
+      "alipay": "支付宝",
+      "wechat": "微信支付"
+    },
+    "cycles": {
+      "monthly": "按月",
+      "yearly": "按年"
+    },
+    "filters": {
+      "status": "按状态筛选",
+      "allStatus": "全部状态",
+      "startDate": "开始日期",
+      "endDate": "结束日期"
+    },
+    "confirm": {
+      "deleteTitle": "删除支付方式",
+      "deleteContent": "确定要删除此支付方式吗？此操作无法撤销。"
+    },
+    "messages": {
+      "loadError": "加载账单数据失败",
+      "downloadSuccess": "发票下载成功",
+      "downloadError": "发票下载失败",
+      "setDefaultSuccess": "默认支付方式已更新",
+      "setDefaultError": "更新默认支付方式失败",
+      "deleteSuccess": "支付方式已删除",
+      "deleteError": "删除支付方式失败"
+    }
   }
 }

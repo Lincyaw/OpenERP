@@ -111,6 +111,7 @@ const ProfilePage = () => lazyLoad(() => import('@/pages/user/Profile'))
 const SettingsPage = () => lazyLoad(() => import('@/pages/user/Settings'))
 const UpgradePlanPage = () => lazyLoad(() => import('@/pages/user/UpgradePlan'))
 const SubscriptionPage = () => lazyLoad(() => import('@/pages/settings/SubscriptionPage'))
+const BillingHistoryPage = () => lazyLoad(() => import('@/pages/settings/BillingHistoryPage'))
 
 /**
  * Application routes with metadata
@@ -776,7 +777,8 @@ export function getRouteObjects(): RouteObject[] {
     { path: 'profile', element: ProfilePage() },
     { path: 'settings', element: SettingsPage() },
     { path: 'upgrade', element: UpgradePlanPage() },
-    { path: 'subscription', element: SubscriptionPage() } // Subscription management - all users can view their plan
+    { path: 'subscription', element: SubscriptionPage() }, // Subscription management - all users can view their plan
+    { path: 'billing', element: BillingHistoryPage() } // Billing history and invoices - all users can view
   )
 
   return [
