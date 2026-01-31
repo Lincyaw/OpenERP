@@ -23,6 +23,8 @@ const (
 	EvaluationReasonDisabled EvaluationReason = "disabled"
 	// EvaluationReasonFlagNotFound indicates the flag was not found
 	EvaluationReasonFlagNotFound EvaluationReason = "flag_not_found"
+	// EvaluationReasonPlanRestricted indicates the tenant's plan doesn't meet the required plan
+	EvaluationReasonPlanRestricted EvaluationReason = "plan_restricted"
 	// EvaluationReasonError indicates an error occurred during evaluation
 	EvaluationReasonError EvaluationReason = "error"
 )
@@ -281,6 +283,19 @@ func NewFlagNotFoundResult(key string) EvaluationResult {
 	}
 }
 
+// NewPlanRestrictedResult creates an evaluation result for a flag that requires a higher plan
+func NewPlanRestrictedResult(key string, requiredPlan string, flagVersion int) EvaluationResult {
+	value := NewBooleanFlagValue(false).WithMetadata("required_plan", requiredPlan)
+	return EvaluationResult{
+		Key:         key,
+		Enabled:     false,
+		Value:       value,
+		Reason:      EvaluationReasonPlanRestricted,
+		FlagVersion: flagVersion,
+		EvaluatedAt: time.Now(),
+	}
+}
+
 // NewErrorResult creates an evaluation result for an error
 func NewErrorResult(key string, err error) EvaluationResult {
 	return EvaluationResult{
@@ -347,6 +362,11 @@ func (r EvaluationResult) IsFromRule() bool {
 // IsDefault returns true if the result is the default value
 func (r EvaluationResult) IsDefault() bool {
 	return r.Reason == EvaluationReasonDefault
+}
+
+// IsPlanRestricted returns true if the result is due to plan restriction
+func (r EvaluationResult) IsPlanRestricted() bool {
+	return r.Reason == EvaluationReasonPlanRestricted
 }
 
 // copyMap creates a shallow copy of a map

@@ -84,7 +84,19 @@ func (e *Evaluator) EvaluateFlag(ctx context.Context, flag *FeatureFlag, evalCtx
 		return NewDisabledResult(flagKey, flag.GetDefaultValue(), flagVersion)
 	}
 
-	// Step 4: Evaluate targeting rules in priority order
+	// Step 4: Check plan restriction
+	// If the flag has a required plan, verify the tenant's plan meets the requirement
+	if flag.HasPlanRestriction() {
+		tenantPlan := ""
+		if evalCtx != nil {
+			tenantPlan = evalCtx.UserPlan // UserPlan contains the tenant's subscription plan
+		}
+		if !flag.MeetsPlanRequirement(tenantPlan) {
+			return NewPlanRestrictedResult(flagKey, flag.GetRequiredPlan().String(), flagVersion)
+		}
+	}
+
+	// Step 5: Evaluate targeting rules in priority order
 	rules := flag.GetRules()
 	if len(rules) > 0 {
 		// Sort rules by priority (lower number = higher priority)
@@ -114,7 +126,7 @@ func (e *Evaluator) EvaluateFlag(ctx context.Context, flag *FeatureFlag, evalCtx
 		}
 	}
 
-	// Step 5: Handle flag type-specific evaluation (percentage rollout, variant selection)
+	// Step 6: Handle flag type-specific evaluation (percentage rollout, variant selection)
 	result := e.evaluateByType(flag, evalCtx)
 	return result
 }
@@ -304,7 +316,18 @@ func (e *PureEvaluator) Evaluate(flag *FeatureFlag, evalCtx *EvaluationContext, 
 		return NewDisabledResult(flagKey, flag.GetDefaultValue(), flagVersion)
 	}
 
-	// Step 4: Evaluate targeting rules
+	// Step 4: Check plan restriction
+	if flag.HasPlanRestriction() {
+		tenantPlan := ""
+		if evalCtx != nil {
+			tenantPlan = evalCtx.UserPlan
+		}
+		if !flag.MeetsPlanRequirement(tenantPlan) {
+			return NewPlanRestrictedResult(flagKey, flag.GetRequiredPlan().String(), flagVersion)
+		}
+	}
+
+	// Step 5: Evaluate targeting rules
 	rules := flag.GetRules()
 	if len(rules) > 0 {
 		sortedRules := make([]TargetingRule, len(rules))
@@ -331,7 +354,7 @@ func (e *PureEvaluator) Evaluate(flag *FeatureFlag, evalCtx *EvaluationContext, 
 		}
 	}
 
-	// Step 5: Return default value
+	// Step 6: Return default value
 	return e.evaluateByType(flag, evalCtx)
 }
 

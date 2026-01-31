@@ -41544,3 +41544,92 @@ Overall identity package coverage: 88.7% (above 80% threshold)
 
 - SAAS-BE-002: Implement PlanFeatureRepository persistence layer
 - SAAS-BE-003: Create feature check middleware for HTTP handlers
+
+2026-01-31 - SAAS-BE-002: Feature Flag 与订阅计划集成
+
+=== Implementation Details ===
+
+Added subscription plan integration to the feature flag system, allowing feature flags
+to be restricted based on tenant subscription plans (free, basic, pro, enterprise).
+
+**Files Modified:**
+
+1. `backend/internal/domain/featureflag/feature_flag.go`
+   - Added `RequiredPlan` type with constants (None, Free, Basic, Pro, Enterprise)
+   - Added `RequiredPlan` field to `FeatureFlag` struct
+   - Added `MeetsPlanRequirement()` method to check if tenant plan meets requirement
+   - Added `SetRequiredPlan()`, `GetRequiredPlan()`, `HasPlanRestriction()` methods
+   - Implemented plan hierarchy comparison logic
+
+2. `backend/internal/domain/featureflag/evaluation.go`
+   - Added `EvaluationReasonPlanRestricted` constant
+   - Added `NewPlanRestrictedResult()` function
+   - Added `IsPlanRestricted()` method to `EvaluationResult`
+
+3. `backend/internal/domain/featureflag/evaluator.go`
+   - Modified `Evaluator.EvaluateFlag()` to check plan restriction after disabled check
+   - Modified `PureEvaluator.Evaluate()` with same plan checking logic
+   - Plan check uses `UserPlan` from `EvaluationContext`
+
+**Files Created:**
+
+4. `backend/migrations/000042_add_required_plan_to_feature_flags.up.sql`
+   - Adds `required_plan` column to `feature_flags` table
+   - Column has CHECK constraint for valid plan values
+   - Includes index for filtering by required_plan
+
+5. `backend/migrations/000042_add_required_plan_to_feature_flags.down.sql`
+   - Rollback migration to remove the column
+
+**Tests Added:**
+
+6. `backend/internal/domain/featureflag/feature_flag_test.go`
+   - TestRequiredPlan_IsValid
+   - TestRequiredPlan_MeetsPlanRequirement (23 test cases)
+   - TestFeatureFlag_RequiredPlan (6 test cases)
+   - TestAllRequiredPlans
+
+7. `backend/internal/domain/featureflag/evaluator_test.go`
+   - TestEvaluator_Evaluate_PlanRestriction (11 test cases)
+   - TestPureEvaluator_Evaluate_PlanRestriction (4 test cases)
+   - Added createTestOverride helper function
+
+=== Key Design Decisions ===
+
+1. **Plan Hierarchy**: Plans are ordered as Free < Basic < Pro < Enterprise.
+   A tenant with a higher plan can access features requiring lower plans.
+
+2. **Evaluation Order**: Plan restriction is checked AFTER disabled check but BEFORE
+   targeting rules. This ensures disabled flags return "disabled" reason, not "plan_restricted".
+
+3. **Override Priority**: User/tenant overrides bypass plan restrictions, allowing
+   admins to grant access to specific tenants regardless of their plan.
+
+4. **Empty Plan Handling**: Empty or unknown tenant plans default to "free" level,
+   ensuring secure defaults.
+
+5. **Case Insensitivity**: Plan comparison is case-insensitive for flexibility.
+
+=== Verification ===
+
+- ✅ All featureflag package tests pass (go test ./internal/domain/featureflag/...)
+- ✅ Test coverage: 88.7% (above 80% threshold)
+- ✅ Go build succeeds (go build ./...)
+- ✅ 44 new test cases added for plan restriction functionality
+
+=== Acceptance Criteria Verification ===
+
+✅ Free 计划租户无法访问 Pro 功能
+   - Implemented via MeetsPlanRequirement() returning false for free < pro
+
+✅ 升级计划后自动获得对应功能权限
+   - Plan check uses current UserPlan from context, so upgraded plans work immediately
+
+✅ 功能评估考虑租户当前计划
+   - Evaluator checks flag.HasPlanRestriction() and flag.MeetsPlanRequirement(tenantPlan)
+
+=== Next Steps ===
+
+- SAAS-BE-003: Create feature check middleware for HTTP handlers
+- Consider adding plan restriction to cached evaluator
+- Add API endpoints for managing feature flag required_plan field

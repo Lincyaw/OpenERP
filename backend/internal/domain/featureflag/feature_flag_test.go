@@ -640,3 +640,141 @@ func TestFeatureFlag_ValidateRules(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+// Tests for RequiredPlan functionality
+
+func TestRequiredPlan_IsValid(t *testing.T) {
+	tests := []struct {
+		plan    RequiredPlan
+		isValid bool
+	}{
+		{RequiredPlanNone, true},
+		{RequiredPlanFree, true},
+		{RequiredPlanBasic, true},
+		{RequiredPlanPro, true},
+		{RequiredPlanEnterprise, true},
+		{RequiredPlan("invalid"), false},
+		{RequiredPlan("premium"), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.plan), func(t *testing.T) {
+			assert.Equal(t, tt.isValid, tt.plan.IsValid())
+		})
+	}
+}
+
+func TestRequiredPlan_MeetsPlanRequirement(t *testing.T) {
+	tests := []struct {
+		name         string
+		requiredPlan RequiredPlan
+		tenantPlan   string
+		expected     bool
+	}{
+		// No restriction
+		{"no restriction - free tenant", RequiredPlanNone, "free", true},
+		{"no restriction - enterprise tenant", RequiredPlanNone, "enterprise", true},
+		{"empty restriction - free tenant", RequiredPlan(""), "free", true},
+
+		// Free plan requirement
+		{"free required - free tenant", RequiredPlanFree, "free", true},
+		{"free required - basic tenant", RequiredPlanFree, "basic", true},
+		{"free required - pro tenant", RequiredPlanFree, "pro", true},
+		{"free required - enterprise tenant", RequiredPlanFree, "enterprise", true},
+
+		// Basic plan requirement
+		{"basic required - free tenant", RequiredPlanBasic, "free", false},
+		{"basic required - basic tenant", RequiredPlanBasic, "basic", true},
+		{"basic required - pro tenant", RequiredPlanBasic, "pro", true},
+		{"basic required - enterprise tenant", RequiredPlanBasic, "enterprise", true},
+
+		// Pro plan requirement
+		{"pro required - free tenant", RequiredPlanPro, "free", false},
+		{"pro required - basic tenant", RequiredPlanPro, "basic", false},
+		{"pro required - pro tenant", RequiredPlanPro, "pro", true},
+		{"pro required - enterprise tenant", RequiredPlanPro, "enterprise", true},
+
+		// Enterprise plan requirement
+		{"enterprise required - free tenant", RequiredPlanEnterprise, "free", false},
+		{"enterprise required - basic tenant", RequiredPlanEnterprise, "basic", false},
+		{"enterprise required - pro tenant", RequiredPlanEnterprise, "pro", false},
+		{"enterprise required - enterprise tenant", RequiredPlanEnterprise, "enterprise", true},
+
+		// Case insensitivity
+		{"case insensitive - PRO tenant", RequiredPlanBasic, "PRO", true},
+		{"case insensitive - Enterprise tenant", RequiredPlanPro, "Enterprise", true},
+
+		// Unknown tenant plan defaults to free
+		{"unknown tenant plan", RequiredPlanBasic, "unknown", false},
+		{"empty tenant plan", RequiredPlanBasic, "", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.requiredPlan.MeetsPlanRequirement(tt.tenantPlan)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestFeatureFlag_RequiredPlan(t *testing.T) {
+	userID := uuid.New()
+
+	t.Run("new flag has no plan restriction", func(t *testing.T) {
+		flag, err := NewFeatureFlag("test", "Test", FlagTypeBoolean, NewBooleanFlagValue(false), nil)
+		require.NoError(t, err)
+		assert.Equal(t, RequiredPlanNone, flag.GetRequiredPlan())
+		assert.False(t, flag.HasPlanRestriction())
+	})
+
+	t.Run("set required plan", func(t *testing.T) {
+		flag, _ := NewFeatureFlag("test", "Test", FlagTypeBoolean, NewBooleanFlagValue(false), nil)
+		flag.ClearDomainEvents()
+
+		err := flag.SetRequiredPlan(RequiredPlanPro, &userID)
+		assert.NoError(t, err)
+		assert.Equal(t, RequiredPlanPro, flag.GetRequiredPlan())
+		assert.True(t, flag.HasPlanRestriction())
+		assert.Equal(t, &userID, flag.UpdatedBy)
+		assert.Len(t, flag.GetDomainEvents(), 1)
+	})
+
+	t.Run("set invalid required plan", func(t *testing.T) {
+		flag, _ := NewFeatureFlag("test", "Test", FlagTypeBoolean, NewBooleanFlagValue(false), nil)
+		err := flag.SetRequiredPlan(RequiredPlan("invalid"), nil)
+		assert.Error(t, err)
+	})
+
+	t.Run("cannot set required plan on archived flag", func(t *testing.T) {
+		flag, _ := NewFeatureFlag("test", "Test", FlagTypeBoolean, NewBooleanFlagValue(false), nil)
+		_ = flag.Archive(nil)
+		err := flag.SetRequiredPlan(RequiredPlanPro, nil)
+		assert.Error(t, err)
+	})
+
+	t.Run("meets plan requirement - no restriction", func(t *testing.T) {
+		flag, _ := NewFeatureFlag("test", "Test", FlagTypeBoolean, NewBooleanFlagValue(false), nil)
+		assert.True(t, flag.MeetsPlanRequirement("free"))
+		assert.True(t, flag.MeetsPlanRequirement("enterprise"))
+	})
+
+	t.Run("meets plan requirement - with restriction", func(t *testing.T) {
+		flag, _ := NewFeatureFlag("test", "Test", FlagTypeBoolean, NewBooleanFlagValue(false), nil)
+		_ = flag.SetRequiredPlan(RequiredPlanPro, nil)
+
+		assert.False(t, flag.MeetsPlanRequirement("free"))
+		assert.False(t, flag.MeetsPlanRequirement("basic"))
+		assert.True(t, flag.MeetsPlanRequirement("pro"))
+		assert.True(t, flag.MeetsPlanRequirement("enterprise"))
+	})
+}
+
+func TestAllRequiredPlans(t *testing.T) {
+	plans := AllRequiredPlans()
+	assert.Len(t, plans, 5)
+	assert.Contains(t, plans, RequiredPlanNone)
+	assert.Contains(t, plans, RequiredPlanFree)
+	assert.Contains(t, plans, RequiredPlanBasic)
+	assert.Contains(t, plans, RequiredPlanPro)
+	assert.Contains(t, plans, RequiredPlanEnterprise)
+}

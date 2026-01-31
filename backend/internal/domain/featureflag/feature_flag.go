@@ -17,6 +17,79 @@ var keyRegex = regexp.MustCompile(`^[a-z][a-z0-9_.-]*$`)
 // Aggregate type constant
 const AggregateTypeFeatureFlag = "FeatureFlag"
 
+// RequiredPlan represents the minimum subscription plan required to access a feature.
+// Empty string means no plan restriction (available to all plans).
+type RequiredPlan string
+
+const (
+	// RequiredPlanNone means no plan restriction (available to all plans)
+	RequiredPlanNone RequiredPlan = ""
+	// RequiredPlanFree means available to free plan and above
+	RequiredPlanFree RequiredPlan = "free"
+	// RequiredPlanBasic means available to basic plan and above
+	RequiredPlanBasic RequiredPlan = "basic"
+	// RequiredPlanPro means available to pro plan and above
+	RequiredPlanPro RequiredPlan = "pro"
+	// RequiredPlanEnterprise means available to enterprise plan only
+	RequiredPlanEnterprise RequiredPlan = "enterprise"
+)
+
+// AllRequiredPlans returns all valid required plan values
+func AllRequiredPlans() []RequiredPlan {
+	return []RequiredPlan{
+		RequiredPlanNone,
+		RequiredPlanFree,
+		RequiredPlanBasic,
+		RequiredPlanPro,
+		RequiredPlanEnterprise,
+	}
+}
+
+// IsValid checks if the required plan is valid
+func (p RequiredPlan) IsValid() bool {
+	switch p {
+	case RequiredPlanNone, RequiredPlanFree, RequiredPlanBasic, RequiredPlanPro, RequiredPlanEnterprise:
+		return true
+	default:
+		return false
+	}
+}
+
+// String returns the string representation of the required plan
+func (p RequiredPlan) String() string {
+	return string(p)
+}
+
+// planHierarchy defines the order of plans from lowest to highest
+var planHierarchy = map[RequiredPlan]int{
+	RequiredPlanNone:       0,
+	RequiredPlanFree:       1,
+	RequiredPlanBasic:      2,
+	RequiredPlanPro:        3,
+	RequiredPlanEnterprise: 4,
+}
+
+// MeetsPlanRequirement checks if the given tenant plan meets the required plan level
+// Returns true if tenantPlan is at or above the required plan level
+func (p RequiredPlan) MeetsPlanRequirement(tenantPlan string) bool {
+	if p == RequiredPlanNone || p == "" {
+		return true // No restriction
+	}
+
+	requiredLevel, ok := planHierarchy[p]
+	if !ok {
+		return false // Invalid required plan
+	}
+
+	tenantLevel, ok := planHierarchy[RequiredPlan(strings.ToLower(tenantPlan))]
+	if !ok {
+		// Unknown tenant plan, default to free level
+		tenantLevel = planHierarchy[RequiredPlanFree]
+	}
+
+	return tenantLevel >= requiredLevel
+}
+
 // FeatureFlag is the aggregate root for feature flag management.
 // It represents a configurable feature flag that can be used to control
 // feature rollouts, A/B testing, and user targeting.
@@ -36,6 +109,7 @@ type FeatureFlag struct {
 	DefaultValue FlagValue       `json:"default_value"`
 	Rules        []TargetingRule `json:"rules,omitempty"`
 	Tags         []string        `json:"tags,omitempty"`
+	RequiredPlan RequiredPlan    `json:"required_plan,omitempty"` // Minimum plan required to access this feature
 	CreatedBy    *uuid.UUID      `json:"created_by,omitempty"`
 	UpdatedBy    *uuid.UUID      `json:"updated_by,omitempty"`
 }
@@ -149,6 +223,40 @@ func (f *FeatureFlag) GetCreatedBy() *uuid.UUID {
 // GetUpdatedBy returns the last updater user ID
 func (f *FeatureFlag) GetUpdatedBy() *uuid.UUID {
 	return f.UpdatedBy
+}
+
+// GetRequiredPlan returns the minimum plan required to access this feature
+func (f *FeatureFlag) GetRequiredPlan() RequiredPlan {
+	return f.RequiredPlan
+}
+
+// HasPlanRestriction returns true if the flag has a plan restriction
+func (f *FeatureFlag) HasPlanRestriction() bool {
+	return f.RequiredPlan != RequiredPlanNone && f.RequiredPlan != ""
+}
+
+// SetRequiredPlan sets the minimum plan required to access this feature
+func (f *FeatureFlag) SetRequiredPlan(plan RequiredPlan, updatedBy *uuid.UUID) error {
+	if f.Status == FlagStatusArchived {
+		return shared.NewDomainError("CANNOT_UPDATE", "Cannot update an archived flag")
+	}
+	if !plan.IsValid() {
+		return shared.NewDomainError("INVALID_PLAN", "Invalid required plan")
+	}
+
+	f.RequiredPlan = plan
+	f.UpdatedBy = updatedBy
+	f.UpdatedAt = time.Now()
+	f.IncrementVersion()
+
+	f.AddDomainEvent(NewFlagUpdatedEvent(f))
+
+	return nil
+}
+
+// MeetsPlanRequirement checks if the given tenant plan meets this flag's plan requirement
+func (f *FeatureFlag) MeetsPlanRequirement(tenantPlan string) bool {
+	return f.RequiredPlan.MeetsPlanRequirement(tenantPlan)
 }
 
 // IsEnabled returns true if the flag is enabled

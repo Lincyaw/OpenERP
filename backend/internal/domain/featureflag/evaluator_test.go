@@ -184,6 +184,13 @@ func createTestFlag(t *testing.T, key, name string, flagType FlagType, status Fl
 	return flag
 }
 
+// Helper to create a test override
+func createTestOverride(t *testing.T, flagKey string, targetType OverrideTargetType, targetID uuid.UUID, enabled bool) *FlagOverride {
+	override, err := NewFlagOverride(flagKey, targetType, targetID, NewBooleanFlagValue(enabled), "test override", nil, nil)
+	require.NoError(t, err)
+	return override
+}
+
 func TestEvaluator_NewEvaluator(t *testing.T) {
 	flagRepo := &MockFeatureFlagRepository{}
 	overrideRepo := &MockFlagOverrideRepository{}
@@ -740,4 +747,230 @@ func TestEvaluator_EvaluateFlag_NilFlag(t *testing.T) {
 	result := evaluator.EvaluateFlag(context.Background(), nil, NewEvaluationContext())
 
 	assert.Equal(t, EvaluationReasonFlagNotFound, result.Reason)
+}
+
+// Tests for plan restriction in evaluation
+
+func TestEvaluator_Evaluate_PlanRestriction(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("flag with no plan restriction allows all plans", func(t *testing.T) {
+		flagRepo := &MockFeatureFlagRepository{}
+		overrideRepo := &MockFlagOverrideRepository{}
+		evaluator := NewEvaluator(flagRepo, overrideRepo)
+
+		flag := createTestFlag(t, "no-restriction", "No Restriction", FlagTypeBoolean, FlagStatusEnabled)
+		// No plan restriction set
+
+		evalCtx := NewEvaluationContext().WithUserPlan("free")
+		result := evaluator.EvaluateFlag(ctx, flag, evalCtx)
+
+		assert.NotEqual(t, EvaluationReasonPlanRestricted, result.Reason)
+		assert.True(t, result.Enabled)
+	})
+
+	t.Run("free tenant cannot access pro feature", func(t *testing.T) {
+		flagRepo := &MockFeatureFlagRepository{}
+		overrideRepo := &MockFlagOverrideRepository{}
+		evaluator := NewEvaluator(flagRepo, overrideRepo)
+
+		flag := createTestFlag(t, "pro-feature", "Pro Feature", FlagTypeBoolean, FlagStatusEnabled)
+		_ = flag.SetRequiredPlan(RequiredPlanPro, nil)
+
+		evalCtx := NewEvaluationContext().WithUserPlan("free")
+		result := evaluator.EvaluateFlag(ctx, flag, evalCtx)
+
+		assert.Equal(t, EvaluationReasonPlanRestricted, result.Reason)
+		assert.False(t, result.Enabled)
+		assert.True(t, result.IsPlanRestricted())
+
+		// Check that required_plan is in metadata
+		requiredPlan, ok := result.Value.GetMetadataValue("required_plan")
+		assert.True(t, ok)
+		assert.Equal(t, "pro", requiredPlan)
+	})
+
+	t.Run("basic tenant cannot access pro feature", func(t *testing.T) {
+		flagRepo := &MockFeatureFlagRepository{}
+		overrideRepo := &MockFlagOverrideRepository{}
+		evaluator := NewEvaluator(flagRepo, overrideRepo)
+
+		flag := createTestFlag(t, "pro-feature", "Pro Feature", FlagTypeBoolean, FlagStatusEnabled)
+		_ = flag.SetRequiredPlan(RequiredPlanPro, nil)
+
+		evalCtx := NewEvaluationContext().WithUserPlan("basic")
+		result := evaluator.EvaluateFlag(ctx, flag, evalCtx)
+
+		assert.Equal(t, EvaluationReasonPlanRestricted, result.Reason)
+		assert.False(t, result.Enabled)
+	})
+
+	t.Run("pro tenant can access pro feature", func(t *testing.T) {
+		flagRepo := &MockFeatureFlagRepository{}
+		overrideRepo := &MockFlagOverrideRepository{}
+		evaluator := NewEvaluator(flagRepo, overrideRepo)
+
+		flag := createTestFlag(t, "pro-feature", "Pro Feature", FlagTypeBoolean, FlagStatusEnabled)
+		_ = flag.SetRequiredPlan(RequiredPlanPro, nil)
+
+		evalCtx := NewEvaluationContext().WithUserPlan("pro")
+		result := evaluator.EvaluateFlag(ctx, flag, evalCtx)
+
+		assert.NotEqual(t, EvaluationReasonPlanRestricted, result.Reason)
+		assert.True(t, result.Enabled)
+	})
+
+	t.Run("enterprise tenant can access pro feature", func(t *testing.T) {
+		flagRepo := &MockFeatureFlagRepository{}
+		overrideRepo := &MockFlagOverrideRepository{}
+		evaluator := NewEvaluator(flagRepo, overrideRepo)
+
+		flag := createTestFlag(t, "pro-feature", "Pro Feature", FlagTypeBoolean, FlagStatusEnabled)
+		_ = flag.SetRequiredPlan(RequiredPlanPro, nil)
+
+		evalCtx := NewEvaluationContext().WithUserPlan("enterprise")
+		result := evaluator.EvaluateFlag(ctx, flag, evalCtx)
+
+		assert.NotEqual(t, EvaluationReasonPlanRestricted, result.Reason)
+		assert.True(t, result.Enabled)
+	})
+
+	t.Run("enterprise feature only accessible by enterprise", func(t *testing.T) {
+		flagRepo := &MockFeatureFlagRepository{}
+		overrideRepo := &MockFlagOverrideRepository{}
+		evaluator := NewEvaluator(flagRepo, overrideRepo)
+
+		flag := createTestFlag(t, "enterprise-feature", "Enterprise Feature", FlagTypeBoolean, FlagStatusEnabled)
+		_ = flag.SetRequiredPlan(RequiredPlanEnterprise, nil)
+
+		// Pro tenant cannot access
+		evalCtx := NewEvaluationContext().WithUserPlan("pro")
+		result := evaluator.EvaluateFlag(ctx, flag, evalCtx)
+		assert.Equal(t, EvaluationReasonPlanRestricted, result.Reason)
+
+		// Enterprise tenant can access
+		evalCtx = NewEvaluationContext().WithUserPlan("enterprise")
+		result = evaluator.EvaluateFlag(ctx, flag, evalCtx)
+		assert.NotEqual(t, EvaluationReasonPlanRestricted, result.Reason)
+		assert.True(t, result.Enabled)
+	})
+
+	t.Run("nil context defaults to no plan (restricted)", func(t *testing.T) {
+		flagRepo := &MockFeatureFlagRepository{}
+		overrideRepo := &MockFlagOverrideRepository{}
+		evaluator := NewEvaluator(flagRepo, overrideRepo)
+
+		flag := createTestFlag(t, "basic-feature", "Basic Feature", FlagTypeBoolean, FlagStatusEnabled)
+		_ = flag.SetRequiredPlan(RequiredPlanBasic, nil)
+
+		result := evaluator.EvaluateFlag(ctx, flag, nil)
+		assert.Equal(t, EvaluationReasonPlanRestricted, result.Reason)
+	})
+
+	t.Run("empty plan in context defaults to free (restricted for basic+)", func(t *testing.T) {
+		flagRepo := &MockFeatureFlagRepository{}
+		overrideRepo := &MockFlagOverrideRepository{}
+		evaluator := NewEvaluator(flagRepo, overrideRepo)
+
+		flag := createTestFlag(t, "basic-feature", "Basic Feature", FlagTypeBoolean, FlagStatusEnabled)
+		_ = flag.SetRequiredPlan(RequiredPlanBasic, nil)
+
+		evalCtx := NewEvaluationContext() // No plan set
+		result := evaluator.EvaluateFlag(ctx, flag, evalCtx)
+		assert.Equal(t, EvaluationReasonPlanRestricted, result.Reason)
+	})
+
+	t.Run("plan check happens after disabled check", func(t *testing.T) {
+		flagRepo := &MockFeatureFlagRepository{}
+		overrideRepo := &MockFlagOverrideRepository{}
+		evaluator := NewEvaluator(flagRepo, overrideRepo)
+
+		flag := createTestFlag(t, "disabled-pro", "Disabled Pro", FlagTypeBoolean, FlagStatusDisabled)
+		_ = flag.SetRequiredPlan(RequiredPlanPro, nil)
+
+		evalCtx := NewEvaluationContext().WithUserPlan("free")
+		result := evaluator.EvaluateFlag(ctx, flag, evalCtx)
+
+		// Should return disabled, not plan_restricted
+		assert.Equal(t, EvaluationReasonDisabled, result.Reason)
+	})
+
+	t.Run("override bypasses plan restriction", func(t *testing.T) {
+		flagRepo := &MockFeatureFlagRepository{}
+		overrideRepo := &MockFlagOverrideRepository{}
+		evaluator := NewEvaluator(flagRepo, overrideRepo)
+
+		flag := createTestFlag(t, "pro-feature", "Pro Feature", FlagTypeBoolean, FlagStatusEnabled)
+		_ = flag.SetRequiredPlan(RequiredPlanPro, nil)
+
+		tenantID := uuid.New()
+		override := createTestOverride(t, "pro-feature", OverrideTargetTypeTenant, tenantID, true)
+
+		overrideRepo.On("FindByFlagKeyAndTarget", mock.Anything, "pro-feature", OverrideTargetTypeTenant, tenantID).
+			Return(override, nil)
+
+		evalCtx := NewEvaluationContext().WithTenant(tenantID.String()).WithUserPlan("free")
+		result := evaluator.EvaluateFlag(ctx, flag, evalCtx)
+
+		// Override should take precedence over plan restriction
+		assert.Equal(t, EvaluationReasonOverrideTenant, result.Reason)
+		assert.True(t, result.Enabled)
+	})
+}
+
+func TestPureEvaluator_Evaluate_PlanRestriction(t *testing.T) {
+	evaluator := NewPureEvaluator()
+
+	t.Run("free tenant cannot access pro feature", func(t *testing.T) {
+		flag := createTestFlag(t, "pro-feature", "Pro Feature", FlagTypeBoolean, FlagStatusEnabled)
+		_ = flag.SetRequiredPlan(RequiredPlanPro, nil)
+
+		evalCtx := NewEvaluationContext().WithUserPlan("free")
+		result := evaluator.Evaluate(flag, evalCtx, nil, nil)
+
+		assert.Equal(t, EvaluationReasonPlanRestricted, result.Reason)
+		assert.False(t, result.Enabled)
+	})
+
+	t.Run("pro tenant can access pro feature", func(t *testing.T) {
+		flag := createTestFlag(t, "pro-feature", "Pro Feature", FlagTypeBoolean, FlagStatusEnabled)
+		_ = flag.SetRequiredPlan(RequiredPlanPro, nil)
+
+		evalCtx := NewEvaluationContext().WithUserPlan("pro")
+		result := evaluator.Evaluate(flag, evalCtx, nil, nil)
+
+		assert.NotEqual(t, EvaluationReasonPlanRestricted, result.Reason)
+		assert.True(t, result.Enabled)
+	})
+
+	t.Run("override bypasses plan restriction", func(t *testing.T) {
+		flag := createTestFlag(t, "pro-feature", "Pro Feature", FlagTypeBoolean, FlagStatusEnabled)
+		_ = flag.SetRequiredPlan(RequiredPlanPro, nil)
+
+		tenantID := uuid.New()
+		override := createTestOverride(t, "pro-feature", OverrideTargetTypeTenant, tenantID, true)
+
+		evalCtx := NewEvaluationContext().WithUserPlan("free")
+		result := evaluator.Evaluate(flag, evalCtx, nil, override)
+
+		// Override should take precedence
+		assert.Equal(t, EvaluationReasonOverrideTenant, result.Reason)
+		assert.True(t, result.Enabled)
+	})
+
+	t.Run("upgrade plan grants access", func(t *testing.T) {
+		flag := createTestFlag(t, "basic-feature", "Basic Feature", FlagTypeBoolean, FlagStatusEnabled)
+		_ = flag.SetRequiredPlan(RequiredPlanBasic, nil)
+
+		// Free tenant - no access
+		evalCtx := NewEvaluationContext().WithUserPlan("free")
+		result := evaluator.Evaluate(flag, evalCtx, nil, nil)
+		assert.Equal(t, EvaluationReasonPlanRestricted, result.Reason)
+
+		// After upgrade to basic - has access
+		evalCtx = NewEvaluationContext().WithUserPlan("basic")
+		result = evaluator.Evaluate(flag, evalCtx, nil, nil)
+		assert.NotEqual(t, EvaluationReasonPlanRestricted, result.Reason)
+		assert.True(t, result.Enabled)
+	})
 }
