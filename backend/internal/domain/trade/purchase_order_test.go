@@ -1237,7 +1237,8 @@ func TestPurchaseOrder_EdgeCases(t *testing.T) {
 		order.SetRemark("Test remark")
 
 		assert.Equal(t, "Test remark", order.Remark)
-		assert.Equal(t, originalVersion+1, order.GetVersion())
+		// Version is managed by repository, not domain methods
+		assert.Equal(t, originalVersion, order.GetVersion())
 	})
 
 	t.Run("PurchaseOrderItem SetRemark", func(t *testing.T) {

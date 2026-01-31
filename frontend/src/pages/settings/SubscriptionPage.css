@@ -205,6 +205,16 @@
   padding-top: var(--spacing-4);
 }
 
+/* Quota Alerts Section */
+.quota-alerts-section {
+  margin-bottom: var(--spacing-2);
+}
+
+/* Usage Chart Section */
+.usage-chart-section {
+  margin-top: var(--spacing-2);
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .resource-usage-grid {

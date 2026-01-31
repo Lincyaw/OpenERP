@@ -1,0 +1,80 @@
+/**
+ * UsageGauge Component Styles
+ */
+
+.usage-gauge {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.usage-gauge__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.usage-gauge__label {
+  flex-shrink: 0;
+}
+
+.usage-gauge__usage-text {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.usage-gauge__progress-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.usage-gauge__progress-wrapper .semi-progress {
+  flex: 1;
+}
+
+.usage-gauge__unlimited-badge {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--semi-color-fill-0);
+  padding: 0 var(--spacing-2);
+  border-radius: var(--semi-border-radius-small);
+}
+
+.usage-gauge__warning {
+  margin-top: var(--spacing-1);
+}
+
+/* Size variants */
+.usage-gauge--small {
+  gap: var(--spacing-1);
+}
+
+.usage-gauge--small .usage-gauge__header {
+  gap: var(--spacing-1);
+}
+
+.usage-gauge--large {
+  gap: var(--spacing-3);
+}
+
+.usage-gauge--large .usage-gauge__header {
+  gap: var(--spacing-3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .usage-gauge__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-1);
+  }
+
+  .usage-gauge__usage-text {
+    text-align: left;
+  }
+}

@@ -1,5 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Card, Typography, Space, Spin, Tag, Empty, Toast, Progress } from '@douyinfe/semi-ui-19'
+import {
+  Card,
+  Typography,
+  Space,
+  Spin,
+  Tag,
+  Empty,
+  Toast,
+  Progress,
+  Skeleton,
+} from '@douyinfe/semi-ui-19'
 import {
   IconGridView,
   IconUserGroup,
@@ -10,6 +20,7 @@ import {
   IconAlertTriangle,
   IconTick,
   IconClock,
+  IconLineChartStroked,
 } from '@douyinfe/semi-icons'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -21,6 +32,8 @@ import { listInventoryBelowMinimum } from '@/api/inventory/inventory'
 import { listSalesOrders, getSalesOrderStatusSummary } from '@/api/sales-orders/sales-orders'
 import { getFinanceReceivableReceivableSummary } from '@/api/finance-receivables/finance-receivables'
 import { getFinancePayablePayableSummary } from '@/api/finance-payables/finance-payables'
+import { useGetCurrentUsage } from '@/api/usage'
+import { UsageGauge, QuotaAlertList } from '@/components/usage'
 import { useFormatters } from '@/hooks/useFormatters'
 import './Dashboard.css'
 
@@ -81,12 +94,15 @@ interface RecentOrder {
  */
 export default function DashboardPage() {
   const navigate = useNavigate()
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'system'])
   const { formatCurrency, formatNumber, formatDate } = useFormatters()
   const { isMobile } = useResponsive()
 
   // Loading state
   const [loading, setLoading] = useState(true)
+
+  // Fetch usage data
+  const { data: usageResponse, isLoading: isUsageLoading } = useGetCurrentUsage()
 
   // Metrics data
   const [productCount, setProductCount] = useState({ total: 0, active: 0 })
@@ -705,43 +721,100 @@ export default function DashboardPage() {
             </Stack>
           </div>
 
-          {/* Right Column - Pending Tasks */}
+          {/* Right Column - Pending Tasks & Usage Overview */}
           <div className="dashboard-col-right">
-            <Card title={t('dashboard.pendingTasks.title')} className="pending-tasks-card">
-              {pendingTasks.length === 0 ? (
-                <div className="no-tasks">
-                  <IconTick size="extra-large" style={{ color: 'var(--semi-color-success)' }} />
-                  <Paragraph type="secondary" style={{ marginTop: 16 }}>
-                    {t('dashboard.pendingTasks.noTasks')}
-                  </Paragraph>
-                </div>
-              ) : (
-                <div className="pending-tasks-list">
-                  {pendingTasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className="pending-task-item"
-                      onClick={() => navigate(task.link)}
-                    >
-                      <div className="task-icon" style={{ color: getPriorityColor(task.priority) }}>
-                        {getTaskIcon(task.type)}
-                      </div>
-                      <div className="task-content">
-                        <div className="task-header">
-                          <Text strong>{task.title}</Text>
-                          <Tag size="small" color={getPriorityColor(task.priority)}>
-                            {getPriorityLabel(task.priority)}
-                          </Tag>
-                        </div>
-                        <Text type="tertiary" size="small">
-                          {task.description}
-                        </Text>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            <Stack gap="md">
+              {/* Quota Alerts */}
+              {usageResponse?.status === 200 && usageResponse.data.data?.metrics && (
+                <QuotaAlertList
+                  metrics={usageResponse.data.data.metrics}
+                  warningThreshold={70}
+                  criticalThreshold={90}
+                  showUpgradeButton
+                  maxAlerts={2}
+                />
               )}
-            </Card>
+
+              {/* Usage Overview Card */}
+              <Card
+                title={
+                  <div className="usage-card-header">
+                    <IconLineChartStroked />
+                    <span>{t('system:usage.chart.title', 'Usage Overview')}</span>
+                  </div>
+                }
+                className="usage-overview-card"
+                headerExtraContent={
+                  <Text
+                    link
+                    onClick={() => navigate('/subscription')}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {t('common:dashboard.viewDetails', 'View Details')}
+                  </Text>
+                }
+              >
+                {isUsageLoading ? (
+                  <Skeleton.Paragraph rows={3} />
+                ) : usageResponse?.status === 200 && usageResponse.data.data?.metrics ? (
+                  <div className="usage-overview-grid">
+                    {usageResponse.data.data.metrics.map((metric) => (
+                      <UsageGauge
+                        key={metric.name}
+                        metric={metric}
+                        showPercentage
+                        showUsageText
+                        size="small"
+                        warningThreshold={70}
+                        criticalThreshold={90}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <Empty description={t('system:usage.noData', 'No usage data')} />
+                )}
+              </Card>
+
+              {/* Pending Tasks */}
+              <Card title={t('dashboard.pendingTasks.title')} className="pending-tasks-card">
+                {pendingTasks.length === 0 ? (
+                  <div className="no-tasks">
+                    <IconTick size="extra-large" style={{ color: 'var(--semi-color-success)' }} />
+                    <Paragraph type="secondary" style={{ marginTop: 16 }}>
+                      {t('dashboard.pendingTasks.noTasks')}
+                    </Paragraph>
+                  </div>
+                ) : (
+                  <div className="pending-tasks-list">
+                    {pendingTasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className="pending-task-item"
+                        onClick={() => navigate(task.link)}
+                      >
+                        <div
+                          className="task-icon"
+                          style={{ color: getPriorityColor(task.priority) }}
+                        >
+                          {getTaskIcon(task.type)}
+                        </div>
+                        <div className="task-content">
+                          <div className="task-header">
+                            <Text strong>{task.title}</Text>
+                            <Tag size="small" color={getPriorityColor(task.priority)}>
+                              {getPriorityLabel(task.priority)}
+                            </Tag>
+                          </div>
+                          <Text type="tertiary" size="small">
+                            {task.description}
+                          </Text>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            </Stack>
           </div>
         </div>
       </Spin>

@@ -1,0 +1,64 @@
+/**
+ * QuotaAlert Component Styles
+ */
+
+.quota-alert {
+  margin-bottom: var(--spacing-3);
+}
+
+.quota-alert:last-child {
+  margin-bottom: 0;
+}
+
+.quota-alert__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+.quota-alert__message {
+  flex: 1;
+  min-width: 200px;
+}
+
+.quota-alert__upgrade-btn {
+  flex-shrink: 0;
+}
+
+/* Severity-specific styles */
+.quota-alert--exceeded {
+  animation: pulse-danger 2s ease-in-out infinite;
+}
+
+@keyframes pulse-danger {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+/* Alert list styles */
+.quota-alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .quota-alert__content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+
+  .quota-alert__upgrade-btn {
+    width: 100%;
+  }
+}

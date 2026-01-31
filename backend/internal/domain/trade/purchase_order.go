@@ -306,7 +306,6 @@ func (o *PurchaseOrder) AddItem(productID uuid.UUID, productName, productCode, u
 	o.Items = append(o.Items, *item)
 	o.recalculateTotals()
 	o.UpdatedAt = time.Now()
-	o.IncrementVersion()
 
 	return item, nil
 }
@@ -325,7 +324,6 @@ func (o *PurchaseOrder) UpdateItemQuantity(itemID uuid.UUID, quantity decimal.De
 			}
 			o.recalculateTotals()
 			o.UpdatedAt = time.Now()
-			o.IncrementVersion()
 			return nil
 		}
 	}
@@ -347,7 +345,6 @@ func (o *PurchaseOrder) UpdateItemCost(itemID uuid.UUID, unitCost valueobject.Mo
 			}
 			o.recalculateTotals()
 			o.UpdatedAt = time.Now()
-			o.IncrementVersion()
 			return nil
 		}
 	}
@@ -367,7 +364,6 @@ func (o *PurchaseOrder) RemoveItem(itemID uuid.UUID) error {
 			o.Items = append(o.Items[:idx], o.Items[idx+1:]...)
 			o.recalculateTotals()
 			o.UpdatedAt = time.Now()
-			o.IncrementVersion()
 			return nil
 		}
 	}
@@ -391,7 +387,6 @@ func (o *PurchaseOrder) ApplyDiscount(discount valueobject.Money) error {
 	o.DiscountAmount = discount.Amount()
 	o.PayableAmount = o.TotalAmount.Sub(o.DiscountAmount)
 	o.UpdatedAt = time.Now()
-	o.IncrementVersion()
 
 	return nil
 }
@@ -400,7 +395,6 @@ func (o *PurchaseOrder) ApplyDiscount(discount valueobject.Money) error {
 func (o *PurchaseOrder) SetRemark(remark string) {
 	o.Remark = remark
 	o.UpdatedAt = time.Now()
-	o.IncrementVersion()
 }
 
 // SetWarehouse sets the target warehouse for receiving
@@ -415,7 +409,6 @@ func (o *PurchaseOrder) SetWarehouse(warehouseID uuid.UUID) error {
 
 	o.WarehouseID = &warehouseID
 	o.UpdatedAt = time.Now()
-	o.IncrementVersion()
 
 	return nil
 }
@@ -437,7 +430,6 @@ func (o *PurchaseOrder) Confirm() error {
 	o.Status = PurchaseOrderStatusConfirmed
 	o.ConfirmedAt = &now
 	o.UpdatedAt = now
-	o.IncrementVersion()
 
 	o.AddDomainEvent(NewPurchaseOrderConfirmedEvent(o))
 
@@ -513,7 +505,6 @@ func (o *PurchaseOrder) Receive(receiveItems []ReceiveItem) ([]ReceivedItemInfo,
 	}
 
 	o.UpdatedAt = time.Now()
-	o.IncrementVersion()
 
 	o.AddDomainEvent(NewPurchaseOrderReceivedEvent(o, receivedInfos))
 
@@ -541,7 +532,6 @@ func (o *PurchaseOrder) Cancel(reason string) error {
 	o.CancelledAt = &now
 	o.CancelReason = reason
 	o.UpdatedAt = now
-	o.IncrementVersion()
 
 	o.AddDomainEvent(NewPurchaseOrderCancelledEvent(o, wasConfirmed))
 

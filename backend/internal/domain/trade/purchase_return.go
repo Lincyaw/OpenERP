@@ -330,7 +330,6 @@ func (r *PurchaseReturn) AddItem(
 	r.Items = append(r.Items, *item)
 	r.recalculateTotalRefund()
 	r.UpdatedAt = time.Now()
-	r.IncrementVersion()
 
 	return item, nil
 }
@@ -349,7 +348,6 @@ func (r *PurchaseReturn) UpdateItemQuantity(itemID uuid.UUID, quantity decimal.D
 			}
 			r.recalculateTotalRefund()
 			r.UpdatedAt = time.Now()
-			r.IncrementVersion()
 			return nil
 		}
 	}
@@ -369,7 +367,6 @@ func (r *PurchaseReturn) RemoveItem(itemID uuid.UUID) error {
 			r.Items = append(r.Items[:idx], r.Items[idx+1:]...)
 			r.recalculateTotalRefund()
 			r.UpdatedAt = time.Now()
-			r.IncrementVersion()
 			return nil
 		}
 	}
@@ -381,14 +378,12 @@ func (r *PurchaseReturn) RemoveItem(itemID uuid.UUID) error {
 func (r *PurchaseReturn) SetReason(reason string) {
 	r.Reason = reason
 	r.UpdatedAt = time.Now()
-	r.IncrementVersion()
 }
 
 // SetRemark sets the return remark
 func (r *PurchaseReturn) SetRemark(remark string) {
 	r.Remark = remark
 	r.UpdatedAt = time.Now()
-	r.IncrementVersion()
 }
 
 // SetWarehouse sets the warehouse from which goods will be shipped
@@ -403,7 +398,6 @@ func (r *PurchaseReturn) SetWarehouse(warehouseID uuid.UUID) error {
 
 	r.WarehouseID = &warehouseID
 	r.UpdatedAt = time.Now()
-	r.IncrementVersion()
 
 	return nil
 }
@@ -425,7 +419,6 @@ func (r *PurchaseReturn) Submit() error {
 	r.Status = PurchaseReturnStatusPending
 	r.SubmittedAt = &now
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewPurchaseReturnSubmittedEvent(r))
 
@@ -448,7 +441,6 @@ func (r *PurchaseReturn) Approve(approverID uuid.UUID, note string) error {
 	r.ApprovedBy = &approverID
 	r.ApprovalNote = note
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewPurchaseReturnApprovedEvent(r))
 
@@ -474,7 +466,6 @@ func (r *PurchaseReturn) Reject(rejecterID uuid.UUID, reason string) error {
 	r.RejectedBy = &rejecterID
 	r.RejectionReason = reason
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewPurchaseReturnRejectedEvent(r))
 
@@ -509,7 +500,6 @@ func (r *PurchaseReturn) Ship(shipperID uuid.UUID, note string, trackingNumber s
 	r.ShippingNote = note
 	r.TrackingNumber = trackingNumber
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewPurchaseReturnShippedEvent(r))
 
@@ -528,7 +518,6 @@ func (r *PurchaseReturn) Complete() error {
 	r.Status = PurchaseReturnStatusCompleted
 	r.CompletedAt = &now
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewPurchaseReturnCompletedEvent(r))
 
@@ -551,7 +540,6 @@ func (r *PurchaseReturn) Cancel(reason string) error {
 	r.CancelledAt = &now
 	r.CancelReason = reason
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewPurchaseReturnCancelledEvent(r, wasApproved))
 

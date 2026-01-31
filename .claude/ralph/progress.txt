@@ -42948,3 +42948,68 @@ PASS
 - Integrate with tenant usage statistics API (SAAS-BE-008)
 - Consider adding billing history section
 - Add plan change confirmation modal
+
+2026-01-31 - SAAS-FE-003: Usage Dashboard Components
+
+=== Implementation Details ===
+- Created manual API hooks for usage endpoints (not yet in swagger):
+  - frontend/src/api/usage/usage.ts - React Query hooks for getCurrentUsage, getUsageHistory, getQuotas
+  - frontend/src/api/usage/index.ts - Barrel export
+
+- Created usage display components:
+  - frontend/src/components/usage/UsageGauge.tsx - Progress bar component with warning/critical thresholds
+  - frontend/src/components/usage/UsageGauge.css - Responsive styles
+  - frontend/src/components/usage/UsageChart.tsx - ECharts line chart for usage trends
+  - frontend/src/components/usage/UsageChart.css - Chart styles
+  - frontend/src/components/usage/QuotaAlert.tsx - Warning banner with upgrade CTA
+  - frontend/src/components/usage/QuotaAlert.css - Alert styles
+  - frontend/src/components/usage/index.ts - Barrel export
+
+- Integrated usage display in SubscriptionPage:
+  - Added QuotaAlertList for resources approaching limits
+  - Replaced mock data with real API data via useGetCurrentUsage hook
+  - Added UsageGauge components for each metric
+  - Added UsageChart for historical trends
+
+- Added usage overview to Dashboard:
+  - Added QuotaAlertList at top of right column
+  - Added Usage Overview card with UsageGauge components
+  - Added link to subscription page for details
+
+- Added i18n translations:
+  - frontend/src/locales/en-US/system.json - English usage translations
+  - frontend/src/locales/zh-CN/system.json - Chinese usage translations
+
+=== Key Design Decisions ===
+1. Created manual API hooks since swagger docs don't include usage endpoints yet
+2. Used ECharts (already in project) for trend charts
+3. Implemented warning (70%) and critical (90%) thresholds for quota alerts
+4. Made components responsive with mobile-first CSS
+5. Used Semi Design components (Progress, Banner, Card) for consistency
+
+=== Verification ===
+- TypeScript type checking: PASSED
+- ESLint: PASSED (no new errors in implementation files)
+- Components follow project patterns and design system
+
+=== Files Modified ===
+- frontend/src/api/usage/usage.ts (new)
+- frontend/src/api/usage/index.ts (new)
+- frontend/src/components/usage/UsageGauge.tsx (new)
+- frontend/src/components/usage/UsageGauge.css (new)
+- frontend/src/components/usage/UsageChart.tsx (new)
+- frontend/src/components/usage/UsageChart.css (new)
+- frontend/src/components/usage/QuotaAlert.tsx (new)
+- frontend/src/components/usage/QuotaAlert.css (new)
+- frontend/src/components/usage/index.ts (new)
+- frontend/src/pages/settings/SubscriptionPage.tsx (modified)
+- frontend/src/pages/settings/SubscriptionPage.css (modified)
+- frontend/src/pages/Dashboard.tsx (modified)
+- frontend/src/pages/Dashboard.css (modified)
+- frontend/src/locales/en-US/system.json (modified)
+- frontend/src/locales/zh-CN/system.json (modified)
+
+=== Next Steps ===
+- Backend: Add usage endpoints to swagger annotations for API doc generation
+- Consider adding real-time usage updates via WebSocket
+- Add E2E tests for usage display functionality

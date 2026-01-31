@@ -6,26 +6,18 @@ import {
   Typography,
   Button,
   Tag,
-  Progress,
   Descriptions,
   Table,
   Skeleton,
   Banner,
 } from '@douyinfe/semi-ui-19'
-import {
-  IconTick,
-  IconClose,
-  IconCrown,
-  IconStar,
-  IconVerify,
-  IconUser,
-  IconInbox,
-  IconBox,
-} from '@douyinfe/semi-icons'
+import { IconTick, IconClose, IconCrown, IconStar, IconVerify } from '@douyinfe/semi-icons'
 
 import { Container } from '@/components/common/layout'
+import { UsageGauge, UsageChart, QuotaAlertList } from '@/components/usage'
 import { useUser } from '@/store'
 import { useGetTenantById } from '@/api/tenants/tenants'
+import { useGetCurrentUsage } from '@/api/usage'
 import {
   useTenantPlan,
   useFeatureStore,
@@ -36,16 +28,6 @@ import {
 import './SubscriptionPage.css'
 
 const { Title, Text } = Typography
-
-/**
- * Plan limits for resource usage display
- */
-const PLAN_LIMITS: Record<TenantPlan, { users: number; warehouses: number; products: number }> = {
-  free: { users: 1, warehouses: 1, products: 100 },
-  basic: { users: 5, warehouses: 3, products: 1000 },
-  pro: { users: 20, warehouses: 10, products: 10000 },
-  enterprise: { users: -1, warehouses: -1, products: -1 }, // -1 = unlimited
-}
 
 /**
  * Plan pricing
@@ -94,7 +76,15 @@ export default function SubscriptionPage() {
     },
   })
 
+  // Fetch usage data from API
+  const { data: usageResponse, isLoading: isUsageLoading } = useGetCurrentUsage({
+    query: {
+      enabled: !!user?.tenantId,
+    },
+  })
+
   const tenant = tenantResponse?.status === 200 ? tenantResponse.data.data : null
+  const usageData = usageResponse?.status === 200 ? usageResponse.data.data : null
 
   // Get enabled and disabled features
   const enabledFeatures = useMemo(() => getEnabledFeatures(), [getEnabledFeatures])
@@ -130,16 +120,6 @@ export default function SubscriptionPage() {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
     return diffDays > 0 ? diffDays : 0
   }, [tenantTrialEndsAt])
-
-  // Mock resource usage (in real app, this would come from API)
-  const resourceUsage = useMemo(
-    () => ({
-      users: { current: 3, limit: PLAN_LIMITS[currentPlan].users },
-      warehouses: { current: 2, limit: PLAN_LIMITS[currentPlan].warehouses },
-      products: { current: 45, limit: PLAN_LIMITS[currentPlan].products },
-    }),
-    [currentPlan]
-  )
 
   // Feature comparison table data
   const featureComparisonData: FeatureComparisonRow[] = useMemo(
@@ -358,25 +338,6 @@ export default function SubscriptionPage() {
     return <Text>{value}</Text>
   }
 
-  // Calculate usage percentage
-  function getUsagePercentage(current: number, limit: number): number {
-    if (limit === -1) return 0 // Unlimited
-    return Math.min(Math.round((current / limit) * 100), 100)
-  }
-
-  // Get usage status color
-  function getUsageStatus(percentage: number): 'success' | 'warning' | 'exception' {
-    if (percentage >= 90) return 'exception'
-    if (percentage >= 70) return 'warning'
-    return 'success'
-  }
-
-  // Format limit display
-  function formatLimit(limit: number): string {
-    if (limit === -1) return t('subscriptionPage.comparison.unlimited')
-    return limit.toLocaleString()
-  }
-
   if (isTenantLoading) {
     return (
       <Container size="lg" className="subscription-page">
@@ -400,6 +361,17 @@ export default function SubscriptionPage() {
           type="danger"
           description={t('common.fetchError', { defaultValue: 'Failed to load data' })}
           className="error-banner"
+        />
+      )}
+
+      {/* Quota Alerts - Show warnings for resources approaching limits */}
+      {usageData?.metrics && (
+        <QuotaAlertList
+          metrics={usageData.metrics}
+          warningThreshold={70}
+          criticalThreshold={90}
+          showUpgradeButton={currentPlan !== 'enterprise'}
+          className="quota-alerts-section"
         />
       )}
 
@@ -478,74 +450,41 @@ export default function SubscriptionPage() {
         </div>
       </Card>
 
-      {/* Resource Usage Section */}
+      {/* Resource Usage Section - Using real API data */}
       <Card className="resource-usage-card">
         <Title heading={5} className="section-title">
           {t('subscriptionPage.resourceUsage')}
         </Title>
 
-        <div className="resource-usage-grid">
-          {/* Users */}
-          <div className="resource-item">
-            <div className="resource-header">
-              <IconUser className="resource-icon" />
-              <Text strong>{t('subscriptionPage.comparison.users')}</Text>
-            </div>
-            <Progress
-              percent={getUsagePercentage(resourceUsage.users.current, resourceUsage.users.limit)}
-              stroke={getUsageStatus(
-                getUsagePercentage(resourceUsage.users.current, resourceUsage.users.limit)
-              )}
-              showInfo
-            />
-            <Text type="tertiary" size="small">
-              {resourceUsage.users.current} / {formatLimit(resourceUsage.users.limit)}
-            </Text>
+        {isUsageLoading ? (
+          <Skeleton.Paragraph rows={3} />
+        ) : usageData?.metrics ? (
+          <div className="resource-usage-grid">
+            {usageData.metrics.map((metric) => (
+              <UsageGauge
+                key={metric.name}
+                metric={metric}
+                showPercentage
+                showUsageText
+                size="default"
+                warningThreshold={70}
+                criticalThreshold={90}
+              />
+            ))}
           </div>
-
-          {/* Warehouses */}
-          <div className="resource-item">
-            <div className="resource-header">
-              <IconInbox className="resource-icon" />
-              <Text strong>{t('subscriptionPage.comparison.warehouses')}</Text>
-            </div>
-            <Progress
-              percent={getUsagePercentage(
-                resourceUsage.warehouses.current,
-                resourceUsage.warehouses.limit
-              )}
-              stroke={getUsageStatus(
-                getUsagePercentage(resourceUsage.warehouses.current, resourceUsage.warehouses.limit)
-              )}
-              showInfo
-            />
-            <Text type="tertiary" size="small">
-              {resourceUsage.warehouses.current} / {formatLimit(resourceUsage.warehouses.limit)}
-            </Text>
-          </div>
-
-          {/* Products */}
-          <div className="resource-item">
-            <div className="resource-header">
-              <IconBox className="resource-icon" />
-              <Text strong>{t('subscriptionPage.comparison.products')}</Text>
-            </div>
-            <Progress
-              percent={getUsagePercentage(
-                resourceUsage.products.current,
-                resourceUsage.products.limit
-              )}
-              stroke={getUsageStatus(
-                getUsagePercentage(resourceUsage.products.current, resourceUsage.products.limit)
-              )}
-              showInfo
-            />
-            <Text type="tertiary" size="small">
-              {resourceUsage.products.current} / {formatLimit(resourceUsage.products.limit)}
-            </Text>
-          </div>
-        </div>
+        ) : (
+          <Text type="tertiary">{t('usage.noData')}</Text>
+        )}
       </Card>
+
+      {/* Usage Trends Chart */}
+      <UsageChart
+        title={t('usage.chart.title')}
+        defaultPeriod="daily"
+        height={300}
+        showPeriodSelector
+        className="usage-chart-section"
+      />
 
       {/* Current Plan Features */}
       <Card className="features-card">

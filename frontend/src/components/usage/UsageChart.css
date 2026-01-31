@@ -1,0 +1,55 @@
+/**
+ * UsageChart Component Styles
+ */
+
+.usage-chart {
+  display: flex;
+  flex-direction: column;
+}
+
+.usage-chart__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+  gap: var(--spacing-3);
+}
+
+.usage-chart__title.semi-typography {
+  margin: 0;
+}
+
+.usage-chart__period-select {
+  min-width: var(--spacing-32);
+}
+
+.usage-chart__content {
+  position: relative;
+  min-height: var(--spacing-48);
+}
+
+.usage-chart__loading,
+.usage-chart__error,
+.usage-chart__empty {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .usage-chart__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+
+  .usage-chart__period-select {
+    width: 100%;
+  }
+}

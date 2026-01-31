@@ -770,5 +770,34 @@
       "sla": "99.9% SLA Guarantee",
       "whiteLabeling": "White-Label Branding"
     }
+  },
+  "usage": {
+    "unlimited": "Unlimited",
+    "unlimitedTooltip": "Current: {{current}} (No limit)",
+    "tooltip": "{{current}} / {{limit}} ({{percentage}}% used, {{remaining}} remaining)",
+    "criticalWarning": "Approaching limit! Consider upgrading.",
+    "warningMessage": "Usage is getting high.",
+    "noData": "No usage data available",
+    "metrics": {
+      "users": "Users",
+      "products": "Products",
+      "warehouses": "Warehouses"
+    },
+    "period": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "chart": {
+      "title": "Usage Trends",
+      "loadError": "Failed to load usage history",
+      "noData": "No historical data available"
+    },
+    "alert": {
+      "warning": "{{resource}} usage is at {{percentage}}% of your limit.",
+      "critical": "{{resource}} is at {{percentage}}%! Only {{remaining}} remaining.",
+      "exceeded": "{{resource}} limit exceeded! Current: {{current}}, Limit: {{limit}}",
+      "upgradeNow": "Upgrade Now"
+    }
   }
 }

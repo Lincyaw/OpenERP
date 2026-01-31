@@ -770,5 +770,34 @@
       "sla": "99.9% SLA 保障",
       "whiteLabeling": "白标品牌定制"
     }
+  },
+  "usage": {
+    "unlimited": "无限制",
+    "unlimitedTooltip": "当前: {{current}} (无限制)",
+    "tooltip": "{{current}} / {{limit}} (已使用 {{percentage}}%，剩余 {{remaining}})",
+    "criticalWarning": "即将达到上限！建议升级。",
+    "warningMessage": "使用量较高。",
+    "noData": "暂无使用数据",
+    "metrics": {
+      "users": "用户数",
+      "products": "商品数",
+      "warehouses": "仓库数"
+    },
+    "period": {
+      "daily": "按日",
+      "weekly": "按周",
+      "monthly": "按月"
+    },
+    "chart": {
+      "title": "使用趋势",
+      "loadError": "加载使用历史失败",
+      "noData": "暂无历史数据"
+    },
+    "alert": {
+      "warning": "{{resource}} 使用量已达 {{percentage}}%。",
+      "critical": "{{resource}} 已达 {{percentage}}%！仅剩 {{remaining}}。",
+      "exceeded": "{{resource}} 已超出限制！当前: {{current}}，限制: {{limit}}",
+      "upgradeNow": "立即升级"
+    }
   }
 }

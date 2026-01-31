@@ -291,7 +291,6 @@ func (r *SalesReturn) AddItem(
 	r.Items = append(r.Items, *item)
 	r.recalculateTotalRefund()
 	r.UpdatedAt = time.Now()
-	r.IncrementVersion()
 
 	return item, nil
 }
@@ -310,7 +309,6 @@ func (r *SalesReturn) UpdateItemQuantity(itemID uuid.UUID, quantity decimal.Deci
 			}
 			r.recalculateTotalRefund()
 			r.UpdatedAt = time.Now()
-			r.IncrementVersion()
 			return nil
 		}
 	}
@@ -330,7 +328,6 @@ func (r *SalesReturn) RemoveItem(itemID uuid.UUID) error {
 			r.Items = append(r.Items[:idx], r.Items[idx+1:]...)
 			r.recalculateTotalRefund()
 			r.UpdatedAt = time.Now()
-			r.IncrementVersion()
 			return nil
 		}
 	}
@@ -342,14 +339,12 @@ func (r *SalesReturn) RemoveItem(itemID uuid.UUID) error {
 func (r *SalesReturn) SetReason(reason string) {
 	r.Reason = reason
 	r.UpdatedAt = time.Now()
-	r.IncrementVersion()
 }
 
 // SetRemark sets the return remark
 func (r *SalesReturn) SetRemark(remark string) {
 	r.Remark = remark
 	r.UpdatedAt = time.Now()
-	r.IncrementVersion()
 }
 
 // SetWarehouse sets the warehouse for returned goods
@@ -364,7 +359,6 @@ func (r *SalesReturn) SetWarehouse(warehouseID uuid.UUID) error {
 
 	r.WarehouseID = &warehouseID
 	r.UpdatedAt = time.Now()
-	r.IncrementVersion()
 
 	return nil
 }
@@ -386,7 +380,6 @@ func (r *SalesReturn) Submit() error {
 	r.Status = ReturnStatusPending
 	r.SubmittedAt = &now
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewSalesReturnSubmittedEvent(r))
 
@@ -409,7 +402,6 @@ func (r *SalesReturn) Approve(approverID uuid.UUID, note string) error {
 	r.ApprovedBy = &approverID
 	r.ApprovalNote = note
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewSalesReturnApprovedEvent(r))
 
@@ -435,7 +427,6 @@ func (r *SalesReturn) Reject(rejecterID uuid.UUID, reason string) error {
 	r.RejectedBy = &rejecterID
 	r.RejectionReason = reason
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewSalesReturnRejectedEvent(r))
 
@@ -457,7 +448,6 @@ func (r *SalesReturn) Complete() error {
 	r.Status = ReturnStatusCompleted
 	r.CompletedAt = &now
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewSalesReturnCompletedEvent(r))
 
@@ -478,7 +468,6 @@ func (r *SalesReturn) Receive() error {
 	r.Status = ReturnStatusReceiving
 	r.ReceivedAt = &now
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewSalesReturnReceivedEvent(r))
 
@@ -502,7 +491,6 @@ func (r *SalesReturn) Cancel(reason string) error {
 	r.CancelledAt = &now
 	r.CancelReason = reason
 	r.UpdatedAt = now
-	r.IncrementVersion()
 
 	r.AddDomainEvent(NewSalesReturnCancelledEvent(r, wasApproved))
 

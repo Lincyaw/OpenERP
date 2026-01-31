@@ -251,7 +251,6 @@ func (o *SalesOrder) AddItem(productID uuid.UUID, productName, productCode, unit
 	o.Items = append(o.Items, *item)
 	o.recalculateTotals()
 	o.UpdatedAt = time.Now()
-	o.IncrementVersion()
 
 	return item, nil
 }
@@ -270,7 +269,6 @@ func (o *SalesOrder) UpdateItemQuantity(itemID uuid.UUID, quantity decimal.Decim
 			}
 			o.recalculateTotals()
 			o.UpdatedAt = time.Now()
-			o.IncrementVersion()
 			return nil
 		}
 	}
@@ -292,7 +290,6 @@ func (o *SalesOrder) UpdateItemPrice(itemID uuid.UUID, unitPrice valueobject.Mon
 			}
 			o.recalculateTotals()
 			o.UpdatedAt = time.Now()
-			o.IncrementVersion()
 			return nil
 		}
 	}
@@ -312,7 +309,6 @@ func (o *SalesOrder) RemoveItem(itemID uuid.UUID) error {
 			o.Items = append(o.Items[:idx], o.Items[idx+1:]...)
 			o.recalculateTotals()
 			o.UpdatedAt = time.Now()
-			o.IncrementVersion()
 			return nil
 		}
 	}
@@ -336,7 +332,6 @@ func (o *SalesOrder) ApplyDiscount(discount valueobject.Money) error {
 	o.DiscountAmount = discount.Amount()
 	o.PayableAmount = o.TotalAmount.Sub(o.DiscountAmount)
 	o.UpdatedAt = time.Now()
-	o.IncrementVersion()
 
 	return nil
 }
@@ -345,7 +340,6 @@ func (o *SalesOrder) ApplyDiscount(discount valueobject.Money) error {
 func (o *SalesOrder) SetRemark(remark string) {
 	o.Remark = remark
 	o.UpdatedAt = time.Now()
-	o.IncrementVersion()
 }
 
 // SetWarehouse sets the warehouse for the order
@@ -360,7 +354,6 @@ func (o *SalesOrder) SetWarehouse(warehouseID uuid.UUID) error {
 
 	o.WarehouseID = &warehouseID
 	o.UpdatedAt = time.Now()
-	o.IncrementVersion()
 
 	return nil
 }
@@ -382,7 +375,6 @@ func (o *SalesOrder) Confirm() error {
 	o.Status = OrderStatusConfirmed
 	o.ConfirmedAt = &now
 	o.UpdatedAt = now
-	o.IncrementVersion()
 
 	o.AddDomainEvent(NewSalesOrderConfirmedEvent(o))
 
@@ -403,7 +395,6 @@ func (o *SalesOrder) Ship() error {
 	o.Status = OrderStatusShipped
 	o.ShippedAt = &now
 	o.UpdatedAt = now
-	o.IncrementVersion()
 
 	o.AddDomainEvent(NewSalesOrderShippedEvent(o))
 
@@ -420,7 +411,6 @@ func (o *SalesOrder) Complete() error {
 	o.Status = OrderStatusCompleted
 	o.CompletedAt = &now
 	o.UpdatedAt = now
-	o.IncrementVersion()
 
 	o.AddDomainEvent(NewSalesOrderCompletedEvent(o))
 
@@ -444,7 +434,6 @@ func (o *SalesOrder) Cancel(reason string) error {
 	o.CancelledAt = &now
 	o.CancelReason = reason
 	o.UpdatedAt = now
-	o.IncrementVersion()
 
 	o.AddDomainEvent(NewSalesOrderCancelledEvent(o, wasConfirmed))
 
