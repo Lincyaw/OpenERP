@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/erp/backend/internal/domain/identity"
@@ -521,4 +522,99 @@ type PlanFeatureChangeLogModel struct {
 // TableName returns the table name for GORM
 func (PlanFeatureChangeLogModel) TableName() string {
 	return "plan_feature_change_logs"
+}
+
+// AdminAuditLogModel is the persistence model for admin audit logs.
+// This model represents immutable audit entries for super admin operations.
+type AdminAuditLogModel struct {
+	ID          uuid.UUID                `gorm:"type:uuid;primaryKey"`
+	AdminUserID uuid.UUID                `gorm:"type:uuid;not null;index"`
+	Action      identity.AuditAction     `gorm:"type:varchar(50);not null;index"`
+	TargetType  identity.AuditTargetType `gorm:"type:varchar(50);not null"`
+	TargetID    *uuid.UUID               `gorm:"type:uuid;index"`
+	OldValue    *string                  `gorm:"type:jsonb"`
+	NewValue    *string                  `gorm:"type:jsonb"`
+	IPAddress   string                   `gorm:"type:varchar(45)"`
+	UserAgent   string                   `gorm:"type:varchar(500)"`
+	CreatedAt   time.Time                `gorm:"not null;index"`
+}
+
+// TableName returns the table name for GORM
+func (AdminAuditLogModel) TableName() string {
+	return "admin_audit_logs"
+}
+
+// ToDomain converts the persistence model to a domain AuditLog entity.
+func (m *AdminAuditLogModel) ToDomain() *identity.AuditLog {
+	log := &identity.AuditLog{
+		ID:          m.ID,
+		AdminUserID: m.AdminUserID,
+		Action:      m.Action,
+		TargetType:  m.TargetType,
+		TargetID:    m.TargetID,
+		IPAddress:   m.IPAddress,
+		UserAgent:   m.UserAgent,
+		CreatedAt:   m.CreatedAt,
+	}
+
+	// Parse OldValue JSON
+	if m.OldValue != nil && *m.OldValue != "" {
+		var oldVal map[string]interface{}
+		if err := json.Unmarshal([]byte(*m.OldValue), &oldVal); err == nil {
+			log.OldValue = oldVal
+		}
+	}
+
+	// Parse NewValue JSON
+	if m.NewValue != nil && *m.NewValue != "" {
+		var newVal map[string]interface{}
+		if err := json.Unmarshal([]byte(*m.NewValue), &newVal); err == nil {
+			log.NewValue = newVal
+		}
+	}
+
+	return log
+}
+
+// FromDomain populates the persistence model from a domain AuditLog entity.
+func (m *AdminAuditLogModel) FromDomain(log *identity.AuditLog) error {
+	m.ID = log.ID
+	m.AdminUserID = log.AdminUserID
+	m.Action = log.Action
+	m.TargetType = log.TargetType
+	m.TargetID = log.TargetID
+	m.IPAddress = log.IPAddress
+	m.UserAgent = log.UserAgent
+	m.CreatedAt = log.CreatedAt
+
+	// Serialize OldValue to JSON
+	if log.OldValue != nil {
+		oldJSON, err := json.Marshal(log.OldValue)
+		if err != nil {
+			return err
+		}
+		oldStr := string(oldJSON)
+		m.OldValue = &oldStr
+	}
+
+	// Serialize NewValue to JSON
+	if log.NewValue != nil {
+		newJSON, err := json.Marshal(log.NewValue)
+		if err != nil {
+			return err
+		}
+		newStr := string(newJSON)
+		m.NewValue = &newStr
+	}
+
+	return nil
+}
+
+// AdminAuditLogModelFromDomain creates a new persistence model from a domain AuditLog entity.
+func AdminAuditLogModelFromDomain(log *identity.AuditLog) (*AdminAuditLogModel, error) {
+	m := &AdminAuditLogModel{}
+	if err := m.FromDomain(log); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
