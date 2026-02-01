@@ -43909,3 +43909,107 @@ Routes to hide (via hideInMenu: true):
 
 1. When backend APIs for payment settings are implemented, remove `hideInMenu: true` to re-enable the menu item
 2. Continue with other cleanup tasks if any remain
+
+---
+
+## 2026-02-01 - BILLING-BE-002: Implement Subscription Plans List API
+
+### Task ID: BILLING-BE-002
+### Status: Complete
+
+=== Implementation Details ===
+
+**Goal:** Create GET /api/v1/billing/plans endpoint to return all available subscription plans with their quotas and features.
+
+**Modified Files:**
+
+1. `backend/internal/interfaces/http/handler/subscription_handler.go`
+   - Added new DTO types:
+     - `PlanQuotaResponse` - Quota definition for a plan
+     - `SubscriptionPlanFeatureResponse` - Feature definition for a plan (renamed to avoid conflict with existing `PlanFeatureResponse`)
+     - `SubscriptionPlanResponse` - Complete plan response with quotas and features
+   - Added `GetPlans` handler method with swagger annotations
+   - Added helper functions:
+     - `buildAvailablePlans()` - Builds list of all 4 plans
+     - `buildPlanResponse()` - Builds single plan response
+     - `getPlanQuotas()` - Returns quota definitions per plan
+     - `getPlanFeatures()` - Returns feature definitions per plan
+     - `getFeatureDisplayName()` - Maps feature keys to Chinese display names
+
+2. `backend/cmd/server/main.go`
+   - Registered new route: `GET /billing/plans` (public, no auth required)
+
+3. `backend/internal/interfaces/http/handler/subscription_handler_test.go`
+   - Added comprehensive test suite for `GetPlans` handler:
+     - `returns_all_available_plans` - Verifies 4 plans returned
+     - `free_plan_has_correct_quotas` - Verifies free plan limits
+     - `enterprise_plan_has_unlimited_quotas` - Verifies -1 for unlimited
+     - `pro_plan_is_highlighted` - Verifies highlighted flag
+     - `plans_include_features` - Verifies features have required fields
+
+**API Response Structure:**
+```json
+[
+  {
+    "id": "free",
+    "name": "免费版",
+    "description": "适合个人和小型团队",
+    "price": 0,
+    "price_unit": "CNY/月",
+    "quotas": [
+      {"type": "users", "limit": 5, "unit": "count"},
+      {"type": "warehouses", "limit": 3, "unit": "count"},
+      {"type": "products", "limit": 1000, "unit": "count"}
+    ],
+    "features": [
+      {"key": "multi_warehouse", "name": "多仓库管理", "description": "...", "enabled": false},
+      ...
+    ],
+    "highlighted": false
+  },
+  ...
+]
+```
+
+**Plans Included:**
+- Free (免费版): 5 users, 3 warehouses, 1000 products, ¥0/月
+- Basic (基础版): 10 users, 5 warehouses, 5000 products, ¥199/月
+- Pro (专业版): 50 users, 20 warehouses, 50000 products, ¥599/月 (highlighted)
+- Enterprise (企业版): Unlimited, 按需定价
+
+=== Design Decisions ===
+
+1. **Public Endpoint**: The `/billing/plans` endpoint is public (no authentication required) so users can view available plans before signing up.
+
+2. **Feature Display Names**: Added Chinese display names for all feature keys to support localization in the frontend.
+
+3. **Type Naming**: Used `SubscriptionPlanFeatureResponse` instead of `PlanFeatureResponse` to avoid conflict with existing type in `plan_feature_handler.go`.
+
+4. **Highlighted Plan**: Pro plan is marked as `highlighted: true` for frontend to display as recommended option.
+
+5. **Unlimited Quotas**: Enterprise plan uses -1 to indicate unlimited quotas, consistent with existing `getQuotaLimit` function.
+
+=== Verification ===
+
+- [x] Go build passes: `go build ./...`
+- [x] All handler tests pass: `go test ./internal/interfaces/http/handler/...`
+- [x] New GetPlans tests pass (5 test cases)
+- [x] No console.log or debug statements
+- [x] Code follows existing patterns in subscription_handler.go
+
+=== Acceptance Criteria Met ===
+
+- [x] API 返回所有可用订阅计划 (API returns all available subscription plans)
+- [x] 每个计划包含配额和功能信息 (Each plan includes quota and feature information)
+- [x] API 文档完整 (API documentation complete - swagger annotations added, but swagger generation has pre-existing issues)
+
+=== Notes ===
+
+- Swagger documentation generation has a pre-existing issue with `dto.ErrorResponse` type not being found. This is unrelated to this task and should be addressed separately.
+- The plan definitions are currently hardcoded in the handler. Future enhancement could move these to configuration or database.
+
+=== Next Steps ===
+
+1. Fix swagger generation issue (separate task)
+2. Frontend can now use this API to dynamically display subscription plans
+3. Consider adding plan comparison endpoint if needed

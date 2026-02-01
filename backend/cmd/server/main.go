@@ -1456,6 +1456,9 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"message": "billing service ready"})
 	})
 
+	// Public routes - available subscription plans (no auth required)
+	billingRoutes.GET("/plans", subscriptionHandler.GetPlans)
+
 	// Current subscription routes (self-service, requires authentication)
 	billingRoutes.GET("/subscription/current", subscriptionHandler.GetCurrentSubscription)
 

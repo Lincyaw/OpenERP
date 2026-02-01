@@ -483,3 +483,206 @@ func TestSubscriptionHandler_GetSubscriptionFeatures(t *testing.T) {
 		})
 	}
 }
+
+func TestSubscriptionHandler_GetPlans(t *testing.T) {
+	t.Run("returns all available plans", func(t *testing.T) {
+		h := NewSubscriptionHandler(
+			&mockTenantRepository{},
+			&mockPlanFeatureRepository{},
+			&mockUserRepository{},
+			&mockWarehouseCounter{},
+			&mockProductCounter{},
+		)
+
+		router := gin.New()
+		router.GET("/billing/plans", h.GetPlans)
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest("GET", "/billing/plans", nil)
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var resp struct {
+			Success bool                       `json:"success"`
+			Data    []SubscriptionPlanResponse `json:"data"`
+		}
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+
+		assert.True(t, resp.Success)
+		assert.Len(t, resp.Data, 4) // free, basic, pro, enterprise
+
+		// Verify plan IDs
+		planIDs := make([]string, len(resp.Data))
+		for i, plan := range resp.Data {
+			planIDs[i] = plan.ID
+		}
+		assert.Contains(t, planIDs, "free")
+		assert.Contains(t, planIDs, "basic")
+		assert.Contains(t, planIDs, "pro")
+		assert.Contains(t, planIDs, "enterprise")
+	})
+
+	t.Run("free plan has correct quotas", func(t *testing.T) {
+		h := NewSubscriptionHandler(
+			&mockTenantRepository{},
+			&mockPlanFeatureRepository{},
+			&mockUserRepository{},
+			&mockWarehouseCounter{},
+			&mockProductCounter{},
+		)
+
+		router := gin.New()
+		router.GET("/billing/plans", h.GetPlans)
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest("GET", "/billing/plans", nil)
+		router.ServeHTTP(w, req)
+
+		var resp struct {
+			Success bool                       `json:"success"`
+			Data    []SubscriptionPlanResponse `json:"data"`
+		}
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+
+		// Find free plan
+		var freePlan *SubscriptionPlanResponse
+		for i := range resp.Data {
+			if resp.Data[i].ID == "free" {
+				freePlan = &resp.Data[i]
+				break
+			}
+		}
+		require.NotNil(t, freePlan)
+
+		assert.Equal(t, "免费版", freePlan.Name)
+		assert.Equal(t, int64(0), freePlan.Price)
+		assert.False(t, freePlan.Highlighted)
+
+		// Check quotas
+		quotaMap := make(map[string]int64)
+		for _, q := range freePlan.Quotas {
+			quotaMap[q.Type] = q.Limit
+		}
+		assert.Equal(t, int64(5), quotaMap["users"])
+		assert.Equal(t, int64(3), quotaMap["warehouses"])
+		assert.Equal(t, int64(1000), quotaMap["products"])
+	})
+
+	t.Run("enterprise plan has unlimited quotas", func(t *testing.T) {
+		h := NewSubscriptionHandler(
+			&mockTenantRepository{},
+			&mockPlanFeatureRepository{},
+			&mockUserRepository{},
+			&mockWarehouseCounter{},
+			&mockProductCounter{},
+		)
+
+		router := gin.New()
+		router.GET("/billing/plans", h.GetPlans)
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest("GET", "/billing/plans", nil)
+		router.ServeHTTP(w, req)
+
+		var resp struct {
+			Success bool                       `json:"success"`
+			Data    []SubscriptionPlanResponse `json:"data"`
+		}
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+
+		// Find enterprise plan
+		var enterprisePlan *SubscriptionPlanResponse
+		for i := range resp.Data {
+			if resp.Data[i].ID == "enterprise" {
+				enterprisePlan = &resp.Data[i]
+				break
+			}
+		}
+		require.NotNil(t, enterprisePlan)
+
+		assert.Equal(t, "企业版", enterprisePlan.Name)
+		assert.Equal(t, "按需定价", enterprisePlan.PriceUnit)
+
+		// Check quotas are unlimited (-1)
+		for _, q := range enterprisePlan.Quotas {
+			assert.Equal(t, int64(-1), q.Limit, "quota %s should be unlimited", q.Type)
+		}
+	})
+
+	t.Run("pro plan is highlighted", func(t *testing.T) {
+		h := NewSubscriptionHandler(
+			&mockTenantRepository{},
+			&mockPlanFeatureRepository{},
+			&mockUserRepository{},
+			&mockWarehouseCounter{},
+			&mockProductCounter{},
+		)
+
+		router := gin.New()
+		router.GET("/billing/plans", h.GetPlans)
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest("GET", "/billing/plans", nil)
+		router.ServeHTTP(w, req)
+
+		var resp struct {
+			Success bool                       `json:"success"`
+			Data    []SubscriptionPlanResponse `json:"data"`
+		}
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+
+		// Find pro plan
+		var proPlan *SubscriptionPlanResponse
+		for i := range resp.Data {
+			if resp.Data[i].ID == "pro" {
+				proPlan = &resp.Data[i]
+				break
+			}
+		}
+		require.NotNil(t, proPlan)
+
+		assert.True(t, proPlan.Highlighted)
+		assert.Equal(t, int64(599), proPlan.Price)
+	})
+
+	t.Run("plans include features", func(t *testing.T) {
+		h := NewSubscriptionHandler(
+			&mockTenantRepository{},
+			&mockPlanFeatureRepository{},
+			&mockUserRepository{},
+			&mockWarehouseCounter{},
+			&mockProductCounter{},
+		)
+
+		router := gin.New()
+		router.GET("/billing/plans", h.GetPlans)
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest("GET", "/billing/plans", nil)
+		router.ServeHTTP(w, req)
+
+		var resp struct {
+			Success bool                       `json:"success"`
+			Data    []SubscriptionPlanResponse `json:"data"`
+		}
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+
+		// All plans should have features
+		for _, plan := range resp.Data {
+			assert.NotEmpty(t, plan.Features, "plan %s should have features", plan.ID)
+
+			// Check that features have required fields
+			for _, feature := range plan.Features {
+				assert.NotEmpty(t, feature.Key, "feature key should not be empty")
+				assert.NotEmpty(t, feature.Name, "feature name should not be empty")
+				assert.NotEmpty(t, feature.Description, "feature description should not be empty")
+			}
+		}
+	})
+}
