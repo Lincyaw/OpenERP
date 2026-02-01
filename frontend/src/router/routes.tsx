@@ -482,6 +482,7 @@ export const appRoutes: AppRoute[] = [
           icon: 'IconLink',
           order: 5,
           permissions: [Permissions.TENANT_UPDATE],
+          hideInMenu: true, // E-commerce platform integration not yet implemented
         },
       },
       {
@@ -491,6 +492,7 @@ export const appRoutes: AppRoute[] = [
           icon: 'IconSync',
           order: 6,
           permissions: [Permissions.TENANT_UPDATE],
+          hideInMenu: true, // E-commerce platform integration not yet implemented
         },
       },
       {
@@ -500,6 +502,7 @@ export const appRoutes: AppRoute[] = [
           icon: 'IconConnectionPoint1',
           order: 7,
           permissions: [Permissions.TENANT_UPDATE],
+          hideInMenu: true, // E-commerce platform integration not yet implemented
         },
       },
       {

@@ -43807,3 +43807,56 @@ Routes to hide (via hideInMenu: true):
 1. BILLING-BE-002: Implement GET /api/v1/billing/plans API to provide dynamic plan list
 2. BILLING-FE-002: Display subscription overview in Settings page
 3. Consider adding real Stripe checkout integration for upgrade flow
+
+
+---
+
+## 2026-02-01 - CLEANUP-FE-001: Hide Unimplemented E-commerce Platform Integration Menu Items
+
+### Task ID: CLEANUP-FE-001
+### Status: Complete
+
+=== Implementation Details ===
+
+**Modified Files:**
+
+1. `frontend/src/router/routes.tsx`
+   - Added `hideInMenu: true` to `/system/platform-config` route meta (line 485)
+   - Added `hideInMenu: true` to `/system/platform-sync` route meta (line 494)
+   - Added `hideInMenu: true` to `/system/product-mappings` route meta (line 503)
+   - Added comments explaining why these routes are hidden
+
+**Routes Hidden:**
+- `/system/platform-config` - Platform Config (电商平台配置)
+- `/system/platform-sync` - Platform Sync Status (平台同步状态)
+- `/system/product-mappings` - Product Mappings (产品映射管理)
+
+=== Design Decisions ===
+
+1. **hideInMenu Property**: Used the existing `hideInMenu: true` property in route meta configuration. This property is already defined in `RouteMeta` interface (types.ts line 16) and is respected by the sidebar menu generation logic.
+
+2. **Code Preservation**: Route definitions and page components are preserved. Only the menu visibility is changed. This allows:
+   - Direct URL access for development/testing
+   - Easy re-enablement by removing `hideInMenu: true`
+   - No code deletion required
+
+3. **Comment Documentation**: Added inline comments explaining why each route is hidden ("E-commerce platform integration not yet implemented") for future maintainability.
+
+=== Verification ===
+
+- [x] TypeScript type checking passes: `npm run type-check`
+- [x] Production build succeeds: `npm run build`
+- [x] No console.log statements in code
+- [x] Routes still accessible via direct URL (preserved for dev/testing)
+- [x] Other system menu items unaffected (Users, Roles, Permissions, Import History)
+
+=== Acceptance Criteria Met ===
+
+- [x] 产品映射、平台配置、平台同步状态菜单项从侧边栏隐藏 (Menu items hidden from sidebar)
+- [x] 代码文件保留，未来可通过移除 hideInMenu 重新启用 (Code preserved, can re-enable by removing hideInMenu)
+- [x] 其他系统设置菜单项正常显示 (Other system settings menu items display normally)
+
+=== Next Steps ===
+
+1. CLEANUP-FE-002: Hide unimplemented Payment Settings menu entry
+2. When backend APIs for e-commerce integration are implemented, remove `hideInMenu: true` to re-enable these menu items
