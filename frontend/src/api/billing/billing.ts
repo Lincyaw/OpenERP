@@ -636,6 +636,8 @@ export const useGetCurrentSubscription = <
   return useQuery({
     queryKey,
     queryFn,
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes - subscription data doesn't change frequently
     ...queryOptions,
   })
 }
@@ -666,6 +668,8 @@ export const useGetPlans = <
   return useQuery({
     queryKey,
     queryFn,
+    retry: 2,
+    staleTime: 10 * 60 * 1000, // 10 minutes - plans rarely change
     ...queryOptions,
   })
 }

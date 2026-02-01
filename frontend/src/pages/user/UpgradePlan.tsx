@@ -138,12 +138,9 @@ export default function UpgradePlanPage() {
 
   const currentPlanId = currentSubscription?.plan_id || 'free'
 
-  // Show error toast on API errors
+  // Show error toast on API errors (only once if either fails)
   useEffect(() => {
-    if (subscriptionError) {
-      Toast.error(t('billing.messages.loadError'))
-    }
-    if (plansError) {
+    if (subscriptionError || plansError) {
       Toast.error(t('billing.messages.loadError'))
     }
   }, [subscriptionError, plansError, t])
@@ -334,7 +331,7 @@ export default function UpgradePlanPage() {
     )
   }
 
-  // Error state
+  // Error state - show error banner if both APIs fail
   if (subscriptionError && plansError) {
     return (
       <Container size="lg" className="upgrade-plan-page">
@@ -343,8 +340,29 @@ export default function UpgradePlanPage() {
     )
   }
 
+  // Calculate trial days remaining (ensure non-negative)
+  const trialDaysRemaining =
+    currentSubscription?.status === 'trial' && currentSubscription.trial_ends_at
+      ? Math.max(
+          0,
+          Math.ceil(
+            (new Date(currentSubscription.trial_ends_at).getTime() - Date.now()) /
+              (1000 * 60 * 60 * 24)
+          )
+        )
+      : 0
+
   return (
     <Container size="lg" className="upgrade-plan-page">
+      {/* Warning banner if one API failed but we have fallback data */}
+      {(subscriptionError || plansError) && (
+        <Banner
+          type="warning"
+          description={t('billing.messages.loadError')}
+          style={{ marginBottom: 16 }}
+        />
+      )}
+
       <div className="upgrade-plan-header">
         <Title heading={3}>{t('subscription.title')}</Title>
         <Text type="tertiary">{t('subscription.subtitle')}</Text>
@@ -360,13 +378,10 @@ export default function UpgradePlanPage() {
                 plan:
                   currentSubscription?.plan_name || plans.find((p) => p.current)?.name || 'Free',
               })}
-              {currentSubscription?.status === 'trial' && currentSubscription.trial_ends_at && (
+              {trialDaysRemaining > 0 && (
                 <Tag color="orange" style={{ marginLeft: 8 }}>
                   {t('subscriptionPage.trialBanner', {
-                    days: Math.ceil(
-                      (new Date(currentSubscription.trial_ends_at).getTime() - Date.now()) /
-                        (1000 * 60 * 60 * 24)
-                    ),
+                    days: trialDaysRemaining,
                   })}
                 </Tag>
               )}
