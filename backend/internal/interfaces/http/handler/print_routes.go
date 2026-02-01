@@ -29,3 +29,17 @@ func PrintRoutes(handler *PrintHandler, authMiddleware gin.HandlerFunc) *router.
 
 	return group
 }
+
+// PrintingWSRoutes creates the route group for printing WebSocket endpoints
+// Note: WebSocket endpoint uses its own authentication via query param or header
+// because WebSocket clients may not be able to set Authorization headers
+func PrintingWSRoutes(wsHandler *PrintingWSHandler, authMiddleware gin.HandlerFunc) *router.DomainGroup {
+	group := router.NewDomainGroup("printing", "/printing")
+	// Auth middleware is applied but will also check query param token in handler
+	group.Use(authMiddleware)
+
+	// WebSocket endpoint for real-time printing events
+	group.GET("/ws", wsHandler.Connect)
+
+	return group
+}

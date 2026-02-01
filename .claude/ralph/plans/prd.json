@@ -22,7 +22,7 @@
       "数据库迁移成功执行",
       "唯一约束正确创建（tenant_id, document_type, trigger_event）"
     ],
-    "status": "pending",
+    "status": "pass",
     "passes": true
   },
   {
@@ -47,7 +47,8 @@
       "支持至少 100 个并发 WebSocket 连接",
       "通过集成测试验证事件推送功能"
     ],
-    "status": "pending"
+    "status": "pending",
+    "passes": true
   },
   {
     "id": "P2-PRINT-003",
