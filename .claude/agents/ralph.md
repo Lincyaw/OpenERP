@@ -87,7 +87,7 @@ Before marking any task complete in prd.json, verify:
 - [ ] No console.log statements (frontend)
 - [ ] No debug print statements (backend)
 - [ ] Git commit created with proper message
-- [ ] prd.json updated (`passes: true`)
+- [ ] prd.json updated using `.claude/ralph/scripts/prd_status.py pass <task-id>`
 - [ ] progress.txt entry appended
 
 ## Core Reference Files
@@ -97,6 +97,25 @@ Always check these files at the start of any task:
 - **Progress Log**: `.claude/ralph/progress.txt` - Historical record of all work done (may be long, use tail/grep)
 - **Spec Doc**: `.claude/ralph/docs/spec.md` - Technical specifications and design details (use grep for specific sections)
 - CLAUDE.md - Project-specific conventions, commit guidelines, linting, and testing commands
+
+## PRD Management Tools
+
+Use these tools to manage tasks in prd.json:
+
+**PRD Manager** (`.claude/ralph/scripts/prd_manager.py`):
+- `search <id>` - View full task details
+- `add` - Add new tasks/bugs interactively
+- `update <id>` - Update task fields
+- `delete <id>` - Remove tasks
+- `list --limit N` - List tasks
+- `stats` - View task statistics
+
+**Quick Status Tool** (`.claude/ralph/scripts/prd_status.py`):
+- `pass <id>` - Mark task as passed
+- `fail <id>` - Mark task as failed
+- `pending <id>` - Mark task as pending
+
+See `.claude/ralph/scripts/README.md` for full documentation.
 
 ## Workflow Protocol
 
@@ -113,12 +132,15 @@ When the user presents a new requirement not in the PRD:
 
 **Step 2: Requirement Formalization**
 - Analyze the user's requirement and break it down into clear, testable acceptance criteria
-- Add the requirement to prd.json with:
-  - A unique task ID (following existing naming conventions)
+- Add the requirement using PRD Manager:
+  ```bash
+  .claude/ralph/scripts/prd_manager.py add
+  ```
+  - Enter unique task ID (following existing naming conventions)
   - Clear story description
   - Appropriate priority (high/medium/low)
   - Detailed requirements list
-  - Set `"passes": false`
+  - Status will be set to pending automatically
 
 **Step 3: Implementation**
 - Work on the task following the common implementation workflow (see below)
@@ -128,7 +150,15 @@ When the user presents a new requirement not in the PRD:
 When no specific user request is provided:
 
 **Step 1: Task Discovery**
-- Read prd.json to identify all items where `"passes": false`
+- Use PRD Manager to find incomplete tasks:
+  ```bash
+  # View statistics
+  .claude/ralph/scripts/prd_manager.py stats
+
+  # List all tasks
+  .claude/ralph/scripts/prd_manager.py list --limit 20
+  ```
+- Or read prd.json directly to identify items where `"passes": false`
 - Select the highest priority incomplete task:
   - Priority order: `high` > `medium` > `low`
   - If multiple tasks have the same priority, consider logical dependencies
@@ -159,7 +189,10 @@ When no specific user request is provided:
 - Never skip pre-commit hooks for linting or formatting
 
 **C. Documentation Updates**
-- Update prd.json: Set `"passes": true` for the completed task
+- Update prd.json using quick status tool:
+  ```bash
+  .claude/ralph/scripts/prd_status.py pass <task-id>
+  ```
 - Append a detailed entry to progress.txt with:
   - Date and task ID
   - Implementation details and key files modified
@@ -169,11 +202,19 @@ When no specific user request is provided:
 
 **D. Commit**
 - Create a git commit for the completed feature following project commit conventions
-- If bugs are discovered during implementation, add them as new entries in prd.json
+- If bugs are discovered during implementation, add them using:
+  ```bash
+  .claude/ralph/scripts/prd_manager.py add
+  # Or for multiple bugs:
+  .claude/ralph/scripts/prd_manager.py add-batch --file bugs.json
+  ```
 
 **E. Completion Check**
-- After each task, check if ALL tasks in prd.json have `"passes": true`
-- If complete, output: `<promise>COMPLETE</promise>`
+- After each task, check completion status:
+  ```bash
+  .claude/ralph/scripts/prd_manager.py stats
+  ```
+- If all tasks complete, output: `<promise>COMPLETE</promise>`
 
 ## Useful Commands for Long Files
 
@@ -186,6 +227,11 @@ tail -100 .claude/ralph/progress.txt
 
 # Search spec.md for specific topic
 grep -B 5 -A 20 "Recovery" .claude/ralph/docs/spec.md
+
+# Find incomplete tasks in PRD (use PRD Manager instead)
+.claude/ralph/scripts/prd_manager.py stats
+.claude/ralph/scripts/prd_manager.py list --limit 20
+```
 
 # Find incomplete tasks in PRD
 grep -B 5 '"passes": false' .claude/ralph/plans/prd.json
@@ -242,4 +288,4 @@ YYYY-MM-DD - Task ID: Brief description
 
 6. **Pre-commit Compliance**: The `--no-verify` flag is ONLY acceptable for e2e tests. Never use it to bypass linting, formatting, or type checking hooks.
 
-7. **Bug Discovery Protocol**: Bugs found during implementation should be logged as new entries in prd.json, not fixed immediately unless they block the current task.
+7. **Bug Discovery Protocol**: Bugs found during implementation should be logged using `.claude/ralph/scripts/prd_manager.py add`, not fixed immediately unless they block the current task.

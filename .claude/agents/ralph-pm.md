@@ -24,10 +24,43 @@ You'll receive a prompt like: "Work on task: P0-PD-001"
 
 #### 1. Read the Task
 
-First, extract the task details:
+First, extract the task details using PRD Manager:
 
 ```bash
-jq '.[] | select(.id=="<task-id>")' .claude/ralph/plans/prd.json
+# Use PRD Manager tool (recommended)
+.claude/ralph/scripts/prd_manager.py search <task-id>
+```
+
+**PRD Manager Tool**: Located at `.claude/ralph/scripts/prd_manager.py`, provides:
+- `search <id>` - View full task details
+- `add` - Add new tasks/bugs from stdin (JSON array)
+- `add --file <path>` - Add tasks from JSON file
+- `update <id>` - Update task fields
+- `delete <id>` - Remove tasks
+- `list --limit N` - List tasks
+- `stats` - View statistics
+- See `.claude/ralph/scripts/README.md` for documentation
+
+**Adding tasks with echo + pipe**:
+```bash
+# Single task
+echo '[{"id":"bug-fix-001","story":"Fix login issue","priority":"high","status":"pending"}]' | .claude/ralph/scripts/prd_manager.py add
+
+# Multiple tasks
+echo '[
+  {"id":"bug-fix-001","story":"Fix login issue","priority":"high"},
+  {"id":"improvement-001","story":"Add search feature","priority":"medium"}
+]' | .claude/ralph/scripts/prd_manager.py add
+
+# With full fields
+echo '[{
+  "id": "bug-fix-002",
+  "story": "Fix payment gateway timeout",
+  "priority": "critical",
+  "status": "pending",
+  "requirements": ["Investigate timeout cause", "Add retry logic"],
+  "acceptance_criteria": ["Payment completes within 5s", "Retry on timeout"]
+}]' | .claude/ralph/scripts/prd_manager.py add
 ```
 
 #### 2. For Design Tasks (PD-*)
@@ -70,7 +103,10 @@ jq '.[] | select(.id=="<task-id>")' .claude/ralph/plans/prd.json
   - Implementation tasks
   ```
 
-- **Update prd.json**: Set `passes: true` for the task
+- **Update prd.json**:
+  ```bash
+  .claude/ralph/scripts/prd_status.py pass <task-id>
+  ```
 - **Append entry** to progress.txt
 
 #### 3. For Review Tasks (DDD-*, review-*)
@@ -100,25 +136,22 @@ jq '.[] | select(.id=="<task-id>")' .claude/ralph/plans/prd.json
   - ❌ **Analysis Paralysis**: Over-planning, under-building
 
 - **If issues found**:
-  - Add bug/improvement tasks to prd.json:
-    ```json
-    {
-      "id": "bug-fix-XXX",
-      "story": "Fix: <issue description>",
-      "priority": "high",
-      "requirements": [
-        "Current state: <what's wrong>",
-        "Expected state: <what should be>",
-        "Root cause: <why it happened>",
-        "Impact: <severity and scope>"
-      ],
-      "passes": false
-    }
+  - Add bug/improvement tasks using PRD Manager:
+    ```bash
+    # Add bug task via pipe
+    echo '[{"id":"bug-fix-XXX","story":"Description of issue","priority":"high","status":"pending"}]' | .claude/ralph/scripts/prd_manager.py add
+    ```
+  - Mark task as failed:
+    ```bash
+    .claude/ralph/scripts/prd_status.py fail <task-id>
     ```
   - Document issues in progress.txt
 
 - **If validation passed**:
-  - Mark review task complete in prd.json
+  - Mark review task complete:
+    ```bash
+    .claude/ralph/scripts/prd_status.py pass <task-id>
+    ```
   - Approve for next phase in progress.txt
 
 #### 4. For Acceptance Tasks (acceptance-*)
@@ -144,12 +177,19 @@ jq '.[] | select(.id=="<task-id>")' .claude/ralph/plans/prd.json
   - Security properly implemented?
 
 - **If not satisfied**:
-  - Add specific bug tasks to prd.json with reproduction steps
+  - Add specific bug tasks using PRD Manager:
+    ```bash
+    # Add bug task via pipe
+    echo '[{"id":"bug-fix-XXX","story":"Description of bug","priority":"high","status":"pending"}]' | .claude/ralph/scripts/prd_manager.py add
+    ```
   - Mark acceptance task as blocked
   - Document gaps in progress.txt
 
 - **If satisfied**:
-  - Mark acceptance task complete
+  - Mark acceptance task complete:
+    ```bash
+    .claude/ralph/scripts/prd_status.py pass <task-id>
+    ```
   - Approve for production readiness
   - Document approval in progress.txt
 
@@ -217,8 +257,11 @@ Identify these architectural anti-patterns:
 **Always perform these actions:**
 
 1. **Update prd.json**:
-   - Set `passes: true` for completed tasks
-   - Add new bug/improvement tasks if issues found
+   - Mark completed tasks: `.claude/ralph/scripts/prd_status.py pass <task-id>`
+   - Add new bug/improvement tasks via pipe:
+     ```bash
+     echo '[{"id":"bug-fix-XXX","story":"Description","priority":"high"}]' | .claude/ralph/scripts/prd_manager.py add
+     ```
    - Use consistent task ID format: `bug-fix-XXX` or `improvement-XXX`
 
 2. **Append detailed entry to progress.txt**:
@@ -323,5 +366,5 @@ A task is complete when:
 - [ ] Documentation updated (progress.txt, ADRs if needed)
 - [ ] No architectural anti-patterns detected
 - [ ] Trade-offs documented for significant decisions
-- [ ] prd.json updated with `passes: true`
+- [ ] prd.json updated using `.claude/ralph/scripts/prd_status.py pass <task-id>`
 - [ ] progress.txt entry appended

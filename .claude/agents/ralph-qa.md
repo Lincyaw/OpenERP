@@ -26,9 +26,13 @@ You'll receive a prompt like: "Work on task: P3-INT-001"
 
 #### 1. Read the Task
 
-Extract task details from prd.json:
+Extract task details from prd.json using the PRD Manager tool:
 
 ```bash
+# Use PRD Manager tool (recommended)
+.claude/ralph/scripts/prd_manager.py search <task-id>
+
+# Or use jq directly
 jq '.[] | select(.id=="<task-id>")' .claude/ralph/plans/prd.json
 ```
 
@@ -36,6 +40,12 @@ Note the requirements - they contain:
 - Test scenarios to verify
 - Acceptance criteria
 - Expected test file paths
+
+**PRD Manager Tool**: Located at `.claude/ralph/scripts/prd_manager.py`, provides commands for:
+- `search <id>` - View full task details
+- `list --limit N` - List tasks
+- `stats` - View task statistics
+- See `.claude/ralph/scripts/README.md` for full documentation
 
 #### 2. Prepare Test Environment
 
@@ -184,12 +194,13 @@ npx playwright test tests/e2e/sales-order.spec.ts --repeat-each=5
 
 **If ALL tests pass (100% rate, 3 consecutive runs):**
 
-1. **Mark task complete** in prd.json:
-   ```json
-   {
-     "id": "P3-INT-001",
-     "passes": true
-   }
+1. **Mark task complete** using quick status tool:
+   ```bash
+   # Use quick status tool (recommended)
+   .claude/ralph/scripts/prd_status.py pass P3-INT-001
+
+   # Or edit prd.json manually
+   # Set "passes": true for the task
    ```
 
 2. **Document results** in progress.txt:
@@ -244,8 +255,14 @@ npx playwright test tests/e2e/sales-order.spec.ts --repeat-each=5
 
 **If ANY tests fail:**
 
-1. **Create bug tasks** in prd.json for each failure:
+1. **Create bug tasks** using PRD Manager:
+   ```bash
+   # Use interactive add command
+   .claude/ralph/scripts/prd_manager.py add
+   # Then enter bug details when prompted
+   ```
 
+   Or add manually to prd.json:
    ```json
    {
      "id": "bug-fix-042",
@@ -266,13 +283,10 @@ npx playwright test tests/e2e/sales-order.spec.ts --repeat-each=5
    }
    ```
 
-2. **Mark integration task as blocked** in prd.json:
-   ```json
-   {
-     "id": "P3-INT-001",
-     "passes": false,
-     "blockedBy": ["bug-fix-042", "bug-fix-043"]
-   }
+2. **Mark integration task as failed**:
+   ```bash
+   # Use quick status tool
+   .claude/ralph/scripts/prd_status.py fail P3-INT-001
    ```
 
 3. **Document failures** in progress.txt:
@@ -398,9 +412,9 @@ npx playwright show-trace test-results/traces/trace.zip
 **Always perform these actions:**
 
 1. **Update prd.json**:
-   - Set `passes: true` if tests pass
-   - Keep `passes: false` if tests fail
-   - Add bug tasks for each failure
+   - Mark passed: `.claude/ralph/scripts/prd_status.py pass <task-id>`
+   - Mark failed: `.claude/ralph/scripts/prd_status.py fail <task-id>`
+   - Add bug tasks: `.claude/ralph/scripts/prd_manager.py add` (or `add-batch` for multiple bugs)
    - Update `blockedBy` field if applicable
 
 2. **Append detailed entry to progress.txt**:
@@ -481,8 +495,8 @@ After running tests:
 - [ ] Results parsed
 - [ ] Screenshots captured for failures
 - [ ] Flaky tests identified and quarantined
-- [ ] Bug tasks created (if failures)
-- [ ] prd.json updated
+- [ ] Bug tasks created using prd_manager.py (if failures)
+- [ ] prd.json updated using prd_status.py
 - [ ] progress.txt updated
 - [ ] Docker services stopped
 
@@ -495,5 +509,5 @@ An integration test task is complete when:
 - [ ] All acceptance criteria verified
 - [ ] Test artifacts preserved
 - [ ] No flaky tests (or flaky tests quarantined with bug tasks)
-- [ ] prd.json updated with `passes: true`
+- [ ] prd.json updated using `.claude/ralph/scripts/prd_status.py pass <task-id>`
 - [ ] progress.txt entry appended
