@@ -366,7 +366,7 @@
       "权限枚举包含所有租户管理权限",
       "迁移脚本可重复执行（幂等）"
     ],
-    "status": "pending",
+    "status": "pass",
     "passes": true
   },
   {
@@ -390,7 +390,8 @@
       "中间件性能开销 < 1ms",
       "单元测试覆盖率 >= 80%"
     ],
-    "status": "pending"
+    "status": "pending",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-003",
