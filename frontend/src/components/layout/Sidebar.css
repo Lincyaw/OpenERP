@@ -5,25 +5,25 @@
   height: 100vh;
   z-index: 100;
   background-color: var(--semi-color-bg-1);
-  border-right: 1px solid var(--semi-color-border);
+  border-right: var(--spacing-0-25) solid var(--semi-color-border);
   transition: width 0.2s ease;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .sidebar--collapsed {
-  width: 60px;
+  width: var(--spacing-15);
 }
 
 /* Logo area */
 .sidebar__logo {
-  height: var(--header-height, 60px);
+  height: var(--header-height, var(--spacing-15));
   display: flex;
   align-items: center;
   padding: 0 var(--spacing-4);
   gap: var(--spacing-3);
-  border-bottom: 1px solid var(--semi-color-border);
+  border-bottom: var(--spacing-0-25) solid var(--semi-color-border);
 }
 
 .sidebar__logo-icon {
@@ -34,7 +34,7 @@
 }
 
 .sidebar__logo-text {
-  font-size: 18px;
+  font-size: var(--spacing-4-5);
   font-weight: 600;
   color: var(--semi-color-text-0);
   white-space: nowrap;
@@ -45,14 +45,24 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  min-height: 0;
+  /* Hide scrollbar but keep scroll functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.sidebar__nav::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .sidebar__nav .semi-navigation {
-  height: 100%;
+  height: auto;
+  min-height: 100%;
 }
 
 .sidebar__nav .semi-navigation-inner {
-  height: calc(100% - 48px); /* Account for footer */
+  height: auto;
+  min-height: 100%;
 }
 
 .sidebar__nav .semi-navigation-list-wrapper {
@@ -73,14 +83,14 @@
   font-weight: 600;
   color: var(--semi-color-text-0);
   text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 0.5px;
+  font-size: var(--spacing-3);
+  letter-spacing: var(--spacing-0-125);
 }
 
 /* Group header icon - more prominent */
 .sidebar__nav .semi-navigation-item-sub > .semi-navigation-item .semi-navigation-item-icon {
   color: var(--semi-color-primary);
-  font-size: 18px;
+  font-size: var(--spacing-4-5);
 }
 
 /* ============================================
@@ -92,9 +102,9 @@
 .sidebar__nav .semi-navigation-sub .semi-navigation-item {
   font-weight: 500;
   color: var(--semi-color-text-0);
-  font-size: 14px;
+  font-size: var(--spacing-3-5);
   padding-left: var(--spacing-3);
-  min-height: 44px; /* Larger touch target for accessibility */
+  min-height: var(--spacing-11); /* Larger touch target for accessibility */
 }
 
 /* Child item text - ensure high contrast */
@@ -105,7 +115,7 @@
 /* Child item icons - darker color, fully opaque */
 .sidebar__nav .semi-navigation-sub .semi-navigation-item .semi-navigation-item-icon {
   color: var(--semi-color-text-1);
-  font-size: 16px;
+  font-size: var(--spacing-4);
   opacity: 1;
 }
 
@@ -114,10 +124,12 @@
   background-color: var(--semi-color-fill-0);
 }
 
+/* stylelint-disable-next-line selector-max-specificity */
 .sidebar__nav .semi-navigation-sub .semi-navigation-item:hover .semi-navigation-item-icon {
   color: var(--semi-color-primary);
 }
 
+/* stylelint-disable-next-line selector-max-specificity */
 .sidebar__nav .semi-navigation-sub .semi-navigation-item:hover .semi-navigation-item-text {
   color: var(--semi-color-primary);
 }
@@ -128,7 +140,9 @@
   background-color: var(--semi-color-primary-light-default);
 }
 
+/* stylelint-disable-next-line selector-max-specificity */
 .sidebar__nav .semi-navigation-sub .semi-navigation-item-selected .semi-navigation-item-icon,
+/* stylelint-disable-next-line selector-max-specificity */
 .sidebar__nav
   .semi-navigation-sub
   .semi-navigation-item.semi-navigation-item-selected
@@ -136,7 +150,9 @@
   color: var(--semi-color-primary);
 }
 
+/* stylelint-disable-next-line selector-max-specificity */
 .sidebar__nav .semi-navigation-sub .semi-navigation-item-selected .semi-navigation-item-text,
+/* stylelint-disable-next-line selector-max-specificity */
 .sidebar__nav
   .semi-navigation-sub
   .semi-navigation-item.semi-navigation-item-selected
@@ -155,12 +171,13 @@
   color: var(--semi-color-text-0);
 }
 
+/* stylelint-disable-next-line selector-max-specificity */
 .sidebar__nav
   > .semi-navigation-list
   > .semi-navigation-item:not(.semi-navigation-item-sub)
   .semi-navigation-item-icon {
   color: var(--semi-color-primary);
-  font-size: 18px;
+  font-size: var(--spacing-4-5);
 }
 
 /* ============================================
@@ -171,7 +188,7 @@
 .sidebar__nav .semi-navigation-item-sub:not(:first-child)::before {
   content: '';
   display: block;
-  height: 1px;
+  height: var(--spacing-0-25);
   background-color: var(--semi-color-border);
   margin: var(--spacing-2) var(--spacing-4);
 }
@@ -195,23 +212,10 @@
   fill: currentColor;
 }
 
-/* Scrollbar styling */
-.sidebar__nav::-webkit-scrollbar {
-  width: 4px;
-}
-
-.sidebar__nav::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.sidebar__nav::-webkit-scrollbar-thumb {
-  background: var(--semi-color-fill-2);
-  border-radius: 2px;
-}
-
 /* Fix collapse button overflow in collapsed state */
 .sidebar--collapsed .sidebar__nav {
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .sidebar--collapsed .semi-navigation-footer {
@@ -264,6 +268,7 @@
 }
 
 /* Responsive - hide sidebar on mobile */
+/* stylelint-disable-next-line unit-disallowed-list -- CSS variables not supported in media queries */
 @media (max-width: 768px) {
   .sidebar-overlay {
     display: block;

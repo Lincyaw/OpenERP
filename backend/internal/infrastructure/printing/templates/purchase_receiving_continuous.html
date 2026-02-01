@@ -16,7 +16,7 @@
             color: #000;
         }
         .page {
-            width: 231mm;
+            width: 100%;
             padding: 2mm;
         }
         /* Header Section */
@@ -76,23 +76,23 @@
             text-align: center;
         }
         .items-table th {
-            background-color: #eee;
+            background-color: transparent;
             font-weight: bold;
             font-size: 11px;
         }
         .items-table td {
             font-size: 11px;
         }
-        .items-table .col-index { width: 20px; }
-        .items-table .col-code { width: 65px; }
-        .items-table .col-name { width: auto; text-align: left; }
-        .items-table .col-unit { width: 30px; }
-        .items-table .col-ordered { width: 45px; text-align: right; }
-        .items-table .col-received { width: 45px; text-align: right; }
-        .items-table .col-price { width: 50px; text-align: right; }
-        .items-table .col-amount { width: 60px; text-align: right; }
-        .items-table .col-batch { width: 55px; }
-        .items-table .col-expiry { width: 65px; }
+        .items-table .col-index { width: 20px}
+        .items-table .col-code { width: 65px}
+        .items-table .col-name { width: auto; text-align: left}
+        .items-table .col-unit { width: 30px}
+        .items-table .col-ordered { width: 45px; text-align: right}
+        .items-table .col-received { width: 45px; text-align: right}
+        .items-table .col-price { width: 50px; text-align: right}
+        .items-table .col-amount { width: 60px; text-align: right}
+        .items-table .col-batch { width: 55px}
+        .items-table .col-expiry { width: 65px}
         /* Summary Row */
         .summary-row {
             display: flex;
@@ -143,7 +143,7 @@
         }
         /* Print styles */
         @media print {
-            .page { padding: 0; }
+            .page { padding: 0}
         }
     </style>
 </head>

@@ -16,7 +16,7 @@
             color: #333;
         }
         .page {
-            width: 138mm;
+            width: 100%;
             padding: 3mm;
         }
         .header {
@@ -29,7 +29,7 @@
             font-size: 16px;
             font-weight: bold;
             letter-spacing: 2px;
-            color: #c00;
+            color: #000;
         }
         .header .company-name {
             font-size: 11px;
@@ -62,7 +62,7 @@
         .reason-section {
             margin-bottom: 6px;
             padding: 4px;
-            background-color: #fff8f0;
+            background-color: transparent;
             border: 1px solid #f0c080;
             font-size: 9px;
         }
@@ -79,26 +79,26 @@
             font-size: 9px;
         }
         .items-table th {
-            background-color: #ffe0e0;
+            background-color: transparent;
             font-weight: bold;
         }
-        .items-table .col-index { width: 20px; }
-        .items-table .col-name { text-align: left; }
-        .items-table .col-qty { width: 45px; text-align: right; }
-        .items-table .col-amount { width: 55px; text-align: right; }
+        .items-table .col-index { width: 20px}
+        .items-table .col-name { text-align: left}
+        .items-table .col-qty { width: 45px; text-align: right}
+        .items-table .col-amount { width: 55px; text-align: right}
         .summary-section {
             display: flex;
             justify-content: space-between;
             margin-bottom: 8px;
             padding: 5px;
-            background-color: #fff0f0;
+            background-color: transparent;
             border: 1px solid #fcc;
             font-size: 9px;
         }
         .total-amount {
             font-size: 12px;
             font-weight: bold;
-            color: #c00;
+            color: #000;
         }
         .signature-section {
             display: flex;
@@ -125,8 +125,8 @@
             justify-content: space-between;
         }
         @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .page { padding: 0; }
+            body {   }
+            .page { padding: 0}
         }
     </style>
 </head>

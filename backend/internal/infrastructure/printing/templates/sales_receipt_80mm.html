@@ -14,10 +14,10 @@
             font-size: 10px;
             line-height: 1.4;
             color: #000;
-            width: 76mm;
+            width: 100%;
         }
         .receipt {
-            width: 76mm;
+            width: 100%;
             padding: 2mm;
         }
         /* Header */
@@ -67,10 +67,10 @@
         .items-table td {
             border-bottom: 1px dotted #ccc;
         }
-        .items-table .col-name { width: auto; }
-        .items-table .col-qty { width: 35px; text-align: center; }
-        .items-table .col-price { width: 45px; text-align: right; }
-        .items-table .col-amount { width: 50px; text-align: right; }
+        .items-table .col-name { width: auto}
+        .items-table .col-qty { width: 35px; text-align: center}
+        .items-table .col-price { width: 45px; text-align: right}
+        .items-table .col-amount { width: 50px; text-align: right}
         /* Totals */
         .totals {
             margin-bottom: 5px;
@@ -92,7 +92,7 @@
             border-top: 1px solid #ccc;
         }
         .total-row.discount {
-            color: #c00;
+            color: #000;
         }
         /* Payments */
         .payments {
@@ -148,12 +148,12 @@
             color: #666;
             margin-top: 3px;
             padding: 3px;
-            background-color: #f9f9f9;
+            background-color: transparent;
         }
         /* Print */
         @media print {
-            body { width: 76mm; }
-            .receipt { padding: 0; }
+            body { width: 100%}
+            .receipt { padding: 0}
         }
     </style>
 </head>

@@ -16,7 +16,7 @@
             color: #333;
         }
         .page {
-            width: 138mm;
+            width: 100%;
             padding: 3mm;
         }
         /* Header Section */
@@ -73,27 +73,27 @@
             text-align: center;
         }
         .items-table th {
-            background-color: #f5f5f5;
+            background-color: transparent;
             font-weight: bold;
             font-size: 9px;
         }
         .items-table td {
             font-size: 9px;
         }
-        .items-table .col-index { width: 20px; }
-        .items-table .col-code { width: 55px; }
-        .items-table .col-name { width: auto; text-align: left; }
-        .items-table .col-unit { width: 25px; }
-        .items-table .col-qty { width: 40px; text-align: right; }
-        .items-table .col-price { width: 50px; text-align: right; }
-        .items-table .col-amount { width: 55px; text-align: right; }
+        .items-table .col-index { width: 20px}
+        .items-table .col-code { width: 55px}
+        .items-table .col-name { width: auto; text-align: left}
+        .items-table .col-unit { width: 25px}
+        .items-table .col-qty { width: 40px; text-align: right}
+        .items-table .col-price { width: 50px; text-align: right}
+        .items-table .col-amount { width: 55px; text-align: right}
         /* Summary Section */
         .summary-section {
             display: flex;
             justify-content: space-between;
             margin-bottom: 8px;
             padding: 5px;
-            background-color: #f9f9f9;
+            background-color: transparent;
             border: 1px solid #ddd;
         }
         .summary-left {
@@ -105,7 +105,7 @@
         .total-amount {
             font-size: 11px;
             font-weight: bold;
-            color: #c00;
+            color: #000;
         }
         .amount-chinese {
             font-size: 9px;
@@ -145,8 +145,8 @@
         }
         /* Print styles */
         @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .page { padding: 0; }
+            body {   }
+            .page { padding: 0}
         }
     </style>
 </head>

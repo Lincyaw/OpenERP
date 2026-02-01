@@ -16,7 +16,7 @@
             color: #333;
         }
         .page {
-            width: 190mm;
+            width: 100%;
             padding: 5mm;
         }
         /* Header Section */
@@ -30,7 +30,7 @@
             font-size: 22px;
             font-weight: bold;
             letter-spacing: 4px;
-            color: #c00;
+            color: #000;
         }
         .header .company-name {
             font-size: 14px;
@@ -74,23 +74,23 @@
             text-align: center;
         }
         .items-table th {
-            background-color: #ffe0e0;
+            background-color: transparent;
             font-weight: bold;
             font-size: 11px;
         }
         .items-table td {
             font-size: 11px;
         }
-        .items-table .col-index { width: 30px; }
-        .items-table .col-code { width: 80px; }
-        .items-table .col-name { width: auto; text-align: left; }
-        .items-table .col-unit { width: 40px; }
-        .items-table .col-qty { width: 60px; text-align: right; }
-        .items-table .col-price { width: 70px; text-align: right; }
-        .items-table .col-amount { width: 80px; text-align: right; }
-        .items-table .col-reason { width: 100px; text-align: left; }
+        .items-table .col-index { width: 30px}
+        .items-table .col-code { width: 80px}
+        .items-table .col-name { width: auto; text-align: left}
+        .items-table .col-unit { width: 40px}
+        .items-table .col-qty { width: 60px; text-align: right}
+        .items-table .col-price { width: 70px; text-align: right}
+        .items-table .col-amount { width: 80px; text-align: right}
+        .items-table .col-reason { width: 100px; text-align: left}
         .items-table tbody tr:nth-child(even) {
-            background-color: #fafafa;
+            background-color: transparent;
         }
         /* Summary Section */
         .summary-section {
@@ -98,7 +98,7 @@
             justify-content: space-between;
             margin-bottom: 15px;
             padding: 10px;
-            background-color: #fff0f0;
+            background-color: transparent;
             border: 1px solid #fcc;
         }
         .summary-left {
@@ -113,7 +113,7 @@
         .total-amount {
             font-size: 14px;
             font-weight: bold;
-            color: #c00;
+            color: #000;
         }
         .amount-chinese {
             font-size: 11px;
@@ -124,7 +124,7 @@
         .reason-section {
             margin-bottom: 15px;
             padding: 8px;
-            background-color: #fff8f0;
+            background-color: transparent;
             border: 1px solid #f0c080;
             font-size: 11px;
         }
@@ -171,18 +171,18 @@
         .remark-section {
             margin-top: 10px;
             padding: 8px;
-            background-color: #fffef0;
+            background-color: transparent;
             border: 1px solid #e6e6c0;
             font-size: 11px;
         }
         .remark-label {
             font-weight: bold;
-            color: #996;
+            color: #666;
         }
         /* Print styles */
         @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .page { padding: 0; }
+            body {   }
+            .page { padding: 0}
         }
     </style>
 </head>

@@ -16,7 +16,7 @@
             color: #333;
         }
         .page {
-            width: 138mm;
+            width: 100%;
             padding: 3mm;
         }
         .header {
@@ -60,7 +60,7 @@
             padding-left: 3px;
         }
         .amount-section {
-            background-color: #f0f8ff;
+            background-color: transparent;
             border: 2px solid #006699;
             padding: 10px;
             margin-bottom: 10px;
@@ -109,10 +109,10 @@
             font-size: 9px;
         }
         .allocations-table th {
-            background-color: #e0f0ff;
+            background-color: transparent;
             font-weight: bold;
         }
-        .allocations-table .col-amount { text-align: right; }
+        .allocations-table .col-amount { text-align: right}
         .signature-section {
             display: flex;
             justify-content: space-between;
@@ -138,8 +138,8 @@
             justify-content: space-between;
         }
         @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .page { padding: 0; }
+            body {   }
+            .page { padding: 0}
         }
     </style>
 </head>

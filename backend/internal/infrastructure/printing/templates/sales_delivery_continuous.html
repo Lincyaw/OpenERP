@@ -16,7 +16,7 @@
             color: #000;
         }
         .page {
-            width: 231mm;
+            width: 100%;
             padding: 2mm;
         }
         /* Header Section */
@@ -70,21 +70,21 @@
             text-align: center;
         }
         .items-table th {
-            background-color: #eee;
+            background-color: transparent;
             font-weight: bold;
             font-size: 11px;
         }
         .items-table td {
             font-size: 11px;
         }
-        .items-table .col-index { width: 25px; }
-        .items-table .col-code { width: 70px; }
-        .items-table .col-name { width: auto; text-align: left; }
-        .items-table .col-unit { width: 30px; }
-        .items-table .col-qty { width: 50px; text-align: right; }
-        .items-table .col-price { width: 55px; text-align: right; }
-        .items-table .col-amount { width: 65px; text-align: right; }
-        .items-table .col-batch { width: 60px; }
+        .items-table .col-index { width: 25px}
+        .items-table .col-code { width: 70px}
+        .items-table .col-name { width: auto; text-align: left}
+        .items-table .col-unit { width: 30px}
+        .items-table .col-qty { width: 50px; text-align: right}
+        .items-table .col-price { width: 55px; text-align: right}
+        .items-table .col-amount { width: 65px; text-align: right}
+        .items-table .col-batch { width: 60px}
         /* Summary Section */
         .summary-row {
             display: flex;
@@ -135,7 +135,7 @@
         }
         /* Print styles */
         @media print {
-            .page { padding: 0; }
+            .page { padding: 0}
         }
     </style>
 </head>

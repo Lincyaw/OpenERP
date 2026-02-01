@@ -16,7 +16,7 @@
             color: #333;
         }
         .page {
-            width: 190mm;
+            width: 100%;
             padding: 5mm;
         }
         /* Header Section */
@@ -65,7 +65,7 @@
             margin-bottom: 10px;
             padding: 8px;
             border: 1px solid #ccc;
-            background-color: #f9f9f9;
+            background-color: transparent;
         }
         .supplier-title {
             font-size: 11px;
@@ -92,38 +92,38 @@
             text-align: center;
         }
         .items-table th {
-            background-color: #f5f5f5;
+            background-color: transparent;
             font-weight: bold;
             font-size: 11px;
         }
         .items-table td {
             font-size: 11px;
         }
-        .items-table .col-index { width: 30px; }
-        .items-table .col-code { width: 80px; }
-        .items-table .col-name { width: auto; text-align: left; }
-        .items-table .col-unit { width: 40px; }
-        .items-table .col-ordered { width: 55px; text-align: right; }
-        .items-table .col-received { width: 55px; text-align: right; }
-        .items-table .col-price { width: 65px; text-align: right; }
-        .items-table .col-amount { width: 75px; text-align: right; }
-        .items-table .col-batch { width: 65px; }
-        .items-table .col-expiry { width: 70px; }
-        .items-table .col-status { width: 50px; }
+        .items-table .col-index { width: 30px}
+        .items-table .col-code { width: 80px}
+        .items-table .col-name { width: auto; text-align: left}
+        .items-table .col-unit { width: 40px}
+        .items-table .col-ordered { width: 55px; text-align: right}
+        .items-table .col-received { width: 55px; text-align: right}
+        .items-table .col-price { width: 65px; text-align: right}
+        .items-table .col-amount { width: 75px; text-align: right}
+        .items-table .col-batch { width: 65px}
+        .items-table .col-expiry { width: 70px}
+        .items-table .col-status { width: 50px}
         .items-table tbody tr:nth-child(even) {
-            background-color: #fafafa;
+            background-color: transparent;
         }
         /* Quality status colors */
-        .status-pass { color: #060; font-weight: bold; }
-        .status-reject { color: #c00; font-weight: bold; }
-        .status-pending { color: #f90; }
+        .status-pass { color: #060; font-weight: bold}
+        .status-reject { color: #000; font-weight: bold}
+        .status-pending { color: #f90}
         /* Summary Section */
         .summary-section {
             display: flex;
             justify-content: space-between;
             margin-bottom: 15px;
             padding: 10px;
-            background-color: #f9f9f9;
+            background-color: transparent;
             border: 1px solid #ddd;
         }
         .summary-left {
@@ -138,7 +138,7 @@
         .total-amount {
             font-size: 14px;
             font-weight: bold;
-            color: #c00;
+            color: #000;
         }
         .amount-chinese {
             font-size: 11px;
@@ -184,18 +184,18 @@
         .remark-section {
             margin-top: 10px;
             padding: 8px;
-            background-color: #fffef0;
+            background-color: transparent;
             border: 1px solid #e6e6c0;
             font-size: 11px;
         }
         .remark-label {
             font-weight: bold;
-            color: #996;
+            color: #666;
         }
         /* Print styles */
         @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .page { padding: 0; }
+            body {   }
+            .page { padding: 0}
         }
     </style>
 </head>

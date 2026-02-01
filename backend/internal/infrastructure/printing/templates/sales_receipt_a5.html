@@ -16,7 +16,7 @@
             color: #333;
         }
         .page {
-            width: 138mm;
+            width: 100%;
             padding: 5mm;
         }
         /* Header Section */
@@ -47,7 +47,7 @@
             justify-content: space-between;
             margin-bottom: 10px;
             padding: 8px;
-            background-color: #f9f9f9;
+            background-color: transparent;
             border: 1px solid #ddd;
         }
         .info-col {
@@ -74,21 +74,21 @@
             text-align: center;
         }
         .items-table th {
-            background-color: #f0f0f0;
+            background-color: transparent;
             font-weight: bold;
             font-size: 10px;
         }
         .items-table td {
             font-size: 10px;
         }
-        .items-table .col-index { width: 25px; }
-        .items-table .col-name { width: auto; text-align: left; }
-        .items-table .col-qty { width: 40px; text-align: right; }
-        .items-table .col-price { width: 55px; text-align: right; }
-        .items-table .col-discount { width: 50px; text-align: right; }
-        .items-table .col-amount { width: 60px; text-align: right; }
+        .items-table .col-index { width: 25px}
+        .items-table .col-name { width: auto; text-align: left}
+        .items-table .col-qty { width: 40px; text-align: right}
+        .items-table .col-price { width: 55px; text-align: right}
+        .items-table .col-discount { width: 50px; text-align: right}
+        .items-table .col-amount { width: 60px; text-align: right}
         .items-table tbody tr:nth-child(even) {
-            background-color: #fafafa;
+            background-color: transparent;
         }
         /* Summary Section */
         .summary-section {
@@ -108,7 +108,7 @@
             margin-bottom: 3px;
         }
         .summary-row.discount {
-            color: #c00;
+            color: #000;
         }
         .total-row {
             font-size: 14px;
@@ -124,7 +124,7 @@
         /* Payments Section */
         .payments-section {
             padding: 8px;
-            background-color: #f5f5f5;
+            background-color: transparent;
             border: 1px solid #ddd;
             margin-bottom: 10px;
         }
@@ -160,8 +160,8 @@
         }
         /* Print */
         @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .page { padding: 0; }
+            body {   }
+            .page { padding: 0}
         }
     </style>
 </head>

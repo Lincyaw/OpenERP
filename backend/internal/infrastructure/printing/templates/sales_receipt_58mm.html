@@ -14,10 +14,10 @@
             font-size: 9px;
             line-height: 1.3;
             color: #000;
-            width: 54mm;
+            width: 100%;
         }
         .receipt {
-            width: 54mm;
+            width: 100%;
             padding: 1mm;
         }
         /* Header */
@@ -94,7 +94,7 @@
             border-top: 1px solid #ccc;
         }
         .total-row.discount {
-            color: #c00;
+            color: #000;
         }
         /* Payments */
         .payments {
@@ -133,8 +133,8 @@
         }
         /* Print */
         @media print {
-            body { width: 54mm; }
-            .receipt { padding: 0; }
+            body { width: 100%}
+            .receipt { padding: 0}
         }
     </style>
 </head>
