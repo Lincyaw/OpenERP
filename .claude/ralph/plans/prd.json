@@ -414,7 +414,7 @@
       "日志查询性能 < 100ms（1000 条记录）",
       "审计日志不可修改或删除"
     ],
-    "status": "pending",
+    "status": "pass",
     "passes": true
   },
   {
