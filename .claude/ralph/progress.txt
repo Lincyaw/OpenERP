@@ -43547,3 +43547,175 @@ equivalent and follows the existing pattern in the codebase.
 - Wire up repositories in main.go dependency injection
 - Add integration tests against PostgreSQL
 - Consider adding Redis mock for cache testing
+
+---
+
+## 2026-02-01 - Product Manager: Task Breakdown for UI Cleanup and Subscription API
+
+### Task ID: PM-TASK-BREAKDOWN-001
+### Status: Complete
+
+=== Requirements Analysis ===
+
+Analyzed two requirement groups:
+1. **Hide Unimplemented Features** - E-commerce platform integration and payment settings
+2. **Implement Subscription API** - Enable real subscription data in frontend
+
+=== Task Breakdown ===
+
+**Task Group 1: Hide Unimplemented Features (P1 - High Priority)**
+
+| Task ID | Story | Category | Priority |
+|---------|-------|----------|----------|
+| CLEANUP-FE-001 | Hide e-commerce platform integration entries | frontend | high |
+| CLEANUP-FE-002 | Hide payment settings entry | frontend | high |
+
+Routes to hide (via hideInMenu: true):
+- /system/product-mappings (Product Mappings)
+- /system/platform-config (Platform Config)
+- /system/platform-sync (Platform Sync Status)
+- /system/payment-settings (Payment Settings)
+
+**Task Group 2: Subscription API (P1 - High Priority)**
+
+| Task ID | Story | Category | Priority | Dependencies |
+|---------|-------|----------|----------|--------------|
+| BILLING-BE-001 | Implement GET /api/v1/billing/subscription/current | backend | high | - |
+| BILLING-BE-002 | Implement GET /api/v1/billing/plans | backend | medium | - |
+| BILLING-FE-001 | Integrate UpgradePlan with real API | frontend | high | BILLING-BE-001, BILLING-BE-002 |
+| BILLING-FE-002 | Display subscription overview in Settings | frontend | medium | BILLING-BE-001 |
+
+=== Design Approach ===
+
+**Subscription API Design:**
+- Leverages existing domain models: Tenant (Plan), UsageQuota, UsageRecord, PlanFeature
+- API returns comprehensive subscription info including quotas and features
+- Frontend replaces mock data with real API calls
+
+**Hide Features Approach:**
+- Use existing hideInMenu meta property in routes.tsx
+- Preserves code files for future enablement
+- Minimal code change, low risk
+
+=== Trade-Offs Analysis ===
+
+**Pros:**
+- Clean separation of concerns (backend API vs frontend integration)
+- Reuses existing billing domain infrastructure
+- Low-risk approach for hiding features (no code deletion)
+- Clear dependencies between tasks
+
+**Cons:**
+- Frontend tasks blocked by backend API completion
+- May need additional API endpoints for upgrade flow (Stripe integration)
+
+**Risk Level:** LOW
+
+=== Red Flags Checked ===
+- [x] No God Objects - Tasks are well-scoped
+- [x] No tight coupling - Clear API contract between frontend/backend
+- [x] Clear structure - DDD layers respected
+- [x] No premature optimization - Simple implementation first
+- [x] No magic - All behavior documented in task requirements
+
+=== Files Modified ===
+- /home/nn/workspace/erp/.claude/ralph/plans/prd.json (7 new tasks added)
+
+=== Next Steps ===
+1. Implement CLEANUP-FE-001 and CLEANUP-FE-002 (can be done in parallel)
+2. Implement BILLING-BE-001 (backend API)
+3. Implement BILLING-BE-002 (backend API)
+4. Implement BILLING-FE-001 and BILLING-FE-002 (after backend APIs ready)
+
+---
+
+## 2026-02-01 - BILLING-BE-001: Implement GET /api/v1/billing/subscription/current API
+
+### Task ID: BILLING-BE-001
+### Status: Complete
+
+=== Implementation Details ===
+
+**Created Files:**
+1. `backend/internal/interfaces/http/handler/subscription_handler.go`
+   - SubscriptionHandler with GetCurrentSubscription endpoint
+   - DTOs: CurrentSubscriptionResponse, SubscriptionQuotaResponse, SubscriptionFeaturesResponse
+   - Helper functions: getPlanDisplayName, getSubscriptionStatus, getQuotaLimit, calculateQuotaRemaining
+
+2. `backend/internal/interfaces/http/handler/subscription_handler_test.go`
+   - Comprehensive unit tests for GetCurrentSubscription
+   - Tests for all helper functions
+   - Mock implementations for PlanFeatureRepository
+   - Test coverage for: basic plan, enterprise (unlimited), trial status, expiration dates, error cases
+
+**Modified Files:**
+1. `backend/cmd/server/main.go`
+   - Added subscriptionHandler initialization
+   - Registered billing routes group at /billing
+   - Added GET /billing/subscription/current endpoint
+
+=== API Response Structure ===
+
+```json
+{
+  "plan_id": "basic",
+  "plan_name": "基础版",
+  "status": "active|cancelled|expired|trial",
+  "period_start": "2024-01-01T00:00:00Z",
+  "period_end": "2024-02-01T00:00:00Z",
+  "trial_ends_at": "2024-01-15T00:00:00Z",
+  "quotas": [
+    {
+      "type": "users|warehouses|products",
+      "limit": 10,
+      "used": 5,
+      "remaining": 5,
+      "unit": "count",
+      "reset_period": "never"
+    }
+  ],
+  "features": {
+    "multi_warehouse": true,
+    "api_access": false,
+    ...
+  }
+}
+```
+
+=== Design Decisions ===
+
+1. **Handler-based approach**: Implemented directly in handler layer rather than creating a separate application service, since the logic is straightforward aggregation of existing domain data.
+
+2. **Feature fallback**: If PlanFeatureRepository returns error or empty results, falls back to DefaultPlanFeatures() from identity domain.
+
+3. **Unlimited quotas**: Enterprise plan returns -1 for both limit and remaining to indicate unlimited.
+
+4. **Status mapping**: Mapped TenantStatus to subscription-friendly status strings:
+   - active → active
+   - inactive → cancelled
+   - suspended → expired
+   - trial → trial
+
+5. **Period dates**: Only populated when tenant has ExpiresAt set. Period start is calculated as 1 month before expiry (assuming monthly billing).
+
+=== Verification ===
+
+- [x] Build passes: `go build ./...`
+- [x] Unit tests pass: 11 test cases covering all scenarios
+- [x] Helper function tests pass: 4 test suites
+- [x] All handler tests pass: `go test ./internal/interfaces/http/handler/...`
+
+=== Acceptance Criteria Met ===
+
+- [x] API returns current tenant's subscription plan info
+- [x] API returns all quota types with usage information
+- [x] API returns current plan's feature configuration
+- [x] API documentation complete (Swagger annotations)
+- [x] Unit tests cover core logic
+
+=== Next Steps ===
+
+- BILLING-BE-002: Implement GET /api/v1/billing/plans API
+- BILLING-FE-001: Integrate UpgradePlan page with real API
+- BILLING-FE-002: Display subscription overview in Settings page
+

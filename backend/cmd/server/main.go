@@ -734,6 +734,7 @@ func main() {
 	printHandler := handler.NewPrintHandler(printService, pdfStorage)
 	planFeatureHandler := handler.NewPlanFeatureHandler(tenantRepo, planFeatureRepo)
 	usageHandler := handler.NewUsageHandler(tenantRepo, userRepo, warehouseRepo, productRepo)
+	subscriptionHandler := handler.NewSubscriptionHandler(tenantRepo, planFeatureRepo, userRepo, warehouseRepo, productRepo)
 
 	// Initialize Stripe webhook handler (if Stripe is enabled)
 	var stripeWebhookHandler *handler.StripeWebhookHandler
@@ -1448,6 +1449,17 @@ func main() {
 	}
 
 	r.Register(featureFlagRoutes)
+
+	// Billing domain - subscription and billing management
+	billingRoutes := router.NewDomainGroup("billing", "/billing")
+	billingRoutes.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "billing service ready"})
+	})
+
+	// Current subscription routes (self-service, requires authentication)
+	billingRoutes.GET("/subscription/current", subscriptionHandler.GetCurrentSubscription)
+
+	r.Register(billingRoutes)
 
 	// Print domain - document printing and template management
 	// Create JWT middleware for print routes authentication
