@@ -303,6 +303,9 @@ func main() {
 	// Print job repository (templates are now static, no repository needed)
 	printJobRepo := persistence.NewGormPrintJobRepository(db.DB)
 
+	// Auto print rule repository
+	autoPrintRuleRepo := persistence.NewGormAutoPrintRuleRepository(db.DB)
+
 	// Initialize event serializer and register all event types
 	eventSerializer := event.NewEventSerializer()
 	event.RegisterAllEvents(eventSerializer)
@@ -519,6 +522,9 @@ func main() {
 		log,
 	)
 
+	// Auto print rule service
+	autoPrintRuleService := printingapp.NewAutoPrintRuleService(autoPrintRuleRepo)
+
 	// Initialize event bus and handlers
 	eventBus := event.NewInMemoryEventBus(log)
 
@@ -732,6 +738,7 @@ func main() {
 	outboxHandler := handler.NewOutboxHandler(outboxService)
 	featureFlagHandler := handler.NewFeatureFlagHandler(flagService, evaluationService, overrideService)
 	printHandler := handler.NewPrintHandler(printService, pdfStorage)
+	autoPrintRuleHandler := handler.NewAutoPrintRuleHandler(autoPrintRuleService)
 
 	// Initialize Printing WebSocket handler for real-time event push
 	var printingWSHandler *handler.PrintingWSHandler
@@ -1499,6 +1506,10 @@ func main() {
 		printingWSRoutes := handler.PrintingWSRoutes(printingWSHandler, printJWTMiddleware)
 		r.Register(printingWSRoutes)
 	}
+
+	// Auto print rule routes for managing automatic printing rules
+	autoPrintRuleRoutes := handler.AutoPrintRuleRoutes(autoPrintRuleHandler, printJWTMiddleware)
+	r.Register(autoPrintRuleRoutes)
 
 	// Setup routes
 	r.Setup()

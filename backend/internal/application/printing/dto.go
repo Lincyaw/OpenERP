@@ -122,3 +122,65 @@ type PaperSizeResponse struct {
 	Width  int    `json:"width"`
 	Height int    `json:"height"`
 }
+
+// =============================================================================
+// Auto Print Rule DTOs
+// =============================================================================
+
+// CreateAutoPrintRuleRequest represents a request to create an auto print rule
+type CreateAutoPrintRuleRequest struct {
+	DocumentType string  `json:"document_type" binding:"required"`
+	TriggerEvent string  `json:"trigger_event" binding:"required"`
+	TemplateID   *string `json:"template_id"`
+	AutoPrint    bool    `json:"auto_print"`
+	Copies       *int    `json:"copies" binding:"omitempty,min=1,max=100"`
+	PrinterName  string  `json:"printer_name"`
+}
+
+// UpdateAutoPrintRuleRequest represents a request to update an auto print rule
+type UpdateAutoPrintRuleRequest struct {
+	TemplateID  *string `json:"template_id"`
+	AutoPrint   bool    `json:"auto_print"`
+	Copies      *int    `json:"copies" binding:"omitempty,min=1,max=100"`
+	PrinterName string  `json:"printer_name"`
+}
+
+// ListAutoPrintRulesRequest represents a request to list auto print rules
+type ListAutoPrintRulesRequest struct {
+	Page         int    `form:"page" binding:"min=1"`
+	PageSize     int    `form:"page_size" binding:"min=1,max=100"`
+	OrderBy      string `form:"order_by"`
+	OrderDir     string `form:"order_dir" binding:"omitempty,oneof=asc desc"`
+	DocumentType string `form:"document_type"`
+	TriggerEvent string `form:"trigger_event"`
+	Enabled      *bool  `form:"enabled"`
+}
+
+// AutoPrintRuleResponse represents an auto print rule response
+type AutoPrintRuleResponse struct {
+	ID           string    `json:"id"`
+	TenantID     string    `json:"tenant_id"`
+	DocumentType string    `json:"document_type"`
+	TriggerEvent string    `json:"trigger_event"`
+	TemplateID   *string   `json:"template_id,omitempty"`
+	AutoPrint    bool      `json:"auto_print"`
+	Copies       int       `json:"copies"`
+	PrinterName  string    `json:"printer_name,omitempty"`
+	Enabled      bool      `json:"enabled"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}
+
+// ListAutoPrintRulesResponse represents a paginated list of auto print rules
+type ListAutoPrintRulesResponse struct {
+	Items []AutoPrintRuleResponse `json:"items"`
+	Total int64                   `json:"total"`
+	Page  int                     `json:"page"`
+	Size  int                     `json:"size"`
+}
+
+// TriggerEventResponse represents a trigger event
+type TriggerEventResponse struct {
+	Code        string `json:"code"`
+	DisplayName string `json:"display_name"`
+}

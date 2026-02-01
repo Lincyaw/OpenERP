@@ -157,6 +157,7 @@ var LegacyErrorCodeMapping = map[string]string{
 	"FLAG_KEY_EXISTS":        ErrCodeAlreadyExists,
 	"FLAG_EXISTS":            ErrCodeAlreadyExists,
 	"OVERRIDE_EXISTS":        ErrCodeAlreadyExists,
+	"DUPLICATE_RULE":         ErrCodeAlreadyExists,
 	"INVALID_INPUT":          ErrCodeInvalidInput,
 	"INVALID_STATE":          ErrCodeInvalidState,
 	"FLAG_ARCHIVED":          ErrCodeInvalidState,
@@ -174,6 +175,12 @@ var LegacyErrorCodeMapping = map[string]string{
 	"VALIDATION_ERROR":       ErrCodeValidation,
 	"BAD_REQUEST":            ErrCodeBadRequest,
 	"INTERNAL_ERROR":         ErrCodeInternal,
+	// Auto print rule domain errors
+	"INVALID_DOCUMENT_TYPE":         ErrCodeBusinessRule,
+	"INVALID_TRIGGER_EVENT":         ErrCodeBusinessRule,
+	"INVALID_COPIES":                ErrCodeBusinessRule,
+	"INVALID_EVENT_DOC_COMBINATION": ErrCodeBusinessRule,
+	"INVALID_TEMPLATE_ID":           ErrCodeBusinessRule,
 }
 
 // NormalizeErrorCode converts a legacy error code to the standardized format
