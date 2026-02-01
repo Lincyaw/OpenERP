@@ -366,7 +366,8 @@
       "权限枚举包含所有租户管理权限",
       "迁移脚本可重复执行（幂等）"
     ],
-    "status": "pending"
+    "status": "pending",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-002",
@@ -601,6 +602,391 @@
       "响应格式符合 API 规范",
       "Swagger 文档自动生成",
       "通过集成测试验证所有端点"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-011",
+    "story": "实现前端路由和权限守卫",
+    "priority": "high",
+    "requirements": [
+      "依赖：P3-ADMIN-002（后端中间件）",
+      "创建 AdminLayout 组件（frontend/src/components/admin/AdminLayout.tsx）",
+      "创建 SuperAdminGuard 组件（frontend/src/components/admin/SuperAdminGuard.tsx）",
+      "在 authStore 中添加 isSuperAdmin 状态",
+      "添加 /admin/* 路由配置",
+      "路由结构：/admin/tenants, /admin/tenants/:id, /admin/stats, /admin/audit-logs",
+      "非超级管理员访问 /admin/* 重定向到 403 页面",
+      "添加超级管理员专用导航菜单",
+      "添加面包屑导航"
+    ],
+    "acceptance_criteria": [
+      "超级管理员可以访问 /admin/* 路由",
+      "普通用户访问 /admin/* 显示 403 页面",
+      "导航菜单正确显示管理选项",
+      "面包屑导航正确显示当前位置",
+      "路由切换流畅无闪烁"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-012",
+    "story": "实现租户列表页面",
+    "priority": "high",
+    "requirements": [
+      "依赖：P3-ADMIN-010, P3-ADMIN-011",
+      "创建 TenantListPage（frontend/src/pages/admin/TenantListPage.tsx）",
+      "显示租户列表：名称、邮箱、计划、状态、创建时间、用户数",
+      "实现分页功能（每页 20 条）",
+      "实现搜索功能（按名称、邮箱搜索）",
+      "实现过滤功能：按状态（active/suspended/deleted）、按计划（free/pro/enterprise）",
+      "实现排序功能：按创建时间、名称、状态",
+      "添加快捷操作按钮：暂停/激活、查看详情、编辑",
+      "添加批量选择和批量操作功能",
+      "添加创建租户按钮",
+      "使用 Semi Design Table 组件"
+    ],
+    "acceptance_criteria": [
+      "租户列表正确显示所有租户",
+      "分页功能正常工作",
+      "搜索和过滤功能正常工作",
+      "排序功能正常工作",
+      "快捷操作按钮功能正常",
+      "批量选择和操作功能正常",
+      "UI 符合 Semi Design 规范",
+      "响应式布局适配移动端"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-013",
+    "story": "实现租户详情页面",
+    "priority": "high",
+    "requirements": [
+      "依赖：P3-ADMIN-010, P3-ADMIN-011",
+      "创建 TenantDetailPage（frontend/src/pages/admin/TenantDetailPage.tsx）",
+      "显示租户基本信息：名称、邮箱、联系方式、创建时间",
+      "显示订阅信息：当前计划、配额使用情况、到期时间",
+      "显示使用统计：用户数、订单数、商品数、存储使用量",
+      "显示状态历史：暂停/激活记录",
+      "显示订阅历史：计划变更记录",
+      "添加操作按钮：编辑、暂停/激活、变更计划、更新配额、删除",
+      "添加标签页切换：概览、用户列表、操作日志",
+      "使用 Semi Design Card 和 Descriptions 组件"
+    ],
+    "acceptance_criteria": [
+      "租户详情正确显示所有信息",
+      "配额使用情况以进度条形式展示",
+      "状态历史和订阅历史正确显示",
+      "操作按钮功能正常",
+      "标签页切换流畅",
+      "UI 符合 Semi Design 规范"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-014",
+    "story": "实现租户 CRUD 表单",
+    "priority": "high",
+    "requirements": [
+      "依赖：P3-ADMIN-010, P3-ADMIN-011",
+      "创建 TenantForm 组件（frontend/src/components/admin/TenantForm.tsx）",
+      "创建租户表单字段：名称、邮箱、联系人、电话、初始计划",
+      "编辑租户表单字段：名称、联系人、电话",
+      "添加表单验证：必填字段、邮箱格式、名称唯一性检查",
+      "创建 CreateTenantModal 对话框",
+      "创建 EditTenantModal 对话框",
+      "创建 DeleteTenantModal 确认对话框（显示影响范围）",
+      "使用 React Hook Form + Zod 验证",
+      "添加加载状态和错误处理"
+    ],
+    "acceptance_criteria": [
+      "创建租户表单验证正确",
+      "编辑租户表单正确回显数据",
+      "删除确认对话框显示影响范围",
+      "表单提交成功后刷新列表",
+      "错误情况显示友好提示",
+      "表单支持键盘操作（Enter 提交、Esc 取消）"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-015",
+    "story": "实现操作对话框（变更计划、更新配额）",
+    "priority": "high",
+    "requirements": [
+      "依赖：P3-ADMIN-010, P3-ADMIN-011",
+      "创建 ChangePlanModal（frontend/src/components/admin/ChangePlanModal.tsx）",
+      "显示当前计划和可选计划",
+      "显示计划变更影响（升级/降级说明）",
+      "显示价格变化（如适用）",
+      "创建 UpdateQuotaModal（frontend/src/components/admin/UpdateQuotaModal.tsx）",
+      "显示当前配额和使用情况",
+      "允许自定义配额：用户数、存储空间、API 调用次数",
+      "添加配额预设（按计划默认值）",
+      "创建 SuspendTenantModal（frontend/src/components/admin/SuspendTenantModal.tsx）",
+      "输入暂停原因（必填）",
+      "可选设置暂停时长（到期自动激活）",
+      "显示暂停影响说明"
+    ],
+    "acceptance_criteria": [
+      "变更计划对话框正确显示计划选项",
+      "更新配额对话框正确显示当前配额",
+      "暂停租户对话框要求输入原因",
+      "所有对话框操作成功后刷新数据",
+      "错误情况显示友好提示",
+      "UI 符合 Semi Design 规范"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-016",
+    "story": "实现平台统计页面",
+    "priority": "medium",
+    "requirements": [
+      "依赖：P3-ADMIN-010, P3-ADMIN-011",
+      "创建 PlatformStatsPage（frontend/src/pages/admin/PlatformStatsPage.tsx）",
+      "显示关键指标卡片：总租户数、活跃租户数、本月新增、总收入",
+      "显示租户增长趋势图（折线图，按日/周/月）",
+      "显示计划分布图（饼图）",
+      "显示状态分布图（饼图）",
+      "显示最近注册的租户列表（前 10 个）",
+      "显示最近暂停的租户列表（前 10 个）",
+      "添加时间范围选择器（7天/30天/90天/全部）",
+      "使用 ECharts 或 Semi Design Charts"
+    ],
+    "acceptance_criteria": [
+      "关键指标卡片正确显示数据",
+      "图表正确渲染且可交互",
+      "时间范围切换正常工作",
+      "数据加载有 loading 状态",
+      "图表响应式适配不同屏幕",
+      "UI 符合 Semi Design 规范"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-017",
+    "story": "实现审计日志页面",
+    "priority": "medium",
+    "requirements": [
+      "依赖：P3-ADMIN-010, P3-ADMIN-011",
+      "创建 AuditLogPage（frontend/src/pages/admin/AuditLogPage.tsx）",
+      "显示审计日志列表：时间、操作者、操作类型、目标、详情",
+      "实现分页功能（每页 50 条）",
+      "实现过滤功能：按操作类型、按目标租户、按时间范围",
+      "实现搜索功能：按操作者、目标 ID",
+      "添加日志详情展开（显示 old_value 和 new_value 对比）",
+      "添加导出功能（CSV 格式）",
+      "使用 Semi Design Table 组件",
+      "添加自动刷新功能（可选，每 30 秒）"
+    ],
+    "acceptance_criteria": [
+      "审计日志列表正确显示所有日志",
+      "分页功能正常工作",
+      "过滤和搜索功能正常工作",
+      "日志详情正确显示变更对比",
+      "导出功能生成正确的 CSV 文件",
+      "UI 符合 Semi Design 规范"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-018",
+    "story": "实现前端 API 客户端和状态管理",
+    "priority": "high",
+    "requirements": [
+      "依赖：P3-ADMIN-010",
+      "在 OpenAPI 规范中添加 Admin API 定义",
+      "运行 npm run api:generate 生成 API 客户端",
+      "创建 adminStore（frontend/src/store/adminStore.ts）",
+      "状态：tenants, selectedTenant, stats, auditLogs, loading, error",
+      "Actions：fetchTenants, fetchTenant, createTenant, updateTenant, deleteTenant",
+      "Actions：suspendTenant, activateTenant, changePlan, updateQuota",
+      "Actions：fetchStats, fetchAuditLogs",
+      "添加乐观更新和错误回滚",
+      "添加请求缓存（SWR 或 React Query）"
+    ],
+    "acceptance_criteria": [
+      "API 客户端正确生成",
+      "状态管理正确处理所有操作",
+      "乐观更新提升用户体验",
+      "错误情况正确回滚状态",
+      "请求缓存减少重复请求",
+      "TypeScript 类型正确"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-019",
+    "story": "编写后端单元测试",
+    "priority": "high",
+    "requirements": [
+      "依赖：P3-ADMIN-001 到 P3-ADMIN-010",
+      "编写 SuperAdminMiddleware 单元测试",
+      "编写 AuditLog 实体单元测试",
+      "编写 AdminTenantRepository 单元测试（使用 sqlmock）",
+      "编写 AdminTenantService 单元测试",
+      "编写 TenantStatsService 单元测试",
+      "编写 AdminHandler 单元测试",
+      "测试覆盖正常流程和边界情况",
+      "测试覆盖错误处理",
+      "确保测试覆盖率 >= 80%"
+    ],
+    "acceptance_criteria": [
+      "所有单元测试通过",
+      "测试覆盖率 >= 80%",
+      "测试覆盖所有业务规则",
+      "测试覆盖所有错误场景",
+      "测试可重复执行（无副作用）"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-020",
+    "story": "编写后端集成测试",
+    "priority": "high",
+    "requirements": [
+      "依赖：P3-ADMIN-019",
+      "编写 Admin API 集成测试（backend/internal/interfaces/http/handler/admin_handler_test.go）",
+      "测试租户 CRUD 完整流程",
+      "测试订阅管理流程",
+      "测试状态管理流程",
+      "测试批量操作流程",
+      "测试审计日志记录",
+      "测试权限控制（普通用户无法访问）",
+      "使用真实数据库（测试容器）",
+      "测试数据隔离（每个测试独立）"
+    ],
+    "acceptance_criteria": [
+      "所有集成测试通过",
+      "测试覆盖完整业务流程",
+      "测试验证权限控制",
+      "测试验证审计日志",
+      "测试可在 CI 环境运行"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-021",
+    "story": "编写前端单元测试",
+    "priority": "high",
+    "requirements": [
+      "依赖：P3-ADMIN-011 到 P3-ADMIN-018",
+      "编写 SuperAdminGuard 组件测试",
+      "编写 TenantForm 组件测试",
+      "编写 ChangePlanModal 组件测试",
+      "编写 UpdateQuotaModal 组件测试",
+      "编写 adminStore 单元测试",
+      "使用 Vitest + React Testing Library",
+      "Mock API 调用",
+      "测试用户交互流程",
+      "确保测试覆盖率 >= 80%"
+    ],
+    "acceptance_criteria": [
+      "所有单元测试通过",
+      "测试覆盖率 >= 80%",
+      "测试覆盖用户交互",
+      "测试覆盖错误状态",
+      "测试可重复执行"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-022",
+    "story": "编写 E2E 测试",
+    "priority": "high",
+    "requirements": [
+      "依赖：P3-ADMIN-020, P3-ADMIN-021",
+      "创建 E2E 测试文件（frontend/tests/e2e/admin/admin.spec.ts）",
+      "测试超级管理员登录流程",
+      "测试租户列表页面功能",
+      "测试创建租户完整流程",
+      "测试编辑租户流程",
+      "测试暂停/激活租户流程",
+      "测试变更订阅计划流程",
+      "测试更新配额流程",
+      "测试删除租户流程",
+      "测试审计日志查看",
+      "测试权限控制（普通用户无法访问）",
+      "使用 Playwright"
+    ],
+    "acceptance_criteria": [
+      "所有 E2E 测试通过",
+      "测试覆盖所有关键用户流程",
+      "测试验证权限控制",
+      "测试在 CI 环境稳定运行",
+      "测试执行时间 < 5 分钟"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-023",
+    "story": "编写 API 文档",
+    "priority": "medium",
+    "requirements": [
+      "依赖：P3-ADMIN-010",
+      "完善 AdminHandler 的 Swagger 注释",
+      "添加请求/响应示例",
+      "添加错误码说明",
+      "添加认证说明（需要超级管理员权限）",
+      "运行 make api-docs 生成文档",
+      "验证 Swagger UI 正确显示",
+      "添加 API 变更日志"
+    ],
+    "acceptance_criteria": [
+      "Swagger 文档完整覆盖所有 Admin API",
+      "请求/响应示例准确",
+      "错误码说明清晰",
+      "Swagger UI 可正常访问和测试",
+      "文档与实现一致"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-024",
+    "story": "编写用户手册",
+    "priority": "low",
+    "requirements": [
+      "依赖：P3-ADMIN-022",
+      "创建超级管理员用户手册（docs/user-guide/super-admin.md）",
+      "内容：功能概述、登录方式、租户管理操作指南",
+      "内容：订阅管理操作指南、状态管理操作指南",
+      "内容：统计报表使用说明、审计日志使用说明",
+      "内容：常见问题解答（FAQ）",
+      "添加操作截图",
+      "添加最佳实践建议"
+    ],
+    "acceptance_criteria": [
+      "用户手册覆盖所有功能",
+      "操作步骤清晰易懂",
+      "截图与实际界面一致",
+      "FAQ 覆盖常见问题",
+      "文档格式规范"
+    ],
+    "status": "pending"
+  },
+  {
+    "id": "P3-ADMIN-025",
+    "story": "创建架构决策记录（ADR）",
+    "priority": "medium",
+    "requirements": [
+      "依赖：P3-ADMIN-001",
+      "创建 ADR-001：超级管理员认证模型设计",
+      "记录系统租户方案的决策理由",
+      "记录考虑过的替代方案（独立认证系统、特殊标记等）",
+      "记录优缺点分析",
+      "创建 ADR-002：跨租户查询设计",
+      "记录绕过租户隔离的安全考虑",
+      "记录审计日志设计决策",
+      "保存到 .claude/ralph/docs/adrs/ 目录"
+    ],
+    "acceptance_criteria": [
+      "ADR 文档格式规范",
+      "决策理由清晰",
+      "替代方案分析完整",
+      "优缺点分析客观",
+      "ADR 可供未来参考"
     ],
     "status": "pending"
   }

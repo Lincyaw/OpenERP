@@ -757,3 +757,58 @@ func TestRole_EmptyDataScope(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "Data scope cannot be empty")
 }
+
+// Super Admin Role Constants Tests
+
+func TestSuperAdminRoleConstants(t *testing.T) {
+	t.Run("super admin role code is SUPER_ADMIN", func(t *testing.T) {
+		assert.Equal(t, "SUPER_ADMIN", RoleCodeSuperAdmin)
+	})
+
+	t.Run("super admin role ID is fixed UUID", func(t *testing.T) {
+		assert.Equal(t, "00000000-0000-0000-0000-000000000100", SuperAdminRoleID)
+	})
+
+	t.Run("super admin user ID is fixed UUID", func(t *testing.T) {
+		assert.Equal(t, "00000000-0000-0000-0000-000000000101", SuperAdminUserID)
+	})
+}
+
+func TestTenantPermissions(t *testing.T) {
+	t.Run("returns all tenant management permissions", func(t *testing.T) {
+		perms := TenantPermissions()
+
+		assert.Len(t, perms, 6)
+		assert.Contains(t, perms, "tenant:read")
+		assert.Contains(t, perms, "tenant:create")
+		assert.Contains(t, perms, "tenant:update")
+		assert.Contains(t, perms, "tenant:delete")
+		assert.Contains(t, perms, "tenant:suspend")
+		assert.Contains(t, perms, "tenant:manage")
+	})
+
+	t.Run("permissions follow resource:action format", func(t *testing.T) {
+		perms := TenantPermissions()
+
+		for _, perm := range perms {
+			// Each permission should be parseable
+			p, err := NewPermissionFromCode(perm)
+			require.NoError(t, err)
+			assert.Equal(t, ResourceTenant, p.Resource)
+		}
+	})
+}
+
+func TestNewTenantActions(t *testing.T) {
+	t.Run("suspend action is defined", func(t *testing.T) {
+		assert.Equal(t, "suspend", ActionSuspend)
+	})
+
+	t.Run("activate action is defined", func(t *testing.T) {
+		assert.Equal(t, "activate", ActionActivate)
+	})
+
+	t.Run("manage action is defined", func(t *testing.T) {
+		assert.Equal(t, "manage", ActionManage)
+	})
+}

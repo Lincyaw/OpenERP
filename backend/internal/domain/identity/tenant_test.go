@@ -568,3 +568,17 @@ func TestTenant_GetTenantID(t *testing.T) {
 
 	assert.Equal(t, tenant.ID, tenantID)
 }
+
+func TestSystemTenantConstants(t *testing.T) {
+	t.Run("system tenant ID is all zeros UUID", func(t *testing.T) {
+		assert.Equal(t, "00000000-0000-0000-0000-000000000000", SystemTenantID)
+	})
+
+	t.Run("system tenant code is SYSTEM", func(t *testing.T) {
+		assert.Equal(t, "SYSTEM", SystemTenantCode)
+	})
+
+	t.Run("system tenant name is System Tenant", func(t *testing.T) {
+		assert.Equal(t, "System Tenant", SystemTenantName)
+	})
+}

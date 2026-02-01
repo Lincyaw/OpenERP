@@ -44218,3 +44218,187 @@ Routes to hide (via hideInMenu: true):
 1. P2-PRINT-002: Implement AutoPrintRule application service and HTTP handlers
 2. P2-PRINT-003: Implement event listeners to trigger auto-print when business events occur
 3. Consider adding a domain service to coordinate auto-print rule evaluation
+
+================================================================================
+2026-02-01 - Super Admin Panel Tasks Added to PRD
+================================================================================
+
+=== Task Summary ===
+
+Added 25 tasks for Super Admin Panel implementation (P3-ADMIN-001 to P3-ADMIN-025).
+
+=== Task Breakdown by Week ===
+
+**Week 1: Authentication and Infrastructure (3 tasks - critical)**
+- P3-ADMIN-001: System tenant and super admin role infrastructure
+- P3-ADMIN-002: SuperAdminMiddleware authentication
+- P3-ADMIN-003: Audit log system
+
+**Week 2-3: Backend Core Features (7 tasks - high)**
+- P3-ADMIN-004: Cross-tenant query Repository
+- P3-ADMIN-005: Tenant management Service (CRUD)
+- P3-ADMIN-006: Subscription management
+- P3-ADMIN-007: Tenant status management
+- P3-ADMIN-008: Tenant usage statistics
+- P3-ADMIN-009: Batch operations
+- P3-ADMIN-010: Admin API Handler
+
+**Week 4-5: Frontend Core Features (8 tasks - high/medium)**
+- P3-ADMIN-011: Frontend routing and permission guard
+- P3-ADMIN-012: Tenant list page
+- P3-ADMIN-013: Tenant detail page
+- P3-ADMIN-014: Tenant CRUD forms
+- P3-ADMIN-015: Operation dialogs (change plan, update quota)
+- P3-ADMIN-016: Platform statistics page
+- P3-ADMIN-017: Audit log page
+- P3-ADMIN-018: Frontend API client and state management
+
+**Week 6: Testing and Documentation (7 tasks - high/medium/low)**
+- P3-ADMIN-019: Backend unit tests
+- P3-ADMIN-020: Backend integration tests
+- P3-ADMIN-021: Frontend unit tests
+- P3-ADMIN-022: E2E tests
+- P3-ADMIN-023: API documentation
+- P3-ADMIN-024: User manual
+- P3-ADMIN-025: Architecture Decision Records (ADRs)
+
+=== Priority Distribution ===
+
+- Critical: 3 tasks (infrastructure foundation)
+- High: 17 tasks (core functionality)
+- Medium: 4 tasks (extended features)
+- Low: 1 task (documentation)
+
+=== Key Design Decisions ===
+
+1. **Authentication Model**: Special system tenant (tenant_id = '00000000-0000-0000-0000-000000000000')
+   - Pros: Reuses existing tenant infrastructure, no schema changes
+   - Cons: Requires careful handling to exclude from normal queries
+   - Risk Level: LOW
+
+2. **Permission Model**: New tenant:* permissions with super_admin role
+   - Pros: Fine-grained access control, extensible
+   - Cons: Additional permission checks
+   - Risk Level: LOW
+
+3. **API Routing**: /api/v1/admin/* for super admin endpoints
+   - Pros: Clear separation, easy to apply middleware
+   - Cons: None significant
+   - Risk Level: LOW
+
+4. **Audit Logging**: Dedicated admin_audit_logs table
+   - Pros: Complete audit trail, immutable records
+   - Cons: Additional storage
+   - Risk Level: LOW
+
+=== Dependencies ===
+
+Task dependency chain:
+P3-ADMIN-001 (foundation)
+  -> P3-ADMIN-002 (middleware)
+  -> P3-ADMIN-003 (audit)
+  -> P3-ADMIN-004 (repository)
+  -> P3-ADMIN-005 (service)
+  -> P3-ADMIN-006, P3-ADMIN-007, P3-ADMIN-008 (features)
+  -> P3-ADMIN-009 (batch)
+  -> P3-ADMIN-010 (API)
+  -> P3-ADMIN-011 (frontend routing)
+  -> P3-ADMIN-012 to P3-ADMIN-018 (frontend pages)
+  -> P3-ADMIN-019 to P3-ADMIN-025 (testing/docs)
+
+=== Red Flags Checked ===
+
+- [x] No God Objects: Responsibilities split across Service, Repository, Handler
+- [x] No tight coupling: Clear layer separation (domain -> application -> infrastructure)
+- [x] Clear structure: Follows existing DDD patterns in codebase
+- [x] No premature optimization: Standard CRUD operations first
+- [x] No magic: All behavior documented in requirements and acceptance criteria
+
+=== Next Steps ===
+
+1. Start with P3-ADMIN-001 (system tenant and super admin role)
+2. Create ADR for authentication model decision
+3. Implement in order following dependency chain
+
+================================================================================
+2026-02-01 - P3-ADMIN-001: System Tenant and Super Admin Role Infrastructure
+================================================================================
+
+=== Implementation Details ===
+
+**Task**: Create system tenant and super admin role infrastructure for cross-tenant management.
+
+**Files Modified**:
+1. `backend/internal/domain/identity/tenant.go`
+   - Added `SystemTenantID` constant: `00000000-0000-0000-0000-000000000000`
+   - Added `SystemTenantCode` constant: `SYSTEM`
+   - Added `SystemTenantName` constant: `System Tenant`
+
+2. `backend/internal/domain/identity/role.go`
+   - Added `RoleCodeSuperAdmin` constant: `SUPER_ADMIN`
+   - Added `SuperAdminRoleID` constant: `00000000-0000-0000-0000-000000000100`
+   - Added `SuperAdminUserID` constant: `00000000-0000-0000-0000-000000000101`
+   - Added new actions: `ActionSuspend`, `ActionActivate`, `ActionManage`
+   - Added `TenantPermissions()` function returning all tenant:* permissions
+
+3. `backend/migrations/000047_create_system_tenant_and_super_admin.up.sql`
+   - Creates system tenant record with all-zeros UUID
+   - Creates SUPER_ADMIN role in system tenant
+   - Grants all tenant:* permissions to super admin role
+   - Creates default super admin user (username: superadmin, password: superadmin123)
+   - Sets up data scopes for cross-tenant access
+
+4. `backend/migrations/000047_create_system_tenant_and_super_admin.down.sql`
+   - Rollback script to remove all super admin infrastructure
+
+5. `backend/internal/domain/identity/tenant_test.go`
+   - Added `TestSystemTenantConstants` test
+
+6. `backend/internal/domain/identity/role_test.go`
+   - Added `TestSuperAdminRoleConstants` test
+   - Added `TestTenantPermissions` test
+   - Added `TestNewTenantActions` test
+
+**Permissions Defined**:
+- `tenant:read` - View tenant details and list all tenants
+- `tenant:create` - Create new tenants
+- `tenant:update` - Update tenant information
+- `tenant:delete` - Delete tenants
+- `tenant:suspend` - Suspend and reactivate tenants
+- `tenant:manage` - Full tenant management access
+
+**Default Super Admin Credentials**:
+- Username: `superadmin`
+- Password: `superadmin123`
+- Note: `must_change_password` flag is set to TRUE
+
+=== Verification ===
+
+- [x] All unit tests pass (14.678s)
+- [x] Go build succeeds
+- [x] Migration scripts are idempotent (use ON CONFLICT DO UPDATE/NOTHING)
+- [x] System tenant ID is all-zeros UUID as specified
+- [x] Super admin role includes all tenant:* permissions
+
+=== Design Decisions ===
+
+1. **System Tenant ID**: Used all-zeros UUID (`00000000-0000-0000-0000-000000000000`) as specified in the design. This makes it easy to identify and exclude from normal tenant queries.
+
+2. **Fixed UUIDs**: Used fixed UUIDs for super admin role and user to ensure consistency across environments and make it easy to reference in code.
+
+3. **Idempotent Migrations**: All INSERT statements use `ON CONFLICT` clauses to ensure migrations can be run multiple times safely.
+
+4. **Password Security**: Default password is set with `must_change_password = TRUE` to force password change on first login.
+
+5. **Data Scopes**: Super admin has `all` scope for tenant, user, and role resources to enable cross-tenant management.
+
+=== Notes ===
+
+- The system tenant should be excluded from normal tenant listing queries
+- Super admin users should only be created in the system tenant
+- The default super admin password should be changed immediately in production
+
+=== Next Steps ===
+
+- P3-ADMIN-002: Implement SuperAdminMiddleware for authentication
+- P3-ADMIN-003: Create audit log system for admin operations

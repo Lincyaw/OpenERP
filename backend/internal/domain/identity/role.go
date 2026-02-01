@@ -630,6 +630,7 @@ const (
 	RoleCodeWarehouse  = "WAREHOUSE"
 	RoleCodeCashier    = "CASHIER"
 	RoleCodeAccountant = "ACCOUNTANT"
+	RoleCodeSuperAdmin = "SUPER_ADMIN" // Super admin role for cross-tenant management
 )
 
 // Predefined resources
@@ -678,4 +679,29 @@ const (
 	ActionImport     = "import"
 	ActionAssignRole = "assign_role"
 	ActionViewAll    = "view_all"
+	ActionSuspend    = "suspend"  // Suspend a tenant
+	ActionActivate   = "activate" // Activate a suspended tenant
+	ActionManage     = "manage"   // Full management access (super admin)
 )
+
+// Super Admin Role Constants
+const (
+	// SuperAdminRoleID is the fixed UUID for the super admin role in the system tenant
+	SuperAdminRoleID = "00000000-0000-0000-0000-000000000100"
+
+	// SuperAdminUserID is the fixed UUID for the default super admin user
+	SuperAdminUserID = "00000000-0000-0000-0000-000000000101"
+)
+
+// TenantPermissions returns all tenant management permissions for super admin
+// These permissions are used for cross-tenant management operations
+func TenantPermissions() []string {
+	return []string{
+		ResourceTenant + ":" + ActionRead,    // tenant:read - View tenant details
+		ResourceTenant + ":" + ActionCreate,  // tenant:create - Create new tenants
+		ResourceTenant + ":" + ActionUpdate,  // tenant:update - Update tenant info
+		ResourceTenant + ":" + ActionDelete,  // tenant:delete - Delete tenants
+		ResourceTenant + ":" + ActionSuspend, // tenant:suspend - Suspend tenants
+		ResourceTenant + ":" + ActionManage,  // tenant:manage - Full tenant management
+	}
+}

@@ -8,6 +8,16 @@ import (
 	"github.com/google/uuid"
 )
 
+// SystemTenantID is the special tenant ID for system-level operations (super admin)
+// This tenant is used for cross-tenant management and should never be used for normal business operations
+const SystemTenantID = "00000000-0000-0000-0000-000000000000"
+
+// SystemTenantCode is the unique code for the system tenant
+const SystemTenantCode = "SYSTEM"
+
+// SystemTenantName is the display name for the system tenant
+const SystemTenantName = "System Tenant"
+
 // TenantStatus represents the status of a tenant
 type TenantStatus string
 
