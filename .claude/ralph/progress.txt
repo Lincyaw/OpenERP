@@ -43860,3 +43860,52 @@ Routes to hide (via hideInMenu: true):
 
 1. CLEANUP-FE-002: Hide unimplemented Payment Settings menu entry
 2. When backend APIs for e-commerce integration are implemented, remove `hideInMenu: true` to re-enable these menu items
+
+
+---
+
+## 2026-02-01 - CLEANUP-FE-002: Hide Unimplemented Payment Settings Menu Entry
+
+### Task ID: CLEANUP-FE-002
+### Status: Complete
+
+=== Implementation Details ===
+
+**Modified Files:**
+
+1. `frontend/src/router/routes.tsx`
+   - Added `hideInMenu: true` to `/system/payment-settings` route meta (line 476)
+   - Added comment explaining why the route is hidden: "Payment settings not yet implemented (backend integration pending)"
+
+**Route Hidden:**
+- `/system/payment-settings` - Payment Settings (支付设置)
+
+=== Design Decisions ===
+
+1. **hideInMenu Property**: Used the existing `hideInMenu: true` property in route meta configuration. This property is already defined in `RouteMeta` interface and is respected by the sidebar menu generation logic.
+
+2. **Code Preservation**: Route definition and page component are preserved. Only the menu visibility is changed. This allows:
+   - Direct URL access for development/testing
+   - Easy re-enablement by removing `hideInMenu: true`
+   - No code deletion required
+
+3. **Comment Documentation**: Added inline comment explaining why the route is hidden for future maintainability.
+
+=== Verification ===
+
+- [x] TypeScript type checking passes: `npm run type-check`
+- [x] Production build succeeds: `npm run build`
+- [x] No console.log statements in code
+- [x] Route still accessible via direct URL (preserved for dev/testing)
+- [x] Other system menu items unaffected (Users, Roles, Permissions, Import History)
+
+=== Acceptance Criteria Met ===
+
+- [x] 支付设置菜单项从侧边栏隐藏 (Payment Settings menu item hidden from sidebar)
+- [x] 代码文件保留，未来可通过移除 hideInMenu 重新启用 (Code preserved, can re-enable by removing hideInMenu)
+- [x] 其他系统设置菜单项正常显示 (Other system settings menu items display normally)
+
+=== Next Steps ===
+
+1. When backend APIs for payment settings are implemented, remove `hideInMenu: true` to re-enable the menu item
+2. Continue with other cleanup tasks if any remain

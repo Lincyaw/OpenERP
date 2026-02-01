@@ -473,6 +473,7 @@ export const appRoutes: AppRoute[] = [
           icon: 'IconCreditCard',
           order: 4,
           permissions: [Permissions.TENANT_UPDATE],
+          hideInMenu: true, // Payment settings not yet implemented (backend integration pending)
         },
       },
       {
