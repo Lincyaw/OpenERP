@@ -9,6 +9,7 @@ import (
 const (
 	AggregateTypePrintTemplate = "PrintTemplate"
 	AggregateTypePrintJob      = "PrintJob"
+	AggregateTypeAutoPrintRule = "AutoPrintRule"
 )
 
 // Event type constants for PrintTemplate
@@ -26,6 +27,14 @@ const (
 	EventTypePrintJobStatusChanged = "PrintJobStatusChanged"
 	EventTypePrintJobCompleted     = "PrintJobCompleted"
 	EventTypePrintJobFailed        = "PrintJobFailed"
+)
+
+// Event type constants for AutoPrintRule
+const (
+	EventTypeAutoPrintRuleCreated  = "AutoPrintRuleCreated"
+	EventTypeAutoPrintRuleUpdated  = "AutoPrintRuleUpdated"
+	EventTypeAutoPrintRuleEnabled  = "AutoPrintRuleEnabled"
+	EventTypeAutoPrintRuleDisabled = "AutoPrintRuleDisabled"
 )
 
 // ============================================================================
@@ -272,5 +281,113 @@ func NewPrintJobFailedEvent(job *PrintJob) *PrintJobFailedEvent {
 		DocumentID:     job.DocumentID,
 		DocumentNumber: job.DocumentNumber,
 		ErrorMessage:   job.ErrorMessage,
+	}
+}
+
+// ============================================================================
+// AutoPrintRule Events
+// ============================================================================
+
+// AutoPrintRuleCreatedEvent is published when a new auto print rule is created
+type AutoPrintRuleCreatedEvent struct {
+	shared.BaseDomainEvent
+	RuleID       uuid.UUID    `json:"rule_id"`
+	DocumentType DocType      `json:"document_type"`
+	TriggerEvent TriggerEvent `json:"trigger_event"`
+	AutoPrint    bool         `json:"auto_print"`
+	Copies       int          `json:"copies"`
+	Enabled      bool         `json:"enabled"`
+}
+
+// NewAutoPrintRuleCreatedEvent creates a new AutoPrintRuleCreatedEvent
+func NewAutoPrintRuleCreatedEvent(rule *AutoPrintRule) *AutoPrintRuleCreatedEvent {
+	return &AutoPrintRuleCreatedEvent{
+		BaseDomainEvent: shared.NewBaseDomainEvent(
+			EventTypeAutoPrintRuleCreated,
+			AggregateTypeAutoPrintRule,
+			rule.ID,
+			rule.TenantID,
+		),
+		RuleID:       rule.ID,
+		DocumentType: rule.DocumentType,
+		TriggerEvent: rule.TriggerEvent,
+		AutoPrint:    rule.AutoPrint,
+		Copies:       rule.Copies,
+		Enabled:      rule.Enabled,
+	}
+}
+
+// AutoPrintRuleUpdatedEvent is published when an auto print rule is updated
+type AutoPrintRuleUpdatedEvent struct {
+	shared.BaseDomainEvent
+	RuleID       uuid.UUID    `json:"rule_id"`
+	DocumentType DocType      `json:"document_type"`
+	TriggerEvent TriggerEvent `json:"trigger_event"`
+	AutoPrint    bool         `json:"auto_print"`
+	Copies       int          `json:"copies"`
+	PrinterName  string       `json:"printer_name,omitempty"`
+}
+
+// NewAutoPrintRuleUpdatedEvent creates a new AutoPrintRuleUpdatedEvent
+func NewAutoPrintRuleUpdatedEvent(rule *AutoPrintRule) *AutoPrintRuleUpdatedEvent {
+	return &AutoPrintRuleUpdatedEvent{
+		BaseDomainEvent: shared.NewBaseDomainEvent(
+			EventTypeAutoPrintRuleUpdated,
+			AggregateTypeAutoPrintRule,
+			rule.ID,
+			rule.TenantID,
+		),
+		RuleID:       rule.ID,
+		DocumentType: rule.DocumentType,
+		TriggerEvent: rule.TriggerEvent,
+		AutoPrint:    rule.AutoPrint,
+		Copies:       rule.Copies,
+		PrinterName:  rule.PrinterName,
+	}
+}
+
+// AutoPrintRuleEnabledEvent is published when an auto print rule is enabled
+type AutoPrintRuleEnabledEvent struct {
+	shared.BaseDomainEvent
+	RuleID       uuid.UUID    `json:"rule_id"`
+	DocumentType DocType      `json:"document_type"`
+	TriggerEvent TriggerEvent `json:"trigger_event"`
+}
+
+// NewAutoPrintRuleEnabledEvent creates a new AutoPrintRuleEnabledEvent
+func NewAutoPrintRuleEnabledEvent(rule *AutoPrintRule) *AutoPrintRuleEnabledEvent {
+	return &AutoPrintRuleEnabledEvent{
+		BaseDomainEvent: shared.NewBaseDomainEvent(
+			EventTypeAutoPrintRuleEnabled,
+			AggregateTypeAutoPrintRule,
+			rule.ID,
+			rule.TenantID,
+		),
+		RuleID:       rule.ID,
+		DocumentType: rule.DocumentType,
+		TriggerEvent: rule.TriggerEvent,
+	}
+}
+
+// AutoPrintRuleDisabledEvent is published when an auto print rule is disabled
+type AutoPrintRuleDisabledEvent struct {
+	shared.BaseDomainEvent
+	RuleID       uuid.UUID    `json:"rule_id"`
+	DocumentType DocType      `json:"document_type"`
+	TriggerEvent TriggerEvent `json:"trigger_event"`
+}
+
+// NewAutoPrintRuleDisabledEvent creates a new AutoPrintRuleDisabledEvent
+func NewAutoPrintRuleDisabledEvent(rule *AutoPrintRule) *AutoPrintRuleDisabledEvent {
+	return &AutoPrintRuleDisabledEvent{
+		BaseDomainEvent: shared.NewBaseDomainEvent(
+			EventTypeAutoPrintRuleDisabled,
+			AggregateTypeAutoPrintRule,
+			rule.ID,
+			rule.TenantID,
+		),
+		RuleID:       rule.ID,
+		DocumentType: rule.DocumentType,
+		TriggerEvent: rule.TriggerEvent,
 	}
 }

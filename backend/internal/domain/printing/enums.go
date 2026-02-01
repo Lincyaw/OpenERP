@@ -222,3 +222,92 @@ func (s JobStatus) CanTransitionTo(target JobStatus) bool {
 	}
 	return false
 }
+
+// TriggerEvent represents the business event that triggers automatic printing
+type TriggerEvent string
+
+const (
+	TriggerEventCreated   TriggerEvent = "CREATED"   // 单据创建时
+	TriggerEventConfirmed TriggerEvent = "CONFIRMED" // 单据确认时
+	TriggerEventShipped   TriggerEvent = "SHIPPED"   // 发货时
+	TriggerEventReceived  TriggerEvent = "RECEIVED"  // 收货时
+	TriggerEventCompleted TriggerEvent = "COMPLETED" // 完成时
+	TriggerEventPaid      TriggerEvent = "PAID"      // 付款时
+)
+
+// IsValid checks if the TriggerEvent is a valid value
+func (t TriggerEvent) IsValid() bool {
+	switch t {
+	case TriggerEventCreated, TriggerEventConfirmed, TriggerEventShipped,
+		TriggerEventReceived, TriggerEventCompleted, TriggerEventPaid:
+		return true
+	}
+	return false
+}
+
+// String returns the string representation of TriggerEvent
+func (t TriggerEvent) String() string {
+	return string(t)
+}
+
+// DisplayName returns the Chinese display name for TriggerEvent
+func (t TriggerEvent) DisplayName() string {
+	switch t {
+	case TriggerEventCreated:
+		return "创建时"
+	case TriggerEventConfirmed:
+		return "确认时"
+	case TriggerEventShipped:
+		return "发货时"
+	case TriggerEventReceived:
+		return "收货时"
+	case TriggerEventCompleted:
+		return "完成时"
+	case TriggerEventPaid:
+		return "付款时"
+	default:
+		return string(t)
+	}
+}
+
+// AllTriggerEvents returns all valid TriggerEvent values
+func AllTriggerEvents() []TriggerEvent {
+	return []TriggerEvent{
+		TriggerEventCreated, TriggerEventConfirmed, TriggerEventShipped,
+		TriggerEventReceived, TriggerEventCompleted, TriggerEventPaid,
+	}
+}
+
+// ApplicableDocTypes returns the document types that this trigger event applies to
+func (t TriggerEvent) ApplicableDocTypes() []DocType {
+	switch t {
+	case TriggerEventCreated:
+		// All document types can trigger on creation
+		return AllDocTypes()
+	case TriggerEventConfirmed:
+		// Orders and vouchers can be confirmed
+		return []DocType{
+			DocTypeSalesOrder, DocTypePurchaseOrder,
+			DocTypeReceiptVoucher, DocTypePaymentVoucher,
+		}
+	case TriggerEventShipped:
+		// Only sales-related documents
+		return []DocType{DocTypeSalesOrder, DocTypeSalesDelivery}
+	case TriggerEventReceived:
+		// Only purchase-related documents
+		return []DocType{DocTypePurchaseOrder, DocTypePurchaseReceiving}
+	case TriggerEventCompleted:
+		// Orders and stock taking can be completed
+		return []DocType{
+			DocTypeSalesOrder, DocTypePurchaseOrder, DocTypeStockTaking,
+		}
+	case TriggerEventPaid:
+		// Financial documents
+		return []DocType{
+			DocTypeSalesOrder, DocTypePurchaseOrder,
+			DocTypeReceiptVoucher, DocTypePaymentVoucher,
+		}
+	default:
+		return nil
+	}
+}

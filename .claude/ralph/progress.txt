@@ -44097,3 +44097,124 @@ Routes to hide (via hideInMenu: true):
 1. Consider adding a "View All Quotas" link to the subscription page for users who want to see all quota details
 2. Add loading skeleton for quota section during data fetch
 3. Consider caching subscription data to reduce API calls
+
+---
+
+2026-02-01 - P2-PRINT-001: 实现 AutoPrintRule 领域模型和基础设施
+
+### Task ID: P2-PRINT-001
+### Status: Complete
+
+=== Implementation Details ===
+
+**Goal:** Implement the AutoPrintRule aggregate root and supporting infrastructure for automatic printing configuration.
+
+**Modified/Created Files:**
+
+1. `backend/internal/domain/printing/enums.go`
+   - Added TriggerEvent enum with values: CREATED, CONFIRMED, SHIPPED, RECEIVED, COMPLETED, PAID
+   - Added IsValid(), String(), DisplayName() methods
+   - Added AllTriggerEvents() helper function
+   - Added ApplicableDocTypes() method to define which events apply to which document types
+
+2. `backend/internal/domain/printing/auto_print_rule.go` (NEW)
+   - Created AutoPrintRule aggregate root with fields:
+     - DocumentType, TriggerEvent, TemplateID, AutoPrint, Copies, PrinterName, Enabled
+   - Implemented NewAutoPrintRule() factory with validation:
+     - Document type validation
+     - Trigger event validation
+     - Copies range validation (1-100)
+     - Event-document type applicability validation
+   - Implemented Update(), Enable(), Disable() methods
+   - Implemented ShouldTrigger() for checking if rule should fire
+   - Implemented ReconstructAutoPrintRule() for repository reconstruction
+
+3. `backend/internal/domain/printing/events.go`
+   - Added AggregateTypeAutoPrintRule constant
+   - Added event type constants for AutoPrintRule
+   - Implemented AutoPrintRuleCreatedEvent
+   - Implemented AutoPrintRuleUpdatedEvent
+   - Implemented AutoPrintRuleEnabledEvent
+   - Implemented AutoPrintRuleDisabledEvent
+
+4. `backend/internal/domain/printing/repository.go`
+   - Added AutoPrintRuleRepository interface with methods:
+     - FindByID, FindByIDForTenant, FindAll, FindAllForTenant
+     - FindByDocTypeAndEvent, FindEnabledByDocTypeAndEvent
+     - FindEnabledForTenant, ExistsByDocTypeAndEvent
+     - Save, Delete, DeleteForTenant, Count, CountForTenant
+   - Added AutoPrintRuleFilter struct
+
+5. `backend/internal/infrastructure/persistence/models/printing.go`
+   - Added AutoPrintRuleModel GORM model
+   - Implemented ToDomain() and AutoPrintRuleModelFromDomain() conversion methods
+
+6. `backend/internal/infrastructure/persistence/auto_print_rule_repository.go` (NEW)
+   - Implemented GormAutoPrintRuleRepository
+   - Implemented all repository interface methods
+   - Added filter support for document_type, trigger_event, enabled, auto_print
+
+7. `backend/migrations/000046_create_auto_print_rules.up.sql` (NEW)
+   - Created auto_print_rules table with all required columns
+   - Added CHECK constraints for document_type, trigger_event, copies
+   - Added UNIQUE constraint on (tenant_id, document_type, trigger_event)
+   - Created indexes: idx_auto_print_rules_tenant, idx_auto_print_rules_lookup, idx_auto_print_rules_enabled
+   - Added updated_at trigger
+
+8. `backend/migrations/000046_create_auto_print_rules.down.sql` (NEW)
+   - Drop migration for auto_print_rules table
+
+9. `backend/internal/domain/printing/auto_print_rule_test.go` (NEW)
+   - Comprehensive unit tests for AutoPrintRule aggregate
+   - Tests for creation, validation, update, enable/disable
+   - Tests for ShouldTrigger() logic
+   - Tests for event-document type applicability
+
+10. `backend/internal/domain/printing/enums_test.go`
+    - Added tests for TriggerEvent enum
+    - Tests for IsValid(), DisplayName(), AllTriggerEvents()
+    - Tests for ApplicableDocTypes()
+
+=== Design Decisions ===
+
+1. **Event-Document Type Applicability**: Not all trigger events make sense for all document types. For example:
+   - SHIPPED only applies to sales documents (SalesOrder, SalesDelivery)
+   - RECEIVED only applies to purchase documents (PurchaseOrder, PurchaseReceiving)
+   - CREATED applies to all document types
+   This is enforced at the domain level during rule creation.
+
+2. **Uniqueness Constraint**: Each tenant can only have one rule per (DocumentType, TriggerEvent) combination. This is enforced both at the database level (UNIQUE constraint) and can be checked at the application level via ExistsByDocTypeAndEvent().
+
+3. **Optional Template ID**: TemplateID is optional (nullable). When nil, the system should use the default template for the document type.
+
+4. **Copies Range**: Limited to 1-100 to prevent accidental mass printing.
+
+5. **Enabled by Default**: New rules are enabled by default, but can be disabled without deletion.
+
+=== Verification ===
+
+- [x] All unit tests pass: `go test -v ./internal/domain/printing/...` (57 tests)
+- [x] Build compiles successfully: `go build ./...`
+- [x] No console.log/debug statements
+- [x] Code follows existing DDD patterns in the codebase
+
+=== Acceptance Criteria Met ===
+
+- [x] AutoPrintRule 聚合根包含所有必要字段（DocumentType, TriggerEvent, TemplateID, AutoPrint, Copies, PrinterName, Enabled）
+- [x] 所有业务规则验证通过单元测试
+- [x] Repository 接口定义完成
+- [x] 数据库迁移文件创建完成
+- [x] 唯一约束正确创建（tenant_id, document_type, trigger_event）
+- [x] 索引创建：idx_auto_print_rules_tenant, idx_auto_print_rules_lookup
+
+=== Notes ===
+
+- The repository implementation is ready but integration tests would require a running database
+- The TriggerEvent.ApplicableDocTypes() method provides a clear mapping of which events can be used with which document types
+- Domain events are emitted for all state changes (create, update, enable, disable)
+
+=== Next Steps ===
+
+1. P2-PRINT-002: Implement AutoPrintRule application service and HTTP handlers
+2. P2-PRINT-003: Implement event listeners to trigger auto-print when business events occur
+3. Consider adding a domain service to coordinate auto-print rule evaluation

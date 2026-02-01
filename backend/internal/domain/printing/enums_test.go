@@ -229,3 +229,79 @@ func TestJobStatus_CanTransitionTo(t *testing.T) {
 		})
 	}
 }
+
+func TestTriggerEvent_IsValid(t *testing.T) {
+	tests := []struct {
+		name     string
+		event    TriggerEvent
+		expected bool
+	}{
+		{"valid CREATED", TriggerEventCreated, true},
+		{"valid CONFIRMED", TriggerEventConfirmed, true},
+		{"valid SHIPPED", TriggerEventShipped, true},
+		{"valid RECEIVED", TriggerEventReceived, true},
+		{"valid COMPLETED", TriggerEventCompleted, true},
+		{"valid PAID", TriggerEventPaid, true},
+		{"invalid empty", TriggerEvent(""), false},
+		{"invalid unknown", TriggerEvent("CANCELLED"), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.event.IsValid())
+		})
+	}
+}
+
+func TestTriggerEvent_DisplayName(t *testing.T) {
+	tests := []struct {
+		event    TriggerEvent
+		expected string
+	}{
+		{TriggerEventCreated, "创建时"},
+		{TriggerEventConfirmed, "确认时"},
+		{TriggerEventShipped, "发货时"},
+		{TriggerEventReceived, "收货时"},
+		{TriggerEventCompleted, "完成时"},
+		{TriggerEventPaid, "付款时"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.event.String(), func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.event.DisplayName())
+		})
+	}
+}
+
+func TestAllTriggerEvents(t *testing.T) {
+	events := AllTriggerEvents()
+	assert.Len(t, events, 6)
+	for _, e := range events {
+		assert.True(t, e.IsValid())
+	}
+}
+
+func TestTriggerEvent_ApplicableDocTypes(t *testing.T) {
+	// CREATED should apply to all document types
+	createdTypes := TriggerEventCreated.ApplicableDocTypes()
+	assert.Len(t, createdTypes, 10) // All doc types
+
+	// SHIPPED should only apply to sales-related documents
+	shippedTypes := TriggerEventShipped.ApplicableDocTypes()
+	assert.Contains(t, shippedTypes, DocTypeSalesOrder)
+	assert.Contains(t, shippedTypes, DocTypeSalesDelivery)
+	assert.NotContains(t, shippedTypes, DocTypePurchaseOrder)
+
+	// RECEIVED should only apply to purchase-related documents
+	receivedTypes := TriggerEventReceived.ApplicableDocTypes()
+	assert.Contains(t, receivedTypes, DocTypePurchaseOrder)
+	assert.Contains(t, receivedTypes, DocTypePurchaseReceiving)
+	assert.NotContains(t, receivedTypes, DocTypeSalesOrder)
+
+	// CONFIRMED should apply to orders and vouchers
+	confirmedTypes := TriggerEventConfirmed.ApplicableDocTypes()
+	assert.Contains(t, confirmedTypes, DocTypeSalesOrder)
+	assert.Contains(t, confirmedTypes, DocTypePurchaseOrder)
+	assert.Contains(t, confirmedTypes, DocTypeReceiptVoucher)
+	assert.Contains(t, confirmedTypes, DocTypePaymentVoucher)
+}

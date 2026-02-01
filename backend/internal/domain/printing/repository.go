@@ -61,3 +61,56 @@ type PrintJobFilter struct {
 	DateFrom     *string    // Filter by date range start (YYYY-MM-DD)
 	DateTo       *string    // Filter by date range end (YYYY-MM-DD)
 }
+
+// AutoPrintRuleRepository defines the interface for auto print rule persistence
+type AutoPrintRuleRepository interface {
+	// FindByID finds a rule by ID
+	FindByID(ctx context.Context, id uuid.UUID) (*AutoPrintRule, error)
+
+	// FindByIDForTenant finds a rule by ID within a specific tenant
+	FindByIDForTenant(ctx context.Context, tenantID, id uuid.UUID) (*AutoPrintRule, error)
+
+	// FindAll finds all rules with optional filtering
+	FindAll(ctx context.Context, filter shared.Filter) ([]AutoPrintRule, error)
+
+	// FindAllForTenant finds all rules for a specific tenant
+	FindAllForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) ([]AutoPrintRule, error)
+
+	// FindByDocTypeAndEvent finds a rule by document type and trigger event for a tenant
+	// Returns nil if no rule exists for the combination
+	FindByDocTypeAndEvent(ctx context.Context, tenantID uuid.UUID, docType DocType, event TriggerEvent) (*AutoPrintRule, error)
+
+	// FindEnabledByDocTypeAndEvent finds an enabled rule by document type and trigger event
+	// This is the primary method used when checking if auto-print should trigger
+	FindEnabledByDocTypeAndEvent(ctx context.Context, tenantID uuid.UUID, docType DocType, event TriggerEvent) (*AutoPrintRule, error)
+
+	// FindEnabledForTenant finds all enabled rules for a tenant
+	FindEnabledForTenant(ctx context.Context, tenantID uuid.UUID) ([]AutoPrintRule, error)
+
+	// ExistsByDocTypeAndEvent checks if a rule exists for the given combination
+	// Used to enforce uniqueness constraint at the application level
+	ExistsByDocTypeAndEvent(ctx context.Context, tenantID uuid.UUID, docType DocType, event TriggerEvent) (bool, error)
+
+	// Save saves a rule (insert or update)
+	Save(ctx context.Context, rule *AutoPrintRule) error
+
+	// Delete deletes a rule by ID
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// DeleteForTenant deletes a rule by ID within a specific tenant
+	DeleteForTenant(ctx context.Context, tenantID, id uuid.UUID) error
+
+	// Count returns the total count of rules matching the filter
+	Count(ctx context.Context, filter shared.Filter) (int64, error)
+
+	// CountForTenant returns the total count of rules for a tenant
+	CountForTenant(ctx context.Context, tenantID uuid.UUID, filter shared.Filter) (int64, error)
+}
+
+// AutoPrintRuleFilter extends the standard filter with auto print rule specific criteria
+type AutoPrintRuleFilter struct {
+	shared.Filter
+	DocumentType *DocType      // Filter by document type
+	TriggerEvent *TriggerEvent // Filter by trigger event
+	Enabled      *bool         // Filter by enabled status
+}

@@ -79,3 +79,63 @@ func PrintJobModelFromDomain(j *printing.PrintJob) *PrintJobModel {
 		Version:        j.Version,
 	}
 }
+
+// AutoPrintRuleModel is the GORM model for auto_print_rules table
+type AutoPrintRuleModel struct {
+	ID           uuid.UUID  `gorm:"type:uuid;primary_key"`
+	TenantID     uuid.UUID  `gorm:"type:uuid;not null;index:idx_auto_print_rules_tenant"`
+	DocumentType string     `gorm:"column:document_type;type:varchar(50);not null"`
+	TriggerEvent string     `gorm:"column:trigger_event;type:varchar(50);not null"`
+	TemplateID   *uuid.UUID `gorm:"column:template_id;type:uuid"`
+	AutoPrint    bool       `gorm:"column:auto_print;not null;default:false"`
+	Copies       int        `gorm:"not null;default:1"`
+	PrinterName  string     `gorm:"column:printer_name;type:varchar(100)"`
+	Enabled      bool       `gorm:"not null;default:true"`
+	CreatedAt    time.Time  `gorm:"not null"`
+	UpdatedAt    time.Time  `gorm:"not null"`
+	Version      int        `gorm:"not null;default:1"`
+}
+
+// TableName returns the table name for AutoPrintRuleModel
+func (AutoPrintRuleModel) TableName() string {
+	return "auto_print_rules"
+}
+
+// ToDomain converts AutoPrintRuleModel to domain AutoPrintRule
+func (m *AutoPrintRuleModel) ToDomain() *printing.AutoPrintRule {
+	return printing.ReconstructAutoPrintRule(
+		m.ID,
+		m.TenantID,
+		printing.DocType(m.DocumentType),
+		printing.TriggerEvent(m.TriggerEvent),
+		m.TemplateID,
+		m.AutoPrint,
+		m.Copies,
+		m.PrinterName,
+		m.Enabled,
+		m.Version,
+		shared.BaseEntity{
+			ID:        m.ID,
+			CreatedAt: m.CreatedAt,
+			UpdatedAt: m.UpdatedAt,
+		},
+	)
+}
+
+// AutoPrintRuleModelFromDomain creates an AutoPrintRuleModel from domain AutoPrintRule
+func AutoPrintRuleModelFromDomain(r *printing.AutoPrintRule) *AutoPrintRuleModel {
+	return &AutoPrintRuleModel{
+		ID:           r.ID,
+		TenantID:     r.TenantID,
+		DocumentType: string(r.DocumentType),
+		TriggerEvent: string(r.TriggerEvent),
+		TemplateID:   r.TemplateID,
+		AutoPrint:    r.AutoPrint,
+		Copies:       r.Copies,
+		PrinterName:  r.PrinterName,
+		Enabled:      r.Enabled,
+		CreatedAt:    r.CreatedAt,
+		UpdatedAt:    r.UpdatedAt,
+		Version:      r.Version,
+	}
+}
