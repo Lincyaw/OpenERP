@@ -45,15 +45,15 @@ func PrintingWSRoutes(wsHandler *PrintingWSHandler, authMiddleware gin.HandlerFu
 }
 
 // AutoPrintRuleRoutes creates the route group for auto print rule endpoints
-// Note: These endpoints require admin role for modification operations
+// Note: Write operations (create, update, delete, enable, disable) require admin role
 func AutoPrintRuleRoutes(handler *AutoPrintRuleHandler, authMiddleware gin.HandlerFunc) *router.DomainGroup {
 	group := router.NewDomainGroup("printing-auto-rules", "/printing")
 	group.Use(authMiddleware)
 
-	// Auto print rule CRUD endpoints
-	// POST /api/v1/printing/auto-rules - Create rule (admin only)
-	group.POST("/auto-rules", handler.CreateRule)
+	// Admin middleware for write operations
+	adminOnly := RequireAdminRole()
 
+	// Read-only endpoints (all authenticated users)
 	// GET /api/v1/printing/auto-rules - List rules
 	group.GET("/auto-rules", handler.ListRules)
 
@@ -66,17 +66,21 @@ func AutoPrintRuleRoutes(handler *AutoPrintRuleHandler, authMiddleware gin.Handl
 	// GET /api/v1/printing/auto-rules/:id - Get rule by ID
 	group.GET("/auto-rules/:id", handler.GetRule)
 
-	// PUT /api/v1/printing/auto-rules/:id - Update rule (admin only)
-	group.PUT("/auto-rules/:id", handler.UpdateRule)
+	// Write endpoints (admin only)
+	// POST /api/v1/printing/auto-rules - Create rule
+	group.POST("/auto-rules", adminOnly, handler.CreateRule)
 
-	// DELETE /api/v1/printing/auto-rules/:id - Delete rule (admin only)
-	group.DELETE("/auto-rules/:id", handler.DeleteRule)
+	// PUT /api/v1/printing/auto-rules/:id - Update rule
+	group.PUT("/auto-rules/:id", adminOnly, handler.UpdateRule)
 
-	// POST /api/v1/printing/auto-rules/:id/enable - Enable rule (admin only)
-	group.POST("/auto-rules/:id/enable", handler.EnableRule)
+	// DELETE /api/v1/printing/auto-rules/:id - Delete rule
+	group.DELETE("/auto-rules/:id", adminOnly, handler.DeleteRule)
 
-	// POST /api/v1/printing/auto-rules/:id/disable - Disable rule (admin only)
-	group.POST("/auto-rules/:id/disable", handler.DisableRule)
+	// POST /api/v1/printing/auto-rules/:id/enable - Enable rule
+	group.POST("/auto-rules/:id/enable", adminOnly, handler.EnableRule)
+
+	// POST /api/v1/printing/auto-rules/:id/disable - Disable rule
+	group.POST("/auto-rules/:id/disable", adminOnly, handler.DisableRule)
 
 	return group
 }

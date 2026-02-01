@@ -213,6 +213,9 @@ func (h *AutoPrintRuleHandler) ListRules(c *gin.Context) {
 	if req.PageSize < 1 {
 		req.PageSize = 20
 	}
+	if req.PageSize > 100 {
+		req.PageSize = 100
+	}
 
 	result, err := h.service.ListRules(c.Request.Context(), tenantID, req)
 	if err != nil {

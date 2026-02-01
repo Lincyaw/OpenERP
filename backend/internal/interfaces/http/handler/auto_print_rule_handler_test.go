@@ -609,3 +609,92 @@ func TestAutoPrintRuleHandler_GetTriggerEvents(t *testing.T) {
 		assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
 	})
 }
+
+// ============================================================================
+// RequireAdminRole Middleware Tests
+// ============================================================================
+
+func TestRequireAdminRole(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	t.Run("allows admin role", func(t *testing.T) {
+		r := gin.New()
+		r.Use(func(c *gin.Context) {
+			c.Set("user_roles", []string{"admin"})
+			c.Next()
+		})
+		r.GET("/test", RequireAdminRole(), func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		})
+
+		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("allows super_admin role", func(t *testing.T) {
+		r := gin.New()
+		r.Use(func(c *gin.Context) {
+			c.Set("user_roles", []string{"super_admin"})
+			c.Next()
+		})
+		r.GET("/test", RequireAdminRole(), func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		})
+
+		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+	})
+
+	t.Run("denies non-admin role", func(t *testing.T) {
+		r := gin.New()
+		r.Use(func(c *gin.Context) {
+			c.Set("user_roles", []string{"user", "viewer"})
+			c.Next()
+		})
+		r.GET("/test", RequireAdminRole(), func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		})
+
+		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusForbidden, w.Code)
+	})
+
+	t.Run("denies when roles not in context", func(t *testing.T) {
+		r := gin.New()
+		r.GET("/test", RequireAdminRole(), func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		})
+
+		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusForbidden, w.Code)
+	})
+
+	t.Run("denies when roles is wrong type", func(t *testing.T) {
+		r := gin.New()
+		r.Use(func(c *gin.Context) {
+			c.Set("user_roles", "admin") // Wrong type: string instead of []string
+			c.Next()
+		})
+		r.GET("/test", RequireAdminRole(), func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		})
+
+		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusForbidden, w.Code)
+	})
+}
