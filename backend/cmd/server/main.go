@@ -732,6 +732,24 @@ func main() {
 	outboxHandler := handler.NewOutboxHandler(outboxService)
 	featureFlagHandler := handler.NewFeatureFlagHandler(flagService, evaluationService, overrideService)
 	printHandler := handler.NewPrintHandler(printService, pdfStorage)
+
+	// Initialize Printing WebSocket handler for real-time event push
+	var printingWSHandler *handler.PrintingWSHandler
+	printingWSHandler = handler.NewPrintingWSHandler(
+		eventBus,
+		jwtService,
+		handler.WithPrintingWSLogger(log),
+		handler.WithPrintingWSMaxClients(100),
+	)
+	// Start the WebSocket handler to begin listening for events
+	if err := printingWSHandler.Start(); err != nil {
+		log.Warn("Failed to start printing WebSocket handler, real-time printing events disabled", zap.Error(err))
+		printingWSHandler = nil
+	} else {
+		log.Info("Printing WebSocket handler started",
+			zap.Strings("event_types", printingWSHandler.EventTypes()))
+	}
+
 	planFeatureHandler := handler.NewPlanFeatureHandler(tenantRepo, planFeatureRepo)
 	usageHandler := handler.NewUsageHandler(tenantRepo, userRepo, warehouseRepo, productRepo)
 	subscriptionHandler := handler.NewSubscriptionHandler(tenantRepo, planFeatureRepo, userRepo, warehouseRepo, productRepo)
@@ -1475,6 +1493,13 @@ func main() {
 	printRoutes := handler.PrintRoutes(printHandler, printJWTMiddleware)
 	r.Register(printRoutes)
 
+	// Printing WebSocket routes for real-time event push
+	// Note: WebSocket endpoint handles its own auth via query param for clients that can't set headers
+	if printingWSHandler != nil {
+		printingWSRoutes := handler.PrintingWSRoutes(printingWSHandler, printJWTMiddleware)
+		r.Register(printingWSRoutes)
+	}
+
 	// Setup routes
 	r.Setup()
 
@@ -1521,6 +1546,13 @@ func main() {
 		featureFlagSSEHandler.Stop()
 		log.Info("Feature Flag SSE handler stopped")
 	}
+
+	// Stop Printing WebSocket handler
+	if printingWSHandler != nil {
+		printingWSHandler.Stop()
+		log.Info("Printing WebSocket handler stopped")
+	}
+
 	// Close Redis cache invalidator
 	if redisCacheInvalidator != nil {
 		if err := redisCacheInvalidator.Close(); err != nil {
