@@ -390,7 +390,7 @@
       "中间件性能开销 < 1ms",
       "单元测试覆盖率 >= 80%"
     ],
-    "status": "pending",
+    "status": "completed",
     "passes": true
   },
   {
