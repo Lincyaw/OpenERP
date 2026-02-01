@@ -13357,7 +13357,7 @@
       "中英文国际化正常"
     ],
     "context": "UpgradePlan 页面目前使用硬编码的 mock 数据，需要集成真实的订阅 API 来显示用户实际的订阅状态和配额使用情况。",
-    "passes": false
+    "passes": true
   },
   {
     "id": "BILLING-FE-002",

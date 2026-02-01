@@ -1,16 +1,33 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, Typography, Button, Toast, Tag, Spin, Banner } from '@douyinfe/semi-ui-19'
+import {
+  Card,
+  Typography,
+  Button,
+  Toast,
+  Tag,
+  Spin,
+  Banner,
+  Skeleton,
+  Progress,
+} from '@douyinfe/semi-ui-19'
 import { IconTick, IconCrown, IconStar, IconVerify } from '@douyinfe/semi-icons'
 
 import { Container } from '@/components/common/layout'
+import {
+  useGetCurrentSubscription,
+  useGetPlans,
+  type SubscriptionQuota,
+  type SubscriptionPlan,
+  type CurrentSubscriptionResponse,
+} from '@/api/billing'
 
 import './UpgradePlan.css'
 
 const { Title, Text } = Typography
 
 /**
- * Plan tier definition
+ * Plan tier definition for display
  */
 interface PlanTier {
   id: string
@@ -25,25 +42,131 @@ interface PlanTier {
 }
 
 /**
+ * Get icon for plan
+ */
+const getPlanIcon = (planId: string): React.ReactNode => {
+  switch (planId) {
+    case 'free':
+      return <IconStar size="large" />
+    case 'basic':
+      return <IconVerify size="large" />
+    case 'pro':
+    case 'enterprise':
+      return <IconCrown size="large" />
+    default:
+      return <IconStar size="large" />
+  }
+}
+
+/**
+ * Format quota display
+ */
+const formatQuotaDisplay = (quota: SubscriptionQuota, t: (key: string) => string): string => {
+  const typeLabels: Record<string, string> = {
+    users: t('usage.metrics.users'),
+    warehouses: t('usage.metrics.warehouses'),
+    products: t('usage.metrics.products'),
+  }
+
+  const label = typeLabels[quota.type] || quota.type
+
+  if (quota.limit === -1) {
+    return `${label}: ${t('usage.unlimited')}`
+  }
+
+  return `${label}: ${quota.used}/${quota.limit}`
+}
+
+/**
+ * Calculate quota percentage
+ */
+const getQuotaPercentage = (quota: SubscriptionQuota): number => {
+  if (quota.limit === -1 || quota.limit === 0) {
+    return 0
+  }
+  return Math.min(100, Math.round((quota.used / quota.limit) * 100))
+}
+
+/**
+ * Get progress bar status based on percentage
+ */
+const getProgressStatus = (percentage: number): 'success' | 'warning' | 'exception' => {
+  if (percentage >= 90) return 'exception'
+  if (percentage >= 70) return 'warning'
+  return 'success'
+}
+
+/**
  * Subscription Upgrade Plan Page
  *
  * Features:
- * - Display available subscription plans
- * - Show current plan status
+ * - Display available subscription plans from API
+ * - Show current plan status with quota usage
  * - Allow plan selection and upgrade
  * - Integrate with Stripe for payment
  */
 export default function UpgradePlanPage() {
   const { t } = useTranslation('system')
 
+  // API queries
+  const {
+    data: subscriptionResponse,
+    isLoading: isLoadingSubscription,
+    error: subscriptionError,
+  } = useGetCurrentSubscription()
+
+  const { data: plansResponse, isLoading: isLoadingPlans, error: plansError } = useGetPlans()
+
   // State
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [currentPlan] = useState<string>('free') // TODO: Get from API
+  const [isUpgrading, setIsUpgrading] = useState(false)
 
-  // Plan definitions
-  const plans: PlanTier[] = useMemo(
-    () => [
+  // Extract data from responses
+  const currentSubscription: CurrentSubscriptionResponse | null = useMemo(() => {
+    if (subscriptionResponse?.status === 200) {
+      return subscriptionResponse.data.data
+    }
+    return null
+  }, [subscriptionResponse])
+
+  const availablePlans: SubscriptionPlan[] = useMemo(() => {
+    if (plansResponse?.status === 200) {
+      return plansResponse.data.data.plans || []
+    }
+    return []
+  }, [plansResponse])
+
+  const currentPlanId = currentSubscription?.plan_id || 'free'
+
+  // Show error toast on API errors
+  useEffect(() => {
+    if (subscriptionError) {
+      Toast.error(t('billing.messages.loadError'))
+    }
+    if (plansError) {
+      Toast.error(t('billing.messages.loadError'))
+    }
+  }, [subscriptionError, plansError, t])
+
+  // Convert API plans to display format, with fallback to hardcoded plans
+  const plans: PlanTier[] = useMemo(() => {
+    // If we have API plans, use them
+    if (availablePlans.length > 0) {
+      return availablePlans.map((plan) => ({
+        id: plan.id,
+        name: plan.name,
+        price: plan.price,
+        priceUnit: plan.price_unit || t('subscription.priceUnit'),
+        description: plan.description,
+        features: plan.features.filter((f) => f.enabled).map((f) => f.name),
+        highlighted: plan.highlighted,
+        current: plan.id === currentPlanId,
+        icon: getPlanIcon(plan.id),
+      }))
+    }
+
+    // Fallback to hardcoded plans if API not available
+    return [
       {
         id: 'free',
         name: t('subscription.plans.free.name'),
@@ -56,7 +179,7 @@ export default function UpgradePlanPage() {
           t('subscription.plans.free.features.orders'),
           t('subscription.plans.free.features.support'),
         ],
-        current: currentPlan === 'free',
+        current: currentPlanId === 'free',
         icon: <IconStar size="large" />,
       },
       {
@@ -72,7 +195,7 @@ export default function UpgradePlanPage() {
           t('subscription.plans.basic.features.support'),
           t('subscription.plans.basic.features.reports'),
         ],
-        current: currentPlan === 'basic',
+        current: currentPlanId === 'basic',
         icon: <IconVerify size="large" />,
       },
       {
@@ -91,13 +214,13 @@ export default function UpgradePlanPage() {
           t('subscription.plans.pro.features.integrations'),
         ],
         highlighted: true,
-        current: currentPlan === 'pro',
+        current: currentPlanId === 'pro',
         icon: <IconCrown size="large" />,
       },
       {
         id: 'enterprise',
         name: t('subscription.plans.enterprise.name'),
-        price: -1, // Custom pricing
+        price: -1,
         priceUnit: t('subscription.priceUnit'),
         description: t('subscription.plans.enterprise.description'),
         features: [
@@ -111,12 +234,11 @@ export default function UpgradePlanPage() {
           t('subscription.plans.enterprise.features.sla'),
           t('subscription.plans.enterprise.features.custom'),
         ],
-        current: currentPlan === 'enterprise',
+        current: currentPlanId === 'enterprise',
         icon: <IconCrown size="large" />,
       },
-    ],
-    [t, currentPlan]
-  )
+    ]
+  }, [availablePlans, currentPlanId, t])
 
   // Handle plan selection
   const handleSelectPlan = useCallback((planId: string) => {
@@ -125,17 +247,16 @@ export default function UpgradePlanPage() {
 
   // Handle upgrade/subscribe
   const handleUpgrade = useCallback(async () => {
-    if (!selectedPlan || selectedPlan === currentPlan) {
+    if (!selectedPlan || selectedPlan === currentPlanId) {
       return
     }
 
     if (selectedPlan === 'enterprise') {
-      // Contact sales for enterprise
       Toast.info(t('subscription.messages.contactSales'))
       return
     }
 
-    setIsLoading(true)
+    setIsUpgrading(true)
 
     try {
       // TODO: Integrate with Stripe Checkout
@@ -150,13 +271,12 @@ export default function UpgradePlanPage() {
     } catch {
       Toast.error(t('subscription.messages.upgradeError'))
     } finally {
-      setIsLoading(false)
+      setIsUpgrading(false)
     }
-  }, [selectedPlan, currentPlan, t])
+  }, [selectedPlan, currentPlanId, t])
 
   // Handle contact sales
   const handleContactSales = useCallback(() => {
-    // Open contact form or email
     window.open('mailto:sales@example.com?subject=Enterprise Plan Inquiry', '_blank')
   }, [])
 
@@ -180,10 +300,48 @@ export default function UpgradePlanPage() {
   // Check if plan is selectable
   const isPlanSelectable = useCallback(
     (plan: PlanTier) => {
-      return !plan.current && plan.id !== currentPlan
+      return !plan.current && plan.id !== currentPlanId
     },
-    [currentPlan]
+    [currentPlanId]
   )
+
+  // Loading state
+  const isLoading = isLoadingSubscription || isLoadingPlans
+
+  // Render loading skeleton
+  if (isLoading) {
+    return (
+      <Container size="lg" className="upgrade-plan-page">
+        <div className="upgrade-plan-header">
+          <Skeleton.Title style={{ width: 200, margin: '0 auto' }} />
+          <Skeleton.Paragraph rows={1} style={{ width: 300, margin: '16px auto 0' }} />
+        </div>
+
+        <Skeleton.Paragraph rows={2} style={{ marginBottom: 24 }} />
+
+        <div className="plan-cards-container">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="plan-card">
+              <Skeleton.Avatar size="large" style={{ marginBottom: 16 }} />
+              <Skeleton.Title style={{ width: 100, marginBottom: 8 }} />
+              <Skeleton.Title style={{ width: 80, marginBottom: 16 }} />
+              <Skeleton.Paragraph rows={4} />
+              <Skeleton.Button style={{ width: '100%', marginTop: 16 }} />
+            </Card>
+          ))}
+        </div>
+      </Container>
+    )
+  }
+
+  // Error state
+  if (subscriptionError && plansError) {
+    return (
+      <Container size="lg" className="upgrade-plan-page">
+        <Banner type="danger" description={t('billing.messages.loadError')} closeIcon={null} />
+      </Container>
+    )
+  }
 
   return (
     <Container size="lg" className="upgrade-plan-page">
@@ -192,12 +350,75 @@ export default function UpgradePlanPage() {
         <Text type="tertiary">{t('subscription.subtitle')}</Text>
       </div>
 
-      {/* Current Plan Banner */}
+      {/* Current Plan Banner with Quota Usage */}
       <Banner
         type="info"
-        description={t('subscription.currentPlanBanner', {
-          plan: plans.find((p) => p.current)?.name || 'Free',
-        })}
+        description={
+          <div className="current-plan-info">
+            <div className="current-plan-text">
+              {t('subscription.currentPlanBanner', {
+                plan:
+                  currentSubscription?.plan_name || plans.find((p) => p.current)?.name || 'Free',
+              })}
+              {currentSubscription?.status === 'trial' && currentSubscription.trial_ends_at && (
+                <Tag color="orange" style={{ marginLeft: 8 }}>
+                  {t('subscriptionPage.trialBanner', {
+                    days: Math.ceil(
+                      (new Date(currentSubscription.trial_ends_at).getTime() - Date.now()) /
+                        (1000 * 60 * 60 * 24)
+                    ),
+                  })}
+                </Tag>
+              )}
+            </div>
+
+            {/* Quota Usage Progress Bars */}
+            {currentSubscription?.quotas && currentSubscription.quotas.length > 0 && (
+              <div className="quota-usage-section">
+                <Text strong style={{ marginBottom: 8, display: 'block' }}>
+                  {t('subscriptionPage.resourceUsage')}
+                </Text>
+                <div className="quota-progress-list">
+                  {currentSubscription.quotas.map((quota) => {
+                    const percentage = getQuotaPercentage(quota)
+                    const isUnlimited = quota.limit === -1
+
+                    return (
+                      <div key={quota.type} className="quota-progress-item">
+                        <div className="quota-progress-header">
+                          <Text>{formatQuotaDisplay(quota, t)}</Text>
+                          {!isUnlimited && <Text type="tertiary">{percentage}%</Text>}
+                        </div>
+                        {!isUnlimited && (
+                          <Progress
+                            percent={percentage}
+                            showInfo={false}
+                            size="small"
+                            stroke={
+                              getProgressStatus(percentage) === 'exception'
+                                ? 'var(--semi-color-danger)'
+                                : getProgressStatus(percentage) === 'warning'
+                                  ? 'var(--semi-color-warning)'
+                                  : 'var(--semi-color-success)'
+                            }
+                          />
+                        )}
+                        {isUnlimited && (
+                          <Progress
+                            percent={100}
+                            showInfo={false}
+                            size="small"
+                            stroke="var(--semi-color-primary)"
+                          />
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        }
         className="current-plan-banner"
       />
 
@@ -286,7 +507,7 @@ export default function UpgradePlanPage() {
       </div>
 
       {/* Upgrade Action */}
-      {selectedPlan && selectedPlan !== currentPlan && selectedPlan !== 'enterprise' && (
+      {selectedPlan && selectedPlan !== currentPlanId && selectedPlan !== 'enterprise' && (
         <div className="upgrade-action-container">
           <Card className="upgrade-action-card">
             <div className="upgrade-action-content">
@@ -302,10 +523,10 @@ export default function UpgradePlanPage() {
                 theme="solid"
                 type="primary"
                 size="large"
-                loading={isLoading}
+                loading={isUpgrading}
                 onClick={handleUpgrade}
               >
-                {isLoading ? <Spin /> : t('subscription.proceedToPayment')}
+                {isUpgrading ? <Spin /> : t('subscription.proceedToPayment')}
               </Button>
             </div>
           </Card>

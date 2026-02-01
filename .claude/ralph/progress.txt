@@ -43719,3 +43719,91 @@ Routes to hide (via hideInMenu: true):
 - BILLING-FE-001: Integrate UpgradePlan page with real API
 - BILLING-FE-002: Display subscription overview in Settings page
 
+
+---
+
+## 2026-02-01 - BILLING-FE-001: UpgradePlan Page Integration with Real Subscription API
+
+### Task ID: BILLING-FE-001
+### Status: Complete
+
+=== Implementation Details ===
+
+**Modified Files:**
+
+1. `frontend/src/api/billing/billing.ts`
+   - Added subscription types: SubscriptionStatus, QuotaType, SubscriptionQuota, SubscriptionFeatures
+   - Added CurrentSubscriptionResponse type for GET /billing/subscription/current
+   - Added SubscriptionPlan, PlanQuota, PlanFeature types for GET /billing/plans
+   - Added PlansListResponse type
+   - Added API functions: getCurrentSubscription(), getPlans()
+   - Added React Query hooks: useGetCurrentSubscription(), useGetPlans()
+   - Added query key functions for cache management
+
+2. `frontend/src/pages/user/UpgradePlan.tsx`
+   - Integrated useGetCurrentSubscription() and useGetPlans() hooks
+   - Added loading state with Skeleton components for all plan cards
+   - Added error handling with Toast notifications and Banner for critical errors
+   - Added quota usage display with Progress bars showing used/limit
+   - Added color-coded progress bars (green/yellow/red based on usage percentage)
+   - Added trial status display with days remaining
+   - Maintained fallback to hardcoded plans when API unavailable
+   - Preserved all existing functionality (plan selection, upgrade flow, FAQ)
+
+3. `frontend/src/pages/user/UpgradePlan.css`
+   - Added styles for quota usage section
+   - Added responsive grid layout for quota progress bars
+   - Added styles for current plan info display
+
+=== API Integration ===
+
+**Endpoints Used:**
+- GET /billing/subscription/current - Returns current tenant subscription with quotas and features
+- GET /billing/plans - Returns list of available subscription plans (pending BILLING-BE-002)
+
+**Response Handling:**
+- Graceful degradation when APIs fail (falls back to hardcoded plans)
+- Error toasts for API failures
+- Loading skeletons during data fetch
+
+=== Design Decisions ===
+
+1. **Fallback Strategy**: When API returns error or empty data, the page falls back to hardcoded plan definitions to ensure the page remains functional.
+
+2. **Quota Display**: Quotas are displayed in the current plan banner with progress bars. Unlimited quotas (-1) show a full blue bar instead of percentage.
+
+3. **Progress Bar Colors**: 
+   - Green (success): < 70% usage
+   - Yellow (warning): 70-89% usage
+   - Red (exception): >= 90% usage
+
+4. **Trial Status**: When subscription status is "trial", displays a tag showing days remaining until trial ends.
+
+5. **React Query Integration**: Used React Query hooks for automatic caching, refetching, and loading state management.
+
+=== Verification ===
+
+- [x] TypeScript type checking passes: `npm run type-check`
+- [x] ESLint passes for modified files
+- [x] Production build succeeds: `npm run build`
+- [x] No console.log statements in code
+- [x] Existing i18n translations used correctly
+
+=== Acceptance Criteria Met ===
+
+- [x] 页面从 API 获取当前订阅信息 (Page fetches current subscription from API)
+- [x] 页面从 API 获取可用计划列表 (Page fetches available plans from API - with fallback)
+- [x] 显示真实的配额使用情况 (Displays real quota usage)
+- [x] 加载状态和错误处理完善 (Loading states and error handling complete)
+- [x] 中英文国际化正常 (i18n works correctly)
+
+=== Dependencies ===
+
+- BILLING-BE-001: ✅ Complete (GET /billing/subscription/current)
+- BILLING-BE-002: ❌ Pending (GET /billing/plans) - Frontend has fallback
+
+=== Next Steps ===
+
+1. BILLING-BE-002: Implement GET /api/v1/billing/plans API to provide dynamic plan list
+2. BILLING-FE-002: Display subscription overview in Settings page
+3. Consider adding real Stripe checkout integration for upgrade flow

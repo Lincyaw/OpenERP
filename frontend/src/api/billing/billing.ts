@@ -449,3 +449,223 @@ export const downloadInvoicePdf = async (invoiceId: string, invoiceNumber: strin
     return { success: false, error: String(error) }
   }
 }
+
+// ============================================================================
+// Subscription Types
+// ============================================================================
+
+/**
+ * Subscription status
+ */
+export type SubscriptionStatus = 'active' | 'cancelled' | 'expired' | 'trial'
+
+/**
+ * Quota type
+ */
+export type QuotaType = 'users' | 'warehouses' | 'products'
+
+/**
+ * Subscription quota with usage information
+ */
+export interface SubscriptionQuota {
+  type: QuotaType
+  limit: number // -1 for unlimited
+  used: number
+  remaining: number // -1 for unlimited
+  unit: string
+  reset_period: string
+}
+
+/**
+ * Subscription features map
+ */
+export interface SubscriptionFeatures {
+  multi_warehouse: boolean
+  api_access: boolean
+  advanced_reports: boolean
+  custom_branding: boolean
+  priority_support: boolean
+  sso: boolean
+  audit_logs: boolean
+  data_export: boolean
+  [key: string]: boolean
+}
+
+/**
+ * Current subscription response
+ */
+export interface CurrentSubscriptionResponse {
+  plan_id: string
+  plan_name: string
+  status: SubscriptionStatus
+  period_start?: string
+  period_end?: string
+  trial_ends_at?: string
+  quotas: SubscriptionQuota[]
+  features: SubscriptionFeatures
+}
+
+/**
+ * Plan quota definition
+ */
+export interface PlanQuota {
+  type: QuotaType
+  limit: number
+  unit: string
+}
+
+/**
+ * Plan feature definition
+ */
+export interface PlanFeature {
+  key: string
+  name: string
+  enabled: boolean
+}
+
+/**
+ * Subscription plan
+ */
+export interface SubscriptionPlan {
+  id: string
+  name: string
+  description: string
+  price: number
+  price_unit: string
+  quotas: PlanQuota[]
+  features: PlanFeature[]
+  highlighted: boolean
+}
+
+/**
+ * Plans list response
+ */
+export interface PlansListResponse {
+  plans: SubscriptionPlan[]
+}
+
+// ============================================================================
+// Subscription Response Types
+// ============================================================================
+
+export type GetCurrentSubscriptionResponse200 = {
+  data: APIResponse<CurrentSubscriptionResponse>
+  status: 200
+}
+
+export type GetCurrentSubscriptionResponseSuccess = GetCurrentSubscriptionResponse200 & {
+  headers: Headers
+}
+
+export type GetCurrentSubscriptionResponse =
+  | GetCurrentSubscriptionResponseSuccess
+  | GetBillingHistoryResponseError
+
+export type GetPlansResponse200 = {
+  data: APIResponse<PlansListResponse>
+  status: 200
+}
+
+export type GetPlansResponseSuccess = GetPlansResponse200 & {
+  headers: Headers
+}
+
+export type GetPlansResponse = GetPlansResponseSuccess | GetBillingHistoryResponseError
+
+// ============================================================================
+// Subscription API Functions
+// ============================================================================
+
+/**
+ * Get current subscription
+ */
+export const getCurrentSubscriptionUrl = () => `/billing/subscription/current`
+
+export const getCurrentSubscription = async (
+  options?: RequestInit
+): Promise<GetCurrentSubscriptionResponse> => {
+  return customInstance<GetCurrentSubscriptionResponse>(getCurrentSubscriptionUrl(), {
+    ...options,
+    method: 'GET',
+  })
+}
+
+/**
+ * Get available plans
+ */
+export const getPlansUrl = () => `/billing/plans`
+
+export const getPlans = async (options?: RequestInit): Promise<GetPlansResponse> => {
+  return customInstance<GetPlansResponse>(getPlansUrl(), {
+    ...options,
+    method: 'GET',
+  })
+}
+
+// ============================================================================
+// Subscription React Query Hooks
+// ============================================================================
+
+export const getGetCurrentSubscriptionQueryKey = () => {
+  return ['getCurrentSubscription'] as const
+}
+
+export type GetCurrentSubscriptionQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCurrentSubscription>>
+>
+export type GetCurrentSubscriptionQueryError = GetBillingHistoryResponseError
+
+/**
+ * Hook to get current subscription
+ */
+export const useGetCurrentSubscription = <
+  TData = Awaited<ReturnType<typeof getCurrentSubscription>>,
+  TError = GetBillingHistoryResponseError,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getCurrentSubscription>>, TError, TData>
+  >
+}): UseQueryResult<TData, TError> => {
+  const { query: queryOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetCurrentSubscriptionQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentSubscription>>> = ({ signal }) =>
+    getCurrentSubscription({ signal })
+
+  return useQuery({
+    queryKey,
+    queryFn,
+    ...queryOptions,
+  })
+}
+
+export const getGetPlansQueryKey = () => {
+  return ['getPlans'] as const
+}
+
+export type GetPlansQueryResult = NonNullable<Awaited<ReturnType<typeof getPlans>>>
+export type GetPlansQueryError = GetBillingHistoryResponseError
+
+/**
+ * Hook to get available plans
+ */
+export const useGetPlans = <
+  TData = Awaited<ReturnType<typeof getPlans>>,
+  TError = GetBillingHistoryResponseError,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlans>>, TError, TData>>
+}): UseQueryResult<TData, TError> => {
+  const { query: queryOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetPlansQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPlans>>> = ({ signal }) =>
+    getPlans({ signal })
+
+  return useQuery({
+    queryKey,
+    queryFn,
+    ...queryOptions,
+  })
+}
