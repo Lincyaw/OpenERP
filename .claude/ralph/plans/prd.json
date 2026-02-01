@@ -47,7 +47,7 @@
       "支持至少 100 个并发 WebSocket 连接",
       "通过集成测试验证事件推送功能"
     ],
-    "status": "pending",
+    "status": "pass",
     "passes": true
   },
   {
