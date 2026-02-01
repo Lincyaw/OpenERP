@@ -13385,6 +13385,6 @@
       "导航按钮正常工作"
     ],
     "context": "Settings 页面已有订阅与计费区域，但显示的是静态文本，需要集成 API 显示真实数据。",
-    "passes": false
+    "passes": true
   }
 ]

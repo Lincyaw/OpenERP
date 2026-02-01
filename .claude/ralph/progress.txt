@@ -44013,3 +44013,87 @@ Routes to hide (via hideInMenu: true):
 1. Fix swagger generation issue (separate task)
 2. Frontend can now use this API to dynamically display subscription plans
 3. Consider adding plan comparison endpoint if needed
+
+---
+
+2025-02-01 - BILLING-FE-002: 在 Settings 页面显示订阅概览
+
+### Task ID: BILLING-FE-002
+### Status: Complete
+
+=== Implementation Details ===
+
+**Goal:** Display real subscription data in the Settings page's subscription & billing section, including plan name, status, and key quota usage.
+
+**Modified Files:**
+
+1. `frontend/src/pages/user/Settings.tsx`
+   - Replaced `useGetCurrentUsage` with `useGetCurrentSubscription` hook from billing API
+   - Added subscription status display with color-coded tags (green=active, orange=trial, red=expired/cancelled)
+   - Added quota usage section showing progress bars for users, products, and warehouses
+   - Progress bars change color based on usage: primary (<70%), warning (70-90%), danger (>90%)
+   - Unlimited quotas display "X / Unlimited" format
+
+2. `frontend/src/pages/user/Settings.css`
+   - Added `.subscription-plan-info` class for plan name and status tag layout
+   - Added `.settings-quota-section` for quota usage container
+   - Added `.settings-quota-list` and `.settings-quota-item` for quota list styling
+   - Added `.settings-quota-header` for quota label and value display
+   - Added responsive styles for mobile view
+
+3. `frontend/src/locales/zh-CN/system.json`
+   - Added `settings.subscription.quotaUsage`: "配额使用情况"
+   - Added `settings.subscription.quotaUsers`: "用户数"
+   - Added `settings.subscription.quotaProducts`: "产品数"
+   - Added `settings.subscription.quotaWarehouses`: "仓库数"
+   - Added `settings.subscription.unlimited`: "无限制"
+   - Added `settings.subscription.status.active`: "活跃"
+   - Added `settings.subscription.status.cancelled`: "已取消"
+   - Added `settings.subscription.status.expired`: "已过期"
+   - Added `settings.subscription.status.trial`: "试用中"
+
+4. `frontend/src/locales/en-US/system.json`
+   - Added corresponding English translations for all new keys
+
+**API Integration:**
+- Uses `GET /api/v1/billing/subscription/current` endpoint (BILLING-BE-001)
+- Extracts `plan_id`, `status`, and `quotas` from response
+- Filters quotas to show only key metrics: users, products, warehouses
+
+=== Design Decisions ===
+
+1. **Quota Display**: Only showing 3 key quotas (users, products, warehouses) to keep the UI clean. Other quotas can be viewed on the full subscription page.
+
+2. **Progress Bar Colors**: Using semantic colors to indicate usage levels:
+   - Primary (blue): Normal usage (<70%)
+   - Warning (orange): Approaching limit (70-90%)
+   - Danger (red): Near or at limit (>90%)
+
+3. **Unlimited Handling**: For enterprise plans with unlimited quotas (limit=-1), showing "X / Unlimited" and 0% progress bar.
+
+4. **Status Tags**: Color-coded status tags provide quick visual feedback on subscription health.
+
+=== Verification ===
+
+- [x] TypeScript type checking passes: `npm run type-check`
+- [x] ESLint passes for Settings.tsx
+- [x] No console.log statements
+- [x] Code follows existing patterns in Settings.tsx
+- [x] Translations added for both zh-CN and en-US
+
+=== Acceptance Criteria Met ===
+
+- [x] Settings 页面显示真实的订阅计划信息 (Settings page displays real subscription plan info)
+- [x] 显示关键配额的使用进度 (Displays key quota usage progress)
+- [x] 导航按钮正常工作 (Navigation buttons work correctly - preserved from original)
+
+=== Notes ===
+
+- The Settings page was located at `frontend/src/pages/user/Settings.tsx`, not `frontend/src/pages/settings/Settings.tsx` as mentioned in the PRD requirements.
+- The existing `useGetCurrentUsage` hook was replaced with `useGetCurrentSubscription` which provides more comprehensive subscription data including quotas with usage information.
+
+=== Next Steps ===
+
+1. Consider adding a "View All Quotas" link to the subscription page for users who want to see all quota details
+2. Add loading skeleton for quota section during data fetch
+3. Consider caching subscription data to reduce API calls

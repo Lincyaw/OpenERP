@@ -566,7 +566,18 @@
       "manage": "管理订阅",
       "billingHistory": "账单历史",
       "billingHistoryDesc": "查看发票和付款记录",
-      "viewBilling": "查看账单"
+      "viewBilling": "查看账单",
+      "quotaUsage": "配额使用情况",
+      "quotaUsers": "用户数",
+      "quotaProducts": "产品数",
+      "quotaWarehouses": "仓库数",
+      "unlimited": "无限制",
+      "status": {
+        "active": "活跃",
+        "cancelled": "已取消",
+        "expired": "已过期",
+        "trial": "试用中"
+      }
     },
     "messages": {
       "languageChanged": "语言已切换",

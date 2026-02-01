@@ -566,7 +566,18 @@
       "manage": "Manage Subscription",
       "billingHistory": "Billing History",
       "billingHistoryDesc": "View invoices and payment history",
-      "viewBilling": "View Billing"
+      "viewBilling": "View Billing",
+      "quotaUsage": "Quota Usage",
+      "quotaUsers": "Users",
+      "quotaProducts": "Products",
+      "quotaWarehouses": "Warehouses",
+      "unlimited": "Unlimited",
+      "status": {
+        "active": "Active",
+        "cancelled": "Cancelled",
+        "expired": "Expired",
+        "trial": "Trial"
+      }
     },
     "messages": {
       "languageChanged": "Language changed",
