@@ -14,7 +14,6 @@ import {
   Spin,
   Empty,
   Timeline,
-  Select,
 } from '@douyinfe/semi-ui-19'
 import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
 import {
@@ -25,6 +24,7 @@ import {
   IconDelete,
   IconRefresh,
   IconSetting,
+  IconPriceTag,
 } from '@douyinfe/semi-icons'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -32,14 +32,17 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Container } from '@/components/common/layout'
 import {
   useGetTenantById,
-  useSuspendTenant,
   useActivateTenant,
-  useDeleteTenant,
-  useSetPlanTenant,
   getGetTenantByIdQueryKey,
 } from '@/api/tenants/tenants'
 import type { HandlerTenantResponse } from '@/api/models'
 import { useFormatters } from '@/hooks/useFormatters'
+import {
+  ChangePlanModal,
+  UpdateQuotaModal,
+  SuspendTenantModal,
+  DeleteTenantModal,
+} from '@/components/admin'
 
 const { Title, Text } = Typography
 
@@ -78,14 +81,6 @@ function getPlanColor(plan: string | undefined): TagColor {
       return 'grey'
   }
 }
-
-// Plan options for change plan modal
-const PLAN_OPTIONS = [
-  { label: 'Free', value: 'free' },
-  { label: 'Basic', value: 'basic' },
-  { label: 'Pro', value: 'pro' },
-  { label: 'Enterprise', value: 'enterprise' },
-]
 
 // Mock status history data (will be replaced with API)
 interface StatusHistoryItem {
@@ -126,7 +121,13 @@ export default function TenantDetailPage() {
 
   // State for modals
   const [changePlanModalVisible, setChangePlanModalVisible] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState<string>('')
+  const [updateQuotaModalVisible, setUpdateQuotaModalVisible] = useState(false)
+  const [suspendModalVisible, setSuspendModalVisible] = useState(false)
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+  // Key counters to force modal remount on open (resets form state)
+  const [changePlanModalKey, setChangePlanModalKey] = useState(0)
+  const [updateQuotaModalKey, setUpdateQuotaModalKey] = useState(0)
+  const [suspendModalKey, setSuspendModalKey] = useState(0)
 
   // Fetch tenant data
   const {
@@ -149,18 +150,6 @@ export default function TenantDetailPage() {
   }, [tenantResponse])
 
   // Mutations
-  const suspendMutation = useSuspendTenant({
-    mutation: {
-      onSuccess: () => {
-        Toast.success(t('tenants.messages.suspendSuccess', 'Tenant suspended successfully'))
-        queryClient.invalidateQueries({ queryKey: getGetTenantByIdQueryKey(id || '') })
-      },
-      onError: () => {
-        Toast.error(t('tenants.messages.suspendError', 'Failed to suspend tenant'))
-      },
-    },
-  })
-
   const activateMutation = useActivateTenant({
     mutation: {
       onSuccess: () => {
@@ -173,30 +162,7 @@ export default function TenantDetailPage() {
     },
   })
 
-  const deleteMutation = useDeleteTenant({
-    mutation: {
-      onSuccess: () => {
-        Toast.success(t('tenants.messages.deleteSuccess', 'Tenant deleted successfully'))
-        navigate('/super-admin/tenants')
-      },
-      onError: () => {
-        Toast.error(t('tenants.messages.deleteError', 'Failed to delete tenant'))
-      },
-    },
-  })
-
-  const setPlanMutation = useSetPlanTenant({
-    mutation: {
-      onSuccess: () => {
-        Toast.success(t('tenants.messages.planChangeSuccess', 'Plan changed successfully'))
-        queryClient.invalidateQueries({ queryKey: getGetTenantByIdQueryKey(id || '') })
-        setChangePlanModalVisible(false)
-      },
-      onError: () => {
-        Toast.error(t('tenants.messages.planChangeError', 'Failed to change plan'))
-      },
-    },
-  })
+  // Note: Delete mutation is handled by DeleteTenantModal component
 
   // Mock data for status history (will be replaced with API)
   const statusHistory: StatusHistoryItem[] = useMemo(
@@ -245,23 +211,9 @@ export default function TenantDetailPage() {
   }, [refetch])
 
   const handleSuspend = useCallback(() => {
-    if (!id) return
-
-    Modal.confirm({
-      title: t('tenants.confirm.suspendTitle', 'Confirm Suspend'),
-      content: t(
-        'tenants.confirm.suspendContent',
-        'Are you sure you want to suspend tenant "{{name}}"? Users will not be able to access the system.',
-        { name: tenant?.name }
-      ),
-      okText: t('tenants.confirm.suspendOk', 'Suspend'),
-      cancelText: t('common.cancel', 'Cancel'),
-      okButtonProps: { type: 'danger' },
-      onOk: () => {
-        suspendMutation.mutate({ id, data: { reason: 'Admin action' } })
-      },
-    })
-  }, [id, tenant?.name, t, suspendMutation])
+    setSuspendModalKey((k) => k + 1)
+    setSuspendModalVisible(true)
+  }, [])
 
   const handleActivate = useCallback(() => {
     if (!id) return
@@ -284,33 +236,18 @@ export default function TenantDetailPage() {
   }, [id, tenant?.name, t, activateMutation])
 
   const handleDelete = useCallback(() => {
-    if (!id) return
-
-    Modal.confirm({
-      title: t('tenants.confirm.deleteTitle', 'Confirm Delete'),
-      content: t(
-        'tenants.confirm.deleteContent',
-        'Are you sure you want to delete tenant "{{name}}"? This action cannot be undone.',
-        { name: tenant?.name }
-      ),
-      okText: t('tenants.confirm.deleteOk', 'Delete'),
-      cancelText: t('common.cancel', 'Cancel'),
-      okButtonProps: { type: 'danger' },
-      onOk: () => {
-        deleteMutation.mutate({ id })
-      },
-    })
-  }, [id, tenant?.name, t, deleteMutation])
+    setDeleteModalVisible(true)
+  }, [])
 
   const handleOpenChangePlanModal = useCallback(() => {
-    setSelectedPlan(tenant?.plan || '')
+    setChangePlanModalKey((k) => k + 1)
     setChangePlanModalVisible(true)
-  }, [tenant?.plan])
+  }, [])
 
-  const handleChangePlan = useCallback(() => {
-    if (!id || !selectedPlan) return
-    setPlanMutation.mutate({ id, data: { plan: selectedPlan } })
-  }, [id, selectedPlan, setPlanMutation])
+  const handleOpenUpdateQuotaModal = useCallback(() => {
+    setUpdateQuotaModalKey((k) => k + 1)
+    setUpdateQuotaModalVisible(true)
+  }, [])
 
   // Calculate quota usage percentages (mock data - will be replaced with actual usage API)
   const quotaUsage = useMemo(() => {
@@ -487,6 +424,9 @@ export default function TenantDetailPage() {
               <Button icon={<IconSetting />} onClick={handleOpenChangePlanModal}>
                 {t('tenants.actions.changePlan', 'Change Plan')}
               </Button>
+              <Button icon={<IconPriceTag />} onClick={handleOpenUpdateQuotaModal}>
+                {t('tenants.actions.updateQuota', 'Update Quota')}
+              </Button>
               {tenant.status === 'suspended' ? (
                 <Button
                   icon={<IconPlay />}
@@ -496,21 +436,11 @@ export default function TenantDetailPage() {
                   {t('tenants.activate', 'Activate')}
                 </Button>
               ) : (
-                <Button
-                  icon={<IconStop />}
-                  type="danger"
-                  onClick={handleSuspend}
-                  loading={suspendMutation.isPending}
-                >
+                <Button icon={<IconStop />} type="danger" onClick={handleSuspend}>
                   {t('tenants.suspend', 'Suspend')}
                 </Button>
               )}
-              <Button
-                icon={<IconDelete />}
-                type="danger"
-                onClick={handleDelete}
-                loading={deleteMutation.isPending}
-              >
+              <Button icon={<IconDelete />} type="danger" onClick={handleDelete}>
                 {t('common.delete', 'Delete')}
               </Button>
             </Space>
@@ -666,30 +596,41 @@ export default function TenantDetailPage() {
       </Space>
 
       {/* Change Plan Modal */}
-      <Modal
-        title={t('tenants.modal.changePlanTitle', 'Change Plan')}
+      <ChangePlanModal
+        key={`change-plan-${changePlanModalKey}`}
         visible={changePlanModalVisible}
-        onOk={handleChangePlan}
-        onCancel={() => setChangePlanModalVisible(false)}
-        okText={t('common.save', 'Save')}
-        cancelText={t('common.cancel', 'Cancel')}
-        confirmLoading={setPlanMutation.isPending}
-      >
-        <Space vertical align="start" spacing="medium" style={{ width: '100%' }}>
-          <Text>
-            {t('tenants.modal.changePlanDescription', 'Select a new plan for tenant "{{name}}"', {
-              name: tenant.name,
-            })}
-          </Text>
-          <Select
-            value={selectedPlan}
-            onChange={(value) => setSelectedPlan(value as string)}
-            optionList={PLAN_OPTIONS}
-            style={{ width: '100%' }}
-            placeholder={t('tenants.modal.selectPlan', 'Select a plan')}
-          />
-        </Space>
-      </Modal>
+        tenantId={id || null}
+        tenantName={tenant.name}
+        currentPlan={tenant.plan}
+        onClose={() => setChangePlanModalVisible(false)}
+      />
+
+      {/* Update Quota Modal */}
+      <UpdateQuotaModal
+        key={`update-quota-${updateQuotaModalKey}`}
+        visible={updateQuotaModalVisible}
+        tenantId={id || null}
+        tenantName={tenant.name}
+        onClose={() => setUpdateQuotaModalVisible(false)}
+      />
+
+      {/* Suspend Tenant Modal */}
+      <SuspendTenantModal
+        key={`suspend-${suspendModalKey}`}
+        visible={suspendModalVisible}
+        tenantId={id || null}
+        tenantName={tenant.name}
+        onClose={() => setSuspendModalVisible(false)}
+      />
+
+      {/* Delete Tenant Modal */}
+      <DeleteTenantModal
+        visible={deleteModalVisible}
+        tenantId={id || null}
+        tenantName={tenant.name}
+        onClose={() => setDeleteModalVisible(false)}
+        onSuccess={() => navigate('/super-admin/tenants')}
+      />
     </Container>
   )
 }

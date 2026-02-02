@@ -138,6 +138,8 @@
       "loadError": "Failed to load tenant data",
       "planChangeSuccess": "Plan changed successfully",
       "planChangeError": "Failed to change plan",
+      "quotaUpdateSuccess": "Quota updated successfully",
+      "quotaUpdateError": "Failed to update quota",
       "batchPartialError": "{{failed}} of {{total}} operations failed",
       "invalidTenant": "Invalid tenant ID"
     },
@@ -176,6 +178,47 @@
       "impactWarehouses": "Warehouses",
       "finalWarning": "This action is irreversible. All tenant data, users, and associated records will be permanently deleted.",
       "unknownTenant": "Unknown Tenant"
+    },
+    "changePlan": {
+      "description": "Select a new plan for tenant \"{{name}}\". Plan changes take effect immediately.",
+      "currentPlan": "Current Plan",
+      "selectPlan": "Select New Plan",
+      "current": "Current",
+      "upgrade": "Upgrade",
+      "downgrade": "Downgrade",
+      "noChange": "No Change",
+      "quotaChanges": "Quota Changes",
+      "maxUsers": "Max Users",
+      "maxProducts": "Max Products",
+      "maxWarehouses": "Max Warehouses",
+      "downgradeWarning": "Downgrading may affect current usage if it exceeds the new plan limits."
+    },
+    "updateQuota": {
+      "description": "Update quota limits for tenant \"{{name}}\". Changes take effect immediately.",
+      "presets": "Apply Plan Preset",
+      "maxUsers": "Max Users",
+      "maxProducts": "Max Products",
+      "maxWarehouses": "Max Warehouses",
+      "currentUsage": "Current",
+      "warningTitle": "Warning",
+      "warningUsers": "Current user count exceeds new limit",
+      "warningProducts": "Current product count exceeds new limit",
+      "warningWarehouses": "Current warehouse count exceeds new limit"
+    },
+    "suspend": {
+      "tenantInfo": "Tenant Information",
+      "warningMessage": "You are about to suspend tenant \"{{name}}\". This will immediately block all access.",
+      "reason": "Suspension Reason",
+      "reasonPlaceholder": "Enter the reason for suspension (required, min 10 characters)",
+      "reasonMinLength": "Reason must be at least 10 characters",
+      "setExpiration": "Set automatic reactivation date",
+      "expirationPlaceholder": "Select reactivation date",
+      "expirationHelp": "Tenant will be automatically reactivated at this date and time",
+      "impactTitle": "Suspension Impact",
+      "impactLogin": "Users will not be able to log in",
+      "impactApi": "API access will be blocked",
+      "impactData": "Data will be preserved but inaccessible",
+      "impactBilling": "Billing may continue depending on plan"
     }
   },
   "stats": {

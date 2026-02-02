@@ -756,7 +756,8 @@
       "错误情况显示友好提示",
       "UI 符合 Semi Design 规范"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-016",

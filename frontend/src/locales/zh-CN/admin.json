@@ -138,6 +138,8 @@
       "loadError": "加载租户数据失败",
       "planChangeSuccess": "套餐变更成功",
       "planChangeError": "套餐变更失败",
+      "quotaUpdateSuccess": "配额更新成功",
+      "quotaUpdateError": "配额更新失败",
       "batchPartialError": "{{total}} 个操作中有 {{failed}} 个失败",
       "invalidTenant": "无效的租户 ID"
     },
@@ -176,6 +178,47 @@
       "impactWarehouses": "仓库数",
       "finalWarning": "此操作不可逆。所有租户数据、用户和相关记录将被永久删除。",
       "unknownTenant": "未知租户"
+    },
+    "changePlan": {
+      "description": "为租户 \"{{name}}\" 选择新套餐。套餐变更立即生效。",
+      "currentPlan": "当前套餐",
+      "selectPlan": "选择新套餐",
+      "current": "当前",
+      "upgrade": "升级",
+      "downgrade": "降级",
+      "noChange": "无变化",
+      "quotaChanges": "配额变化",
+      "maxUsers": "最大用户数",
+      "maxProducts": "最大商品数",
+      "maxWarehouses": "最大仓库数",
+      "downgradeWarning": "降级可能会影响当前使用量（如果超出新套餐限制）。"
+    },
+    "updateQuota": {
+      "description": "更新租户 \"{{name}}\" 的配额限制。变更立即生效。",
+      "presets": "应用套餐预设",
+      "maxUsers": "最大用户数",
+      "maxProducts": "最大商品数",
+      "maxWarehouses": "最大仓库数",
+      "currentUsage": "当前",
+      "warningTitle": "警告",
+      "warningUsers": "当前用户数超出新限制",
+      "warningProducts": "当前商品数超出新限制",
+      "warningWarehouses": "当前仓库数超出新限制"
+    },
+    "suspend": {
+      "tenantInfo": "租户信息",
+      "warningMessage": "您即将暂停租户 \"{{name}}\"。这将立即阻止所有访问。",
+      "reason": "暂停原因",
+      "reasonPlaceholder": "请输入暂停原因（必填，至少10个字符）",
+      "reasonMinLength": "原因至少需要10个字符",
+      "setExpiration": "设置自动恢复日期",
+      "expirationPlaceholder": "选择恢复日期",
+      "expirationHelp": "租户将在此日期和时间自动恢复",
+      "impactTitle": "暂停影响",
+      "impactLogin": "用户将无法登录",
+      "impactApi": "API 访问将被阻止",
+      "impactData": "数据将被保留但无法访问",
+      "impactBilling": "根据套餐，计费可能会继续"
     }
   },
   "stats": {

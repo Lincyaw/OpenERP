@@ -46443,3 +46443,89 @@ Key files modified:
 - Consider adding unit tests for form validation
 - Consider adding E2E tests for CRUD operations
 - May need to implement actual usage API for accurate impact scope in delete modal
+
+## 2026-02-02 - P3-ADMIN-015: Operation Dialogs Implementation
+
+### Task ID: P3-ADMIN-015
+### Status: PASSED ✓
+
+### Implementation Details
+
+#### 1. ChangePlanModal Component (`frontend/src/components/admin/ChangePlanModal.tsx`)
+- Modal dialog for changing tenant subscription plan
+- Shows current plan and available plans (Free, Basic, Pro, Enterprise)
+- Displays upgrade/downgrade indicator with visual feedback
+- Shows quota changes comparison (max users, products, warehouses)
+- Downgrade warning when reducing plan limits
+- API integration with useSetPlanTenant hook
+- Success/error toast notifications
+- Keyboard support (Esc to cancel)
+
+#### 2. UpdateQuotaModal Component (`frontend/src/components/admin/UpdateQuotaModal.tsx`)
+- Modal dialog for updating tenant quota limits
+- Shows current quota and usage with progress bars
+- Allows custom quota values: max users, max products, max warehouses
+- Plan-based presets (Free, Basic, Pro, Enterprise defaults)
+- Warning when new limits are below current usage
+- API integration with useUpdateTenantConfig hook
+- Visual feedback with color-coded progress bars (red when >90%)
+
+#### 3. SuspendTenantModal Component (`frontend/src/components/admin/SuspendTenantModal.tsx`)
+- Modal dialog for suspending tenant accounts
+- Requires suspension reason (mandatory, min 10 characters)
+- Optional automatic reactivation date with DatePicker
+- Shows suspension impact explanation:
+  - Users cannot log in
+  - API access blocked
+  - Data preserved but inaccessible
+  - Billing may continue
+- API integration with useSuspendTenant hook
+- Validation with error messages
+
+#### 4. TenantDetail Page Integration
+- Updated TenantDetail page to use new modal components
+- Added "Update Quota" button to action bar
+- Replaced inline Modal.confirm with dedicated modal components
+- Removed unused mutations and imports
+- Added IconPriceTag for quota button
+
+#### 5. i18n Translations
+- Added English translations in `frontend/src/locales/en-US/admin.json`:
+  - changePlan section: description, currentPlan, selectPlan, upgrade, downgrade, quotaChanges, etc.
+  - updateQuota section: description, presets, maxUsers, maxProducts, maxWarehouses, warnings
+  - suspend section: tenantInfo, warningMessage, reason, expiration, impact items
+- Added Chinese translations in `frontend/src/locales/zh-CN/admin.json`
+
+### Files Modified
+- `frontend/src/components/admin/ChangePlanModal.tsx` (new)
+- `frontend/src/components/admin/UpdateQuotaModal.tsx` (new)
+- `frontend/src/components/admin/SuspendTenantModal.tsx` (new)
+- `frontend/src/components/admin/index.ts` (updated exports)
+- `frontend/src/pages/super-admin/TenantDetail.tsx` (integrated modals)
+- `frontend/src/locales/en-US/admin.json` (added translations)
+- `frontend/src/locales/zh-CN/admin.json` (added translations)
+
+### Verification
+- TypeScript type-check: PASSED
+- Production build: PASSED
+- ESLint: No new errors
+
+### Acceptance Criteria Verification
+- [x] 变更计划对话框正确显示计划选项 (Radio group with all 4 plans)
+- [x] 更新配额对话框正确显示当前配额 (Progress bars with current/max values)
+- [x] 暂停租户对话框要求输入原因 (Required field with min 10 chars validation)
+- [x] 所有对话框操作成功后刷新数据 (Query invalidation on success)
+- [x] 错误情况显示友好提示 (Toast notifications for errors)
+- [x] UI 符合 Semi Design 规范 (Modal, Tag, Progress, RadioGroup, DatePicker, etc.)
+
+### Design Decisions
+1. Used dedicated modal components instead of inline Modal.confirm for better UX
+2. Plan hierarchy defined for upgrade/downgrade detection
+3. Mock usage data for quota display (will need usage API integration)
+4. Optional expiration date for suspend with auto-reactivation feature
+5. Comprehensive impact explanation for suspend action
+
+### Next Steps
+- Implement actual usage API for accurate quota display
+- Add unit tests for modal components
+- Consider E2E tests for modal workflows
