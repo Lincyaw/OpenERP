@@ -47599,3 +47599,43 @@ Key files modified:
 - Register AdminHandler routes in main.go (separate task needed)
 - Consider consolidating admin_handler.go and admin_tenant_handler.go duplicates
 - Fix balance_transaction.go swag annotation error (separate bug)
+
+2026-02-02 - P3-ADMIN-025: Create Architecture Decision Records (ADRs)
+
+=== Implementation Details ===
+Created two ADRs documenting key architectural decisions for the super admin system:
+
+1. **ADR-002: Super Admin Authentication Model Design**
+   - Documents the "System Tenant" approach (tenant_id = all-zero UUID)
+   - Records why we chose same-JWT-flow authentication over alternatives
+   - Covers two-layer authorization (tenant check + role/permission check)
+   - Alternatives analyzed: separate auth system, user flag, API keys, external IdP
+
+2. **ADR-003: Cross-Tenant Query and Audit Log Design**
+   - Documents how admin queries bypass tenant isolation safely
+   - Records dedicated admin repository layer with explicit scope bypass
+   - Documents audit log design: append-only, JSONB changes, service-level logging
+   - Alternatives analyzed: ORM-level filter disable, middleware logging, event sourcing, external audit
+
+=== Decisions ===
+- Numbered ADRs starting from 002 (001 already existed for CSS remediation)
+- Both ADRs follow the standard template with Context, Decision, Consequences, Alternatives, Trade-Offs
+- Risk levels: ADR-002 = LOW, ADR-003 = MEDIUM
+
+=== Red Flags Checked ===
+- [x] No God Objects - Super admin uses existing RBAC model
+- [x] No tight coupling - Admin layer is separate from tenant business logic
+- [x] Clear structure - Dedicated middleware, service, and repository layers
+- [x] No premature optimization - Simple append-only audit log
+- [x] No magic - All access checks are explicit in middleware
+
+=== Acceptance Criteria Met ===
+- [x] ADR 文档格式规范 (standard template with all sections)
+- [x] 决策理由清晰 (rationale documented in Context and Decision sections)
+- [x] 替代方案分析完整 (4 alternatives per ADR with rejection reasons)
+- [x] 优缺点分析客观 (Pros/Cons in both Consequences and Trade-Offs)
+- [x] ADR 可供未来参考 (saved to .claude/ralph/docs/adrs/)
+
+=== Files Created ===
+- .claude/ralph/docs/adrs/ADR-002.md (Super Admin Authentication Model)
+- .claude/ralph/docs/adrs/ADR-003.md (Cross-Tenant Query and Audit Log Design)
