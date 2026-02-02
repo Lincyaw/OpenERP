@@ -1,9 +1,16 @@
 // Store types
 export type { User, AuthState, AuthActions, AppState, AppActions, BreadcrumbItem } from './types'
+export { SYSTEM_TENANT_ID, SUPER_ADMIN_ROLE_ID } from './types'
 export type { FlagValue, FeatureFlagState, FeatureFlagActions } from './featureFlagStore'
 
 // Auth store
-export { useAuthStore, useUser, useIsAuthenticated, useAuthLoading } from './authStore'
+export {
+  useAuthStore,
+  useUser,
+  useIsAuthenticated,
+  useAuthLoading,
+  useIsSuperAdmin,
+} from './authStore'
 
 // App store
 export {

@@ -1,4 +1,14 @@
 /**
+ * System tenant ID for super admin users
+ */
+export const SYSTEM_TENANT_ID = '00000000-0000-0000-0000-000000000000'
+
+/**
+ * Super admin role ID
+ */
+export const SUPER_ADMIN_ROLE_ID = 'super_admin'
+
+/**
  * User information stored in auth state
  */
 export interface User {
@@ -26,6 +36,8 @@ export interface AuthState {
   isLoading: boolean
   /** Whether user is authenticated */
   isAuthenticated: boolean
+  /** Whether user is a super admin (system tenant + super_admin role) */
+  isSuperAdmin: boolean
 }
 
 /**

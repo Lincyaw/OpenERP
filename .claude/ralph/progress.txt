@@ -46125,3 +46125,94 @@ Design decisions:
 - Integration testing with actual services
 - E2E testing of admin endpoints
 - Frontend admin dashboard implementation
+
+2026-02-02 - Task P3-ADMIN-011: Implement Frontend Routes and Permission Guards
+
+=== Implementation Details ===
+
+Implemented frontend routing and permission guards for super admin functionality:
+
+1. **AuthStore Updates** (frontend/src/store/authStore.ts, types.ts):
+   - Added `isSuperAdmin` state to AuthState interface
+   - Added `SYSTEM_TENANT_ID` and `SUPER_ADMIN_ROLE_ID` constants
+   - Created `checkIsSuperAdmin()` function that verifies:
+     - User belongs to system tenant (tenant_id = '00000000-0000-0000-0000-000000000000')
+     - User has super_admin role OR tenant:* permissions
+   - Updated login, setUser, updateUser, logout to compute isSuperAdmin
+   - Added `useIsSuperAdmin` selector hook
+
+2. **SuperAdminGuard Component** (frontend/src/components/admin/SuperAdminGuard.tsx):
+   - Route guard that redirects unauthenticated users to /login
+   - Redirects non-super-admin users to /403 (Forbidden)
+   - Preserves intended destination for post-login redirect
+
+3. **AdminLayout Component** (frontend/src/components/admin/AdminLayout.tsx):
+   - Dedicated layout for super admin routes with separate sidebar
+   - Navigation items: Tenants, Statistics, Audit Logs
+   - Breadcrumb navigation with proper hierarchy
+   - "Back to App" link to return to main application
+   - Collapsible sidebar with toggle support
+
+4. **Super Admin Routes** (frontend/src/router/routes.tsx):
+   - Added /super-admin/* routes protected by SuperAdminGuard
+   - Route structure:
+     - /super-admin/tenants - Tenant list
+     - /super-admin/tenants/:id - Tenant detail
+     - /super-admin/stats - Platform statistics
+     - /super-admin/audit-logs - Admin audit logs
+
+5. **Placeholder Admin Pages** (frontend/src/pages/super-admin/):
+   - TenantList.tsx - Tenant management with search, filtering, table
+   - TenantDetail.tsx - Tenant details with tabs (Overview, Users, Subscription, Activity)
+   - Stats.tsx - Platform statistics with KPI cards and chart placeholders
+   - AuditLogs.tsx - Audit log viewer with filtering
+
+6. **i18n Translations** (frontend/src/locales/*/admin.json):
+   - Added translations for admin navigation, breadcrumbs
+   - Added translations for tenant management, statistics, audit logs
+   - Both en-US and zh-CN locales updated
+
+Key files modified:
+- frontend/src/store/types.ts (added isSuperAdmin, constants)
+- frontend/src/store/authStore.ts (isSuperAdmin computation)
+- frontend/src/store/index.ts (export useIsSuperAdmin)
+- frontend/src/components/admin/SuperAdminGuard.tsx (new)
+- frontend/src/components/admin/AdminLayout.tsx (new)
+- frontend/src/components/admin/AdminLayout.css (new)
+- frontend/src/components/admin/index.ts (new)
+- frontend/src/router/routes.tsx (added super admin routes)
+- frontend/src/pages/super-admin/TenantList.tsx (new)
+- frontend/src/pages/super-admin/TenantDetail.tsx (new)
+- frontend/src/pages/super-admin/Stats.tsx (new)
+- frontend/src/pages/super-admin/AuditLogs.tsx (new)
+- frontend/src/locales/en-US/admin.json (updated)
+- frontend/src/locales/zh-CN/admin.json (updated)
+
+=== Verification ===
+
+- TypeScript type check passes: npm run type-check
+- Build succeeds: npm run build
+- Store tests pass: npm run test:run -- src/store
+- No new lint errors in added files
+
+=== Acceptance Criteria Met ===
+
+- [x] 超级管理员可以访问 /super-admin/* 路由
+- [x] 普通用户访问 /super-admin/* 显示 403 页面
+- [x] 导航菜单正确显示管理选项 (Tenants, Stats, Audit Logs)
+- [x] 面包屑导航正确显示当前位置
+- [x] 路由切换流畅无闪烁 (lazy loading with Suspense)
+
+=== Notes ===
+
+- Pages are placeholder implementations with mock data
+- Will need API integration when backend endpoints are connected
+- Charts in Stats page are placeholders for future implementation
+- Tenant management actions (create, edit, suspend) are UI-only
+
+=== Next Steps ===
+
+- P3-ADMIN-012: Connect frontend to backend Admin API endpoints
+- Implement actual API calls for tenant management
+- Add charts/visualizations to Stats page
+- Implement real-time audit log streaming

@@ -1,4 +1,68 @@
 {
+  "title": "Admin Panel",
+  "backToApp": "Back to App",
+  "nav": {
+    "tenants": "Tenants",
+    "stats": "Statistics",
+    "auditLogs": "Audit Logs"
+  },
+  "breadcrumb": {
+    "admin": "Admin",
+    "tenants": "Tenants",
+    "statistics": "Statistics",
+    "audit logs": "Audit Logs"
+  },
+  "tenants": {
+    "title": "Tenant Management",
+    "name": "Name",
+    "plan": "Plan",
+    "status": "Status",
+    "users": "Users",
+    "createdAt": "Created",
+    "actions": "Actions",
+    "search": "Search tenants...",
+    "create": "Create Tenant",
+    "overview": "Overview",
+    "subscription": "Subscription",
+    "activity": "Activity",
+    "storage": "Storage Used",
+    "apiCalls": "API Calls (30d)",
+    "contactEmail": "Contact Email",
+    "contactPhone": "Contact Phone",
+    "usersPlaceholder": "User management coming soon...",
+    "subscriptionPlaceholder": "Subscription history coming soon...",
+    "activityPlaceholder": "Activity log coming soon..."
+  },
+  "stats": {
+    "title": "Platform Statistics",
+    "totalTenants": "Total Tenants",
+    "activeTenants": "Active Tenants",
+    "totalUsers": "Total Users",
+    "totalOrders": "Total Orders",
+    "tenantGrowth": "Tenant Growth",
+    "planDistribution": "Plan Distribution",
+    "chartPlaceholder": "Chart coming soon..."
+  },
+  "audit": {
+    "title": "Audit Logs",
+    "timestamp": "Timestamp",
+    "action": "Action",
+    "actor": "Actor",
+    "target": "Target",
+    "status": "Status",
+    "searchPlaceholder": "Search by actor or target...",
+    "filterAction": "Filter by action",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "actions": {
+      "tenantCreate": "Create Tenant",
+      "tenantSuspend": "Suspend Tenant",
+      "tenantActivate": "Activate Tenant",
+      "planChange": "Change Plan",
+      "quotaUpdate": "Update Quota",
+      "tenantDelete": "Delete Tenant"
+    }
+  },
   "featureFlags": {
     "title": "Feature Flags",
     "createTitle": "Create Feature Flag",

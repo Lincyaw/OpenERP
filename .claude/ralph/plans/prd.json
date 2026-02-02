@@ -642,7 +642,8 @@
       "面包屑导航正确显示当前位置",
       "路由切换流畅无闪烁"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-012",

@@ -1,10 +1,32 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { AuthState, AuthActions, User } from './types'
+import { SYSTEM_TENANT_ID, SUPER_ADMIN_ROLE_ID } from './types'
 
 const STORAGE_KEY = 'erp-auth'
 const TOKEN_KEY = 'access_token'
 const USER_KEY = 'user'
+
+/**
+ * Check if a user is a super admin
+ * Super admin requires:
+ * 1. User belongs to system tenant (tenant_id = SYSTEM_TENANT_ID)
+ * 2. User has super_admin role OR tenant:* permissions
+ */
+function checkIsSuperAdmin(user: User | null): boolean {
+  if (!user) return false
+
+  // Check 1: Must be from system tenant
+  if (user.tenantId !== SYSTEM_TENANT_ID) {
+    return false
+  }
+
+  // Check 2: Must have super_admin role OR tenant:* permissions
+  const hasSuperAdminRole = user.roles?.includes(SUPER_ADMIN_ROLE_ID) ?? false
+  const hasTenantPermission = user.permissions?.some((p) => p.startsWith('tenant:')) ?? false
+
+  return hasSuperAdminRole || hasTenantPermission
+}
 
 /**
  * Initial auth state
@@ -19,6 +41,7 @@ const initialState: AuthState = {
   refreshToken: null, // Kept for type compatibility but always null
   isLoading: true,
   isAuthenticated: false,
+  isSuperAdmin: false,
 }
 
 /**
@@ -58,7 +81,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         ...initialState,
 
         setUser: (user: User) => {
-          set({ user, isAuthenticated: true }, false, 'auth/setUser')
+          const isSuperAdmin = checkIsSuperAdmin(user)
+          set({ user, isAuthenticated: true, isSuperAdmin }, false, 'auth/setUser')
           // Store user in localStorage for guards (user data is not sensitive)
           localStorage.setItem(USER_KEY, JSON.stringify(user))
         },
@@ -81,6 +105,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
         login: (user: User, accessToken: string, _refreshToken?: string) => {
           // refreshToken parameter is ignored - it's handled via httpOnly cookie
+          const isSuperAdmin = checkIsSuperAdmin(user)
           set(
             {
               user,
@@ -88,6 +113,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
               refreshToken: null, // Always null - stored in httpOnly cookie
               isAuthenticated: true,
               isLoading: false,
+              isSuperAdmin,
             },
             false,
             'auth/login'
@@ -105,6 +131,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
               refreshToken: null,
               isAuthenticated: false,
               isLoading: false,
+              isSuperAdmin: false,
             },
             false,
             'auth/logout'
@@ -120,7 +147,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           const currentUser = get().user
           if (currentUser) {
             const updatedUser = { ...currentUser, ...updates }
-            set({ user: updatedUser }, false, 'auth/updateUser')
+            const isSuperAdmin = checkIsSuperAdmin(updatedUser)
+            set({ user: updatedUser, isSuperAdmin }, false, 'auth/updateUser')
             localStorage.setItem(USER_KEY, JSON.stringify(updatedUser))
           }
         },
@@ -202,3 +230,4 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 export const useUser = () => useAuthStore((state) => state.user)
 export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated)
 export const useAuthLoading = () => useAuthStore((state) => state.isLoading)
+export const useIsSuperAdmin = () => useAuthStore((state) => state.isSuperAdmin)

@@ -2,6 +2,7 @@ import { Navigate, type RouteObject } from 'react-router-dom'
 import { lazyLoad } from './lazyLoad'
 import { AuthGuard, GuestGuard } from './guards'
 import { MainLayout } from '@/components/layout'
+import { SuperAdminGuard, AdminLayout } from '@/components/admin'
 import type { AppRoute } from './types'
 import { Permissions } from '@/config/permissions'
 
@@ -112,6 +113,12 @@ const SettingsPage = () => lazyLoad(() => import('@/pages/user/Settings'))
 const UpgradePlanPage = () => lazyLoad(() => import('@/pages/user/UpgradePlan'))
 const SubscriptionPage = () => lazyLoad(() => import('@/pages/settings/SubscriptionPage'))
 const BillingHistoryPage = () => lazyLoad(() => import('@/pages/settings/BillingHistoryPage'))
+
+// Super Admin module (platform administration)
+const TenantListPage = () => lazyLoad(() => import('@/pages/super-admin/TenantList'))
+const TenantDetailPage = () => lazyLoad(() => import('@/pages/super-admin/TenantDetail'))
+const AdminStatsPage = () => lazyLoad(() => import('@/pages/super-admin/Stats'))
+const AuditLogsPage = () => lazyLoad(() => import('@/pages/super-admin/AuditLogs'))
 
 /**
  * Application routes with metadata
@@ -809,6 +816,23 @@ export function getRouteObjects(): RouteObject[] {
         </AuthGuard>
       ),
       children: protectedChildRoutes,
+    },
+
+    // Super Admin routes (with AdminLayout)
+    {
+      path: '/super-admin',
+      element: (
+        <SuperAdminGuard>
+          <AdminLayout />
+        </SuperAdminGuard>
+      ),
+      children: [
+        { index: true, element: <Navigate to="/super-admin/tenants" replace /> },
+        { path: 'tenants', element: TenantListPage() },
+        { path: 'tenants/:id', element: TenantDetailPage() },
+        { path: 'stats', element: AdminStatsPage() },
+        { path: 'audit-logs', element: AuditLogsPage() },
+      ],
     },
 
     // Catch-all redirect
