@@ -119,50 +119,74 @@ type SalesOrderResponse struct {
 	PayableAmount  float64                  `json:"payable_amount" example:"2899.70"`
 	Status         string                   `json:"status" example:"draft"`
 	Remark         string                   `json:"remark" example:"备注信息"`
-	ConfirmedAt    *time.Time               `json:"confirmed_at,omitempty"`
-	ShippedAt      *time.Time               `json:"shipped_at,omitempty"`
-	CompletedAt    *time.Time               `json:"completed_at,omitempty"`
-	CancelledAt    *time.Time               `json:"cancelled_at,omitempty"`
-	CancelReason   string                   `json:"cancel_reason,omitempty" example:""`
-	CreatedAt      time.Time                `json:"created_at"`
-	UpdatedAt      time.Time                `json:"updated_at"`
-	Version        int                      `json:"version" example:"1"`
+	// @Description Order confirmation timestamp
+	// @Example "2026-02-02T14:00:00Z"
+	ConfirmedAt *time.Time `json:"confirmed_at,omitempty" format:"date-time"`
+	// @Description Order shipment timestamp
+	// @Example "2026-02-02T15:00:00Z"
+	ShippedAt *time.Time `json:"shipped_at,omitempty" format:"date-time"`
+	// @Description Order completion timestamp
+	// @Example "2026-02-02T16:00:00Z"
+	CompletedAt *time.Time `json:"completed_at,omitempty" format:"date-time"`
+	// @Description Order cancellation timestamp
+	// @Example "2026-02-02T14:30:00Z"
+	CancelledAt  *time.Time `json:"cancelled_at,omitempty" format:"date-time"`
+	CancelReason string     `json:"cancel_reason,omitempty" example:""`
+	// @Description Record creation timestamp
+	// @Example "2026-02-02T10:00:00Z"
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Record last update timestamp
+	// @Example "2026-02-02T14:00:00Z"
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
+	Version   int       `json:"version" example:"1"`
 }
 
 // SalesOrderListResponse represents a sales order in list responses
 //
 //	@Description	Sales order list item response
 type SalesOrderListResponse struct {
-	ID            string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
-	OrderNumber   string     `json:"order_number" example:"SO-2026-00001"`
-	CustomerID    string     `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	CustomerName  string     `json:"customer_name" example:"张三"`
-	WarehouseID   *string    `json:"warehouse_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
-	ItemCount     int        `json:"item_count" example:"3"`
-	TotalAmount   float64    `json:"total_amount" example:"2999.70"`
-	PayableAmount float64    `json:"payable_amount" example:"2899.70"`
-	Status        string     `json:"status" example:"draft"`
-	ConfirmedAt   *time.Time `json:"confirmed_at,omitempty"`
-	ShippedAt     *time.Time `json:"shipped_at,omitempty"`
-	CreatedAt     time.Time  `json:"created_at"`
-	UpdatedAt     time.Time  `json:"updated_at"`
+	ID            string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
+	OrderNumber   string  `json:"order_number" example:"SO-2026-00001"`
+	CustomerID    string  `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	CustomerName  string  `json:"customer_name" example:"张三"`
+	WarehouseID   *string `json:"warehouse_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
+	ItemCount     int     `json:"item_count" example:"3"`
+	TotalAmount   float64 `json:"total_amount" example:"2999.70"`
+	PayableAmount float64 `json:"payable_amount" example:"2899.70"`
+	Status        string  `json:"status" example:"draft"`
+	// @Description Order confirmation timestamp
+	// @Example "2026-02-02T14:00:00Z"
+	ConfirmedAt *time.Time `json:"confirmed_at,omitempty" format:"date-time"`
+	// @Description Order shipment timestamp
+	// @Example "2026-02-02T15:00:00Z"
+	ShippedAt *time.Time `json:"shipped_at,omitempty" format:"date-time"`
+	// @Description Record creation timestamp
+	// @Example "2026-02-02T10:00:00Z"
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Record last update timestamp
+	// @Example "2026-02-02T14:00:00Z"
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
 }
 
 // SalesOrderItemResponse represents an order item in API responses
 //
 //	@Description	Sales order item response
 type SalesOrderItemResponse struct {
-	ID          string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440020"`
-	ProductID   string    `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	ProductName string    `json:"product_name" example:"测试商品"`
-	ProductCode string    `json:"product_code" example:"SKU-001"`
-	Quantity    float64   `json:"quantity" example:"10"`
-	UnitPrice   float64   `json:"unit_price" example:"99.99"`
-	Amount      float64   `json:"amount" example:"999.90"`
-	Unit        string    `json:"unit" example:"pcs"`
-	Remark      string    `json:"remark,omitempty" example:"商品备注"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440020"`
+	ProductID   string  `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440002"`
+	ProductName string  `json:"product_name" example:"测试商品"`
+	ProductCode string  `json:"product_code" example:"SKU-001"`
+	Quantity    float64 `json:"quantity" example:"10"`
+	UnitPrice   float64 `json:"unit_price" example:"99.99"`
+	Amount      float64 `json:"amount" example:"999.90"`
+	Unit        string  `json:"unit" example:"pcs"`
+	Remark      string  `json:"remark,omitempty" example:"商品备注"`
+	// @Description Record creation timestamp
+	// @Example "2026-02-02T10:00:00Z"
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Record last update timestamp
+	// @Example "2026-02-02T14:00:00Z"
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
 }
 
 // OrderStatusSummaryResponse represents order count summary by status
