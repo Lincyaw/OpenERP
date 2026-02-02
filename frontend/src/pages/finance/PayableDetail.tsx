@@ -101,7 +101,8 @@ export default function PayableDetailPage() {
   const formatDateTime = useCallback(
     (dateStr?: string): string => {
       if (!dateStr) return '-'
-      return formatDateTimeBase(dateStr)
+      const result = formatDateTimeBase(dateStr)
+      return result || '-' // Handle empty string from invalid dates
     },
     [formatDateTimeBase]
   )
