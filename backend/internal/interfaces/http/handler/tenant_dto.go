@@ -73,24 +73,32 @@ type TenantListQuery struct {
 
 // TenantResponse represents a tenant in API responses
 type TenantResponse struct {
-	ID           uuid.UUID            `json:"id"`
-	Code         string               `json:"code"`
-	Name         string               `json:"name"`
-	ShortName    string               `json:"short_name,omitempty"`
-	Status       string               `json:"status"`
-	Plan         string               `json:"plan"`
-	ContactName  string               `json:"contact_name,omitempty"`
-	ContactPhone string               `json:"contact_phone,omitempty"`
-	ContactEmail string               `json:"contact_email,omitempty"`
-	Address      string               `json:"address,omitempty"`
-	LogoURL      string               `json:"logo_url,omitempty"`
-	Domain       string               `json:"domain,omitempty"`
-	ExpiresAt    *time.Time           `json:"expires_at,omitempty"`
-	TrialEndsAt  *time.Time           `json:"trial_ends_at,omitempty"`
-	Config       TenantConfigResponse `json:"config"`
-	Notes        string               `json:"notes,omitempty"`
-	CreatedAt    time.Time            `json:"created_at"`
-	UpdatedAt    time.Time            `json:"updated_at"`
+	ID           uuid.UUID `json:"id"`
+	Code         string    `json:"code"`
+	Name         string    `json:"name"`
+	ShortName    string    `json:"short_name,omitempty"`
+	Status       string    `json:"status"`
+	Plan         string    `json:"plan"`
+	ContactName  string    `json:"contact_name,omitempty"`
+	ContactPhone string    `json:"contact_phone,omitempty"`
+	ContactEmail string    `json:"contact_email,omitempty"`
+	Address      string    `json:"address,omitempty"`
+	LogoURL      string    `json:"logo_url,omitempty"`
+	Domain       string    `json:"domain,omitempty"`
+	// @Description Timestamp when the tenant subscription expires in ISO 8601 format
+	// @Example 2027-01-31T23:59:59Z
+	ExpiresAt *time.Time `json:"expires_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the trial period ends in ISO 8601 format
+	// @Example 2026-02-15T23:59:59Z
+	TrialEndsAt *time.Time           `json:"trial_ends_at,omitempty" format:"date-time"`
+	Config      TenantConfigResponse `json:"config"`
+	Notes       string               `json:"notes,omitempty"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-01T00:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-15T10:30:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
 }
 
 // TenantConfigResponse represents tenant configuration in API responses

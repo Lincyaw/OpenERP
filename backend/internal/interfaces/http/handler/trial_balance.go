@@ -46,51 +46,59 @@ type TrialBalanceCheckRequest struct {
 //
 //	@Description	Trial balance check response
 type TrialBalanceResponse struct {
-	ID                  string                `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	TenantID            string                `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	CheckedAt           time.Time             `json:"checked_at"`
-	CheckedBy           string                `json:"checked_by" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Status              string                `json:"status" example:"BALANCED"`
-	TotalDebits         float64               `json:"total_debits" example:"50000.00"`
-	TotalCredits        float64               `json:"total_credits" example:"50000.00"`
-	NetBalance          float64               `json:"net_balance" example:"0.00"`
-	TotalReceivables    float64               `json:"total_receivables" example:"30000.00"`
-	TotalPayables       float64               `json:"total_payables" example:"20000.00"`
-	TotalReceipts       float64               `json:"total_receipts" example:"10000.00"`
-	TotalPayments       float64               `json:"total_payments" example:"15000.00"`
-	TotalCreditMemos    float64               `json:"total_credit_memos" example:"2000.00"`
-	TotalDebitMemos     float64               `json:"total_debit_memos" example:"3000.00"`
-	ReceivableCount     int64                 `json:"receivable_count" example:"50"`
-	PayableCount        int64                 `json:"payable_count" example:"30"`
-	ReceiptCount        int64                 `json:"receipt_count" example:"20"`
-	PaymentCount        int64                 `json:"payment_count" example:"25"`
-	CreditMemoCount     int64                 `json:"credit_memo_count" example:"5"`
-	DebitMemoCount      int64                 `json:"debit_memo_count" example:"3"`
-	Discrepancies       []DiscrepancyResponse `json:"discrepancies"`
-	DiscrepancyCount    int                   `json:"discrepancy_count" example:"0"`
-	CriticalCount       int                   `json:"critical_count" example:"0"`
-	WarningCount        int                   `json:"warning_count" example:"0"`
-	PeriodStart         *time.Time            `json:"period_start,omitempty"`
-	PeriodEnd           *time.Time            `json:"period_end,omitempty"`
-	ExecutionDurationMs int64                 `json:"execution_duration_ms" example:"150"`
-	Notes               string                `json:"notes,omitempty" example:"Monthly balance check"`
+	ID       string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	TenantID string `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	// @Description Timestamp when the balance was checked in ISO 8601 format
+	// @Example 2026-01-31T23:59:59Z
+	CheckedAt        time.Time             `json:"checked_at" format:"date-time"`
+	CheckedBy        string                `json:"checked_by" example:"550e8400-e29b-41d4-a716-446655440002"`
+	Status           string                `json:"status" example:"BALANCED"`
+	TotalDebits      float64               `json:"total_debits" example:"50000.00"`
+	TotalCredits     float64               `json:"total_credits" example:"50000.00"`
+	NetBalance       float64               `json:"net_balance" example:"0.00"`
+	TotalReceivables float64               `json:"total_receivables" example:"30000.00"`
+	TotalPayables    float64               `json:"total_payables" example:"20000.00"`
+	TotalReceipts    float64               `json:"total_receipts" example:"10000.00"`
+	TotalPayments    float64               `json:"total_payments" example:"15000.00"`
+	TotalCreditMemos float64               `json:"total_credit_memos" example:"2000.00"`
+	TotalDebitMemos  float64               `json:"total_debit_memos" example:"3000.00"`
+	ReceivableCount  int64                 `json:"receivable_count" example:"50"`
+	PayableCount     int64                 `json:"payable_count" example:"30"`
+	ReceiptCount     int64                 `json:"receipt_count" example:"20"`
+	PaymentCount     int64                 `json:"payment_count" example:"25"`
+	CreditMemoCount  int64                 `json:"credit_memo_count" example:"5"`
+	DebitMemoCount   int64                 `json:"debit_memo_count" example:"3"`
+	Discrepancies    []DiscrepancyResponse `json:"discrepancies"`
+	DiscrepancyCount int                   `json:"discrepancy_count" example:"0"`
+	CriticalCount    int                   `json:"critical_count" example:"0"`
+	WarningCount     int                   `json:"warning_count" example:"0"`
+	// @Description Start of the period being checked in ISO 8601 format
+	// @Example 2026-01-01T00:00:00Z
+	PeriodStart *time.Time `json:"period_start,omitempty" format:"date-time"`
+	// @Description End of the period being checked in ISO 8601 format
+	// @Example 2026-01-31T23:59:59Z
+	PeriodEnd           *time.Time `json:"period_end,omitempty" format:"date-time"`
+	ExecutionDurationMs int64      `json:"execution_duration_ms" example:"150"`
+	Notes               string     `json:"notes,omitempty" example:"Monthly balance check"`
 }
 
 // DiscrepancyResponse represents a balance discrepancy in API responses
 //
 //	@Description	Balance discrepancy response
 type DiscrepancyResponse struct {
-	ID              string                  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Type            string                  `json:"type" example:"RECEIVABLE_AMOUNT_MISMATCH"`
-	EntityType      string                  `json:"entity_type" example:"AccountReceivable"`
-	EntityID        string                  `json:"entity_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	EntityNumber    string                  `json:"entity_number" example:"AR-2026-00001"`
-	ExpectedAmount  float64                 `json:"expected_amount" example:"1000.00"`
-	ActualAmount    float64                 `json:"actual_amount" example:"900.00"`
-	Difference      float64                 `json:"difference" example:"100.00"`
-	Description     string                  `json:"description" example:"Receivable paid + outstanding doesn't equal total amount"`
-	Severity        string                  `json:"severity" example:"CRITICAL"`
-	DetectedAt      time.Time               `json:"detected_at"`
+	ID             string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Type           string  `json:"type" example:"RECEIVABLE_AMOUNT_MISMATCH"`
+	EntityType     string  `json:"entity_type" example:"AccountReceivable"`
+	EntityID       string  `json:"entity_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	EntityNumber   string  `json:"entity_number" example:"AR-2026-00001"`
+	ExpectedAmount float64 `json:"expected_amount" example:"1000.00"`
+	ActualAmount   float64 `json:"actual_amount" example:"900.00"`
+	Difference     float64 `json:"difference" example:"100.00"`
+	Description    string  `json:"description" example:"Receivable paid + outstanding doesn't equal total amount"`
+	Severity       string  `json:"severity" example:"CRITICAL"`
+	// @Description Timestamp when the discrepancy was detected in ISO 8601 format
+	// @Example 2026-01-31T23:59:59Z
+	DetectedAt      time.Time               `json:"detected_at" format:"date-time"`
 	RelatedEntities []RelatedEntityResponse `json:"related_entities,omitempty"`
 }
 
@@ -117,35 +125,45 @@ type BalanceCheckGuardResponse struct {
 //
 //	@Description	Reconciliation report response
 type ReconciliationReportResponse struct {
-	TrialBalance         TrialBalanceResponse `json:"trial_balance"`
-	GeneratedAt          time.Time            `json:"generated_at"`
-	GeneratedBy          string               `json:"generated_by" example:"550e8400-e29b-41d4-a716-446655440000"`
-	ReportType           string               `json:"report_type" example:"RECONCILIATION"`
-	TotalEntitiesChecked int64                `json:"total_entities_checked" example:"133"`
-	HealthScore          int                  `json:"health_score" example:"100"`
-	Recommendations      []string             `json:"recommendations"`
+	TrialBalance TrialBalanceResponse `json:"trial_balance"`
+	// @Description Timestamp when the report was generated in ISO 8601 format
+	// @Example 2026-01-31T23:59:59Z
+	GeneratedAt          time.Time `json:"generated_at" format:"date-time"`
+	GeneratedBy          string    `json:"generated_by" example:"550e8400-e29b-41d4-a716-446655440000"`
+	ReportType           string    `json:"report_type" example:"RECONCILIATION"`
+	TotalEntitiesChecked int64     `json:"total_entities_checked" example:"133"`
+	HealthScore          int       `json:"health_score" example:"100"`
+	Recommendations      []string  `json:"recommendations"`
 }
 
 // AuditLogResponse represents a trial balance audit log entry
 //
 //	@Description	Trial balance audit log response
 type AuditLogResponse struct {
-	ID               string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	TenantID         string     `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	CheckedAt        time.Time  `json:"checked_at"`
-	CheckedBy        string     `json:"checked_by" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Status           string     `json:"status" example:"BALANCED"`
-	TotalDebits      float64    `json:"total_debits" example:"50000.00"`
-	TotalCredits     float64    `json:"total_credits" example:"50000.00"`
-	NetBalance       float64    `json:"net_balance" example:"0.00"`
-	DiscrepancyCount int        `json:"discrepancy_count" example:"0"`
-	CriticalCount    int        `json:"critical_count" example:"0"`
-	WarningCount     int        `json:"warning_count" example:"0"`
-	DurationMs       int64      `json:"duration_ms" example:"150"`
-	PeriodStart      *time.Time `json:"period_start,omitempty"`
-	PeriodEnd        *time.Time `json:"period_end,omitempty"`
-	Notes            string     `json:"notes,omitempty"`
-	CreatedAt        time.Time  `json:"created_at"`
+	ID       string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	TenantID string `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	// @Description Timestamp when the balance was checked in ISO 8601 format
+	// @Example 2026-01-31T23:59:59Z
+	CheckedAt        time.Time `json:"checked_at" format:"date-time"`
+	CheckedBy        string    `json:"checked_by" example:"550e8400-e29b-41d4-a716-446655440002"`
+	Status           string    `json:"status" example:"BALANCED"`
+	TotalDebits      float64   `json:"total_debits" example:"50000.00"`
+	TotalCredits     float64   `json:"total_credits" example:"50000.00"`
+	NetBalance       float64   `json:"net_balance" example:"0.00"`
+	DiscrepancyCount int       `json:"discrepancy_count" example:"0"`
+	CriticalCount    int       `json:"critical_count" example:"0"`
+	WarningCount     int       `json:"warning_count" example:"0"`
+	DurationMs       int64     `json:"duration_ms" example:"150"`
+	// @Description Start of the period being checked in ISO 8601 format
+	// @Example 2026-01-01T00:00:00Z
+	PeriodStart *time.Time `json:"period_start,omitempty" format:"date-time"`
+	// @Description End of the period being checked in ISO 8601 format
+	// @Example 2026-01-31T23:59:59Z
+	PeriodEnd *time.Time `json:"period_end,omitempty" format:"date-time"`
+	Notes     string     `json:"notes,omitempty"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-31T23:59:59Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
 }
 
 // ===================== Handler Methods =====================

@@ -95,11 +95,13 @@ type ConfirmPurchaseOrderRequest struct {
 //
 //	@Description	Item to receive in a purchase order
 type ReceiveItemInput struct {
-	ProductID   string     `json:"product_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440002"`
-	Quantity    float64    `json:"quantity" binding:"required,gt=0" example:"5"`
-	UnitCost    *float64   `json:"unit_cost" example:"52.00"`
-	BatchNumber string     `json:"batch_number" example:"BATCH-2026-001"`
-	ExpiryDate  *time.Time `json:"expiry_date" example:"2027-12-31T00:00:00Z"`
+	ProductID   string   `json:"product_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440002"`
+	Quantity    float64  `json:"quantity" binding:"required,gt=0" example:"5"`
+	UnitCost    *float64 `json:"unit_cost" example:"52.00"`
+	BatchNumber string   `json:"batch_number" example:"BATCH-2026-001"`
+	// @Description Expiry date of the batch in ISO 8601 format
+	// @Example 2027-12-31T00:00:00Z
+	ExpiryDate *time.Time `json:"expiry_date" format:"date-time" example:"2027-12-31T00:00:00Z"`
 }
 
 // ReceivePurchaseOrderRequest represents a request to receive goods
@@ -137,67 +139,91 @@ type PurchaseOrderResponse struct {
 	Status           string                      `json:"status" example:"draft"`
 	ReceiveProgress  float64                     `json:"receive_progress" example:"33.33"`
 	Remark           string                      `json:"remark" example:"备注信息"`
-	ConfirmedAt      *time.Time                  `json:"confirmed_at,omitempty"`
-	CompletedAt      *time.Time                  `json:"completed_at,omitempty"`
-	CancelledAt      *time.Time                  `json:"cancelled_at,omitempty"`
-	CancelReason     string                      `json:"cancel_reason,omitempty" example:""`
-	CreatedAt        time.Time                   `json:"created_at"`
-	UpdatedAt        time.Time                   `json:"updated_at"`
-	Version          int                         `json:"version" example:"1"`
+	// @Description Timestamp when the order was confirmed in ISO 8601 format
+	// @Example 2026-01-15T10:30:00Z
+	ConfirmedAt *time.Time `json:"confirmed_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the order was completed in ISO 8601 format
+	// @Example 2026-01-20T14:45:00Z
+	CompletedAt *time.Time `json:"completed_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the order was cancelled in ISO 8601 format
+	// @Example 2026-01-18T09:15:00Z
+	CancelledAt  *time.Time `json:"cancelled_at,omitempty" format:"date-time"`
+	CancelReason string     `json:"cancel_reason,omitempty" example:""`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-10T08:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-15T10:30:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
+	Version   int       `json:"version" example:"1"`
 }
 
 // PurchaseOrderListResponse represents a purchase order in list responses
 //
 //	@Description	Purchase order list item response
 type PurchaseOrderListResponse struct {
-	ID              string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
-	OrderNumber     string     `json:"order_number" example:"PO-2026-00001"`
-	SupplierID      string     `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	SupplierName    string     `json:"supplier_name" example:"供应商A"`
-	WarehouseID     *string    `json:"warehouse_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
-	ItemCount       int        `json:"item_count" example:"3"`
-	TotalAmount     float64    `json:"total_amount" example:"1500.00"`
-	PayableAmount   float64    `json:"payable_amount" example:"1400.00"`
-	Status          string     `json:"status" example:"draft"`
-	ReceiveProgress float64    `json:"receive_progress" example:"33.33"`
-	ConfirmedAt     *time.Time `json:"confirmed_at,omitempty"`
-	CompletedAt     *time.Time `json:"completed_at,omitempty"`
-	CreatedAt       time.Time  `json:"created_at"`
-	UpdatedAt       time.Time  `json:"updated_at"`
+	ID              string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
+	OrderNumber     string  `json:"order_number" example:"PO-2026-00001"`
+	SupplierID      string  `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	SupplierName    string  `json:"supplier_name" example:"供应商A"`
+	WarehouseID     *string `json:"warehouse_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
+	ItemCount       int     `json:"item_count" example:"3"`
+	TotalAmount     float64 `json:"total_amount" example:"1500.00"`
+	PayableAmount   float64 `json:"payable_amount" example:"1400.00"`
+	Status          string  `json:"status" example:"draft"`
+	ReceiveProgress float64 `json:"receive_progress" example:"33.33"`
+	// @Description Timestamp when the order was confirmed in ISO 8601 format
+	// @Example 2026-01-15T10:30:00Z
+	ConfirmedAt *time.Time `json:"confirmed_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the order was completed in ISO 8601 format
+	// @Example 2026-01-20T14:45:00Z
+	CompletedAt *time.Time `json:"completed_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-10T08:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-15T10:30:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
 }
 
 // PurchaseOrderItemResponse represents an order item in API responses
 //
 //	@Description	Purchase order item response
 type PurchaseOrderItemResponse struct {
-	ID                string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440020"`
-	ProductID         string    `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	ProductName       string    `json:"product_name" example:"测试商品"`
-	ProductCode       string    `json:"product_code" example:"SKU-001"`
-	OrderedQuantity   float64   `json:"ordered_quantity" example:"10"`
-	ReceivedQuantity  float64   `json:"received_quantity" example:"5"`
-	RemainingQuantity float64   `json:"remaining_quantity" example:"5"`
-	UnitCost          float64   `json:"unit_cost" example:"50.00"`
-	Amount            float64   `json:"amount" example:"500.00"`
-	Unit              string    `json:"unit" example:"pcs"`
-	Remark            string    `json:"remark,omitempty" example:"商品备注"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	ID                string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440020"`
+	ProductID         string  `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440002"`
+	ProductName       string  `json:"product_name" example:"测试商品"`
+	ProductCode       string  `json:"product_code" example:"SKU-001"`
+	OrderedQuantity   float64 `json:"ordered_quantity" example:"10"`
+	ReceivedQuantity  float64 `json:"received_quantity" example:"5"`
+	RemainingQuantity float64 `json:"remaining_quantity" example:"5"`
+	UnitCost          float64 `json:"unit_cost" example:"50.00"`
+	Amount            float64 `json:"amount" example:"500.00"`
+	Unit              string  `json:"unit" example:"pcs"`
+	Remark            string  `json:"remark,omitempty" example:"商品备注"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-10T08:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-15T10:30:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
 }
 
 // ReceivedItemResponse represents received item info in responses
 //
 //	@Description	Received item info response
 type ReceivedItemResponse struct {
-	ItemID      string     `json:"item_id" example:"550e8400-e29b-41d4-a716-446655440020"`
-	ProductID   string     `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	ProductName string     `json:"product_name" example:"测试商品"`
-	ProductCode string     `json:"product_code" example:"SKU-001"`
-	Quantity    float64    `json:"quantity" example:"5"`
-	UnitCost    float64    `json:"unit_cost" example:"50.00"`
-	Unit        string     `json:"unit" example:"pcs"`
-	BatchNumber string     `json:"batch_number,omitempty" example:"BATCH-2026-001"`
-	ExpiryDate  *time.Time `json:"expiry_date,omitempty" example:"2027-12-31T00:00:00Z"`
+	ItemID      string  `json:"item_id" example:"550e8400-e29b-41d4-a716-446655440020"`
+	ProductID   string  `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440002"`
+	ProductName string  `json:"product_name" example:"测试商品"`
+	ProductCode string  `json:"product_code" example:"SKU-001"`
+	Quantity    float64 `json:"quantity" example:"5"`
+	UnitCost    float64 `json:"unit_cost" example:"50.00"`
+	Unit        string  `json:"unit" example:"pcs"`
+	BatchNumber string  `json:"batch_number,omitempty" example:"BATCH-2026-001"`
+	// @Description Expiry date of the batch in ISO 8601 format
+	// @Example 2027-12-31T00:00:00Z
+	ExpiryDate *time.Time `json:"expiry_date,omitempty" format:"date-time" example:"2027-12-31T00:00:00Z"`
 }
 
 // ReceiveResultResponse represents the result of a receive operation

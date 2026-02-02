@@ -125,70 +125,106 @@ type PurchaseReturnResponse struct {
 	Status              string                       `json:"status" example:"draft"`
 	Reason              string                       `json:"reason,omitempty" example:"商品质量问题"`
 	Remark              string                       `json:"remark,omitempty" example:"备注信息"`
-	SubmittedAt         *time.Time                   `json:"submitted_at,omitempty"`
-	ApprovedAt          *time.Time                   `json:"approved_at,omitempty"`
-	ApprovedBy          *string                      `json:"approved_by,omitempty"`
-	ApprovalNote        string                       `json:"approval_note,omitempty"`
-	RejectedAt          *time.Time                   `json:"rejected_at,omitempty"`
-	RejectedBy          *string                      `json:"rejected_by,omitempty"`
-	RejectionReason     string                       `json:"rejection_reason,omitempty"`
-	ShippedAt           *time.Time                   `json:"shipped_at,omitempty"`
-	ShippedBy           *string                      `json:"shipped_by,omitempty"`
-	ShippingNote        string                       `json:"shipping_note,omitempty"`
-	TrackingNumber      string                       `json:"tracking_number,omitempty"`
-	CompletedAt         *time.Time                   `json:"completed_at,omitempty"`
-	CancelledAt         *time.Time                   `json:"cancelled_at,omitempty"`
-	CancelReason        string                       `json:"cancel_reason,omitempty"`
-	CreatedAt           time.Time                    `json:"created_at"`
-	UpdatedAt           time.Time                    `json:"updated_at"`
-	Version             int                          `json:"version" example:"1"`
+	// @Description Timestamp when the return was submitted in ISO 8601 format
+	// @Example 2026-01-15T10:00:00Z
+	SubmittedAt *time.Time `json:"submitted_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the return was approved in ISO 8601 format
+	// @Example 2026-01-16T14:30:00Z
+	ApprovedAt   *time.Time `json:"approved_at,omitempty" format:"date-time"`
+	ApprovedBy   *string    `json:"approved_by,omitempty"`
+	ApprovalNote string     `json:"approval_note,omitempty"`
+	// @Description Timestamp when the return was rejected in ISO 8601 format
+	// @Example 2026-01-16T14:30:00Z
+	RejectedAt      *time.Time `json:"rejected_at,omitempty" format:"date-time"`
+	RejectedBy      *string    `json:"rejected_by,omitempty"`
+	RejectionReason string     `json:"rejection_reason,omitempty"`
+	// @Description Timestamp when the return was shipped in ISO 8601 format
+	// @Example 2026-01-17T09:00:00Z
+	ShippedAt      *time.Time `json:"shipped_at,omitempty" format:"date-time"`
+	ShippedBy      *string    `json:"shipped_by,omitempty"`
+	ShippingNote   string     `json:"shipping_note,omitempty"`
+	TrackingNumber string     `json:"tracking_number,omitempty"`
+	// @Description Timestamp when the return was completed in ISO 8601 format
+	// @Example 2026-01-20T16:00:00Z
+	CompletedAt *time.Time `json:"completed_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the return was cancelled in ISO 8601 format
+	// @Example 2026-01-18T11:00:00Z
+	CancelledAt  *time.Time `json:"cancelled_at,omitempty" format:"date-time"`
+	CancelReason string     `json:"cancel_reason,omitempty"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-15T08:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-17T09:00:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
+	Version   int       `json:"version" example:"1"`
 }
 
 // PurchaseReturnListResponse represents a purchase return in list responses
 //
 //	@Description	Purchase return list item response
 type PurchaseReturnListResponse struct {
-	ID                  string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
-	ReturnNumber        string     `json:"return_number" example:"PR-2026-00001"`
-	PurchaseOrderID     string     `json:"purchase_order_id" example:"550e8400-e29b-41d4-a716-446655440020"`
-	PurchaseOrderNumber string     `json:"purchase_order_number" example:"PO-2026-00001"`
-	SupplierID          string     `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	SupplierName        string     `json:"supplier_name" example:"优质供应商"`
-	WarehouseID         *string    `json:"warehouse_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
-	ItemCount           int        `json:"item_count" example:"2"`
-	TotalRefund         float64    `json:"total_refund" example:"799.92"`
-	Status              string     `json:"status" example:"pending"`
-	SubmittedAt         *time.Time `json:"submitted_at,omitempty"`
-	ApprovedAt          *time.Time `json:"approved_at,omitempty"`
-	ShippedAt           *time.Time `json:"shipped_at,omitempty"`
-	CompletedAt         *time.Time `json:"completed_at,omitempty"`
-	CreatedAt           time.Time  `json:"created_at"`
-	UpdatedAt           time.Time  `json:"updated_at"`
+	ID                  string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440010"`
+	ReturnNumber        string  `json:"return_number" example:"PR-2026-00001"`
+	PurchaseOrderID     string  `json:"purchase_order_id" example:"550e8400-e29b-41d4-a716-446655440020"`
+	PurchaseOrderNumber string  `json:"purchase_order_number" example:"PO-2026-00001"`
+	SupplierID          string  `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	SupplierName        string  `json:"supplier_name" example:"优质供应商"`
+	WarehouseID         *string `json:"warehouse_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
+	ItemCount           int     `json:"item_count" example:"2"`
+	TotalRefund         float64 `json:"total_refund" example:"799.92"`
+	Status              string  `json:"status" example:"pending"`
+	// @Description Timestamp when the return was submitted in ISO 8601 format
+	// @Example 2026-01-15T10:00:00Z
+	SubmittedAt *time.Time `json:"submitted_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the return was approved in ISO 8601 format
+	// @Example 2026-01-16T14:30:00Z
+	ApprovedAt *time.Time `json:"approved_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the return was shipped in ISO 8601 format
+	// @Example 2026-01-17T09:00:00Z
+	ShippedAt *time.Time `json:"shipped_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the return was completed in ISO 8601 format
+	// @Example 2026-01-20T16:00:00Z
+	CompletedAt *time.Time `json:"completed_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-15T08:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-17T09:00:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
 }
 
 // PurchaseReturnItemResponse represents a return item in API responses
 //
 //	@Description	Purchase return item response
 type PurchaseReturnItemResponse struct {
-	ID                  string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440030"`
-	PurchaseOrderItemID string     `json:"purchase_order_item_id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	ProductID           string     `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440003"`
-	ProductName         string     `json:"product_name" example:"测试商品"`
-	ProductCode         string     `json:"product_code" example:"SKU-001"`
-	OriginalQuantity    float64    `json:"original_quantity" example:"10"`
-	ReturnQuantity      float64    `json:"return_quantity" example:"5"`
-	UnitCost            float64    `json:"unit_cost" example:"99.99"`
-	RefundAmount        float64    `json:"refund_amount" example:"499.95"`
-	Unit                string     `json:"unit" example:"pcs"`
-	Reason              string     `json:"reason,omitempty" example:"商品损坏"`
-	ConditionOnReturn   string     `json:"condition_on_return,omitempty" example:"defective"`
-	BatchNumber         string     `json:"batch_number,omitempty" example:"BATCH-001"`
-	ShippedQuantity     float64    `json:"shipped_quantity" example:"5"`
-	ShippedAt           *time.Time `json:"shipped_at,omitempty"`
+	ID                  string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440030"`
+	PurchaseOrderItemID string  `json:"purchase_order_item_id" example:"550e8400-e29b-41d4-a716-446655440002"`
+	ProductID           string  `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440003"`
+	ProductName         string  `json:"product_name" example:"测试商品"`
+	ProductCode         string  `json:"product_code" example:"SKU-001"`
+	OriginalQuantity    float64 `json:"original_quantity" example:"10"`
+	ReturnQuantity      float64 `json:"return_quantity" example:"5"`
+	UnitCost            float64 `json:"unit_cost" example:"99.99"`
+	RefundAmount        float64 `json:"refund_amount" example:"499.95"`
+	Unit                string  `json:"unit" example:"pcs"`
+	Reason              string  `json:"reason,omitempty" example:"商品损坏"`
+	ConditionOnReturn   string  `json:"condition_on_return,omitempty" example:"defective"`
+	BatchNumber         string  `json:"batch_number,omitempty" example:"BATCH-001"`
+	ShippedQuantity     float64 `json:"shipped_quantity" example:"5"`
+	// @Description Timestamp when the item was shipped in ISO 8601 format
+	// @Example 2026-01-17T09:00:00Z
+	ShippedAt           *time.Time `json:"shipped_at,omitempty" format:"date-time"`
 	SupplierReceivedQty float64    `json:"supplier_received_qty" example:"5"`
-	SupplierReceivedAt  *time.Time `json:"supplier_received_at,omitempty"`
-	CreatedAt           time.Time  `json:"created_at"`
-	UpdatedAt           time.Time  `json:"updated_at"`
+	// @Description Timestamp when the supplier received the item in ISO 8601 format
+	// @Example 2026-01-20T14:00:00Z
+	SupplierReceivedAt *time.Time `json:"supplier_received_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-15T08:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-17T09:00:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
 }
 
 // PurchaseReturnStatusSummaryResponse represents return count summary by status

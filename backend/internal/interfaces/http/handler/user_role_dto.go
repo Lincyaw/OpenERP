@@ -68,18 +68,24 @@ type UserListQuery struct {
 // UserResponse represents a user in API responses
 // @Name HandlerUserListQuery
 type UserResponse struct {
-	ID          uuid.UUID  `json:"id"`
-	TenantID    uuid.UUID  `json:"tenant_id"`
-	Username    string     `json:"username"`
-	Email       string     `json:"email,omitempty"`
-	Phone       string     `json:"phone,omitempty"`
-	DisplayName string     `json:"display_name"`
-	Avatar      string     `json:"avatar,omitempty"`
-	Status      string     `json:"status"`
-	RoleIDs     []string   `json:"role_ids"`
-	LastLoginAt *time.Time `json:"last_login_at,omitempty"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	ID          uuid.UUID `json:"id"`
+	TenantID    uuid.UUID `json:"tenant_id"`
+	Username    string    `json:"username"`
+	Email       string    `json:"email,omitempty"`
+	Phone       string    `json:"phone,omitempty"`
+	DisplayName string    `json:"display_name"`
+	Avatar      string    `json:"avatar,omitempty"`
+	Status      string    `json:"status"`
+	RoleIDs     []string  `json:"role_ids"`
+	// @Description Timestamp of the user's last login in ISO 8601 format
+	// @Example 2026-01-31T15:30:00Z
+	LastLoginAt *time.Time `json:"last_login_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-01T00:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-15T10:30:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
 }
 
 // UserListResponse represents a paginated list of users
@@ -147,8 +153,12 @@ type RoleResponse struct {
 	SortOrder    int       `json:"sort_order"`
 	Permissions  []string  `json:"permissions"`
 	UserCount    int64     `json:"user_count,omitempty"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-01T00:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-15T10:30:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
 }
 
 // RoleListResponse represents a paginated list of roles

@@ -29,144 +29,184 @@ func NewFinanceHandler(financeService *financeapp.FinanceService) *FinanceHandle
 //
 //	@Description	Account receivable response
 type AccountReceivableResponse struct {
-	ID                string                  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	TenantID          string                  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	ReceivableNumber  string                  `json:"receivable_number" example:"AR-2026-00001"`
-	CustomerID        string                  `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	CustomerName      string                  `json:"customer_name" example:"张三"`
-	SourceType        string                  `json:"source_type" example:"SALES_ORDER"`
-	SourceID          string                  `json:"source_id" example:"550e8400-e29b-41d4-a716-446655440003"`
-	SourceNumber      string                  `json:"source_number" example:"SO-2026-00001"`
-	TotalAmount       float64                 `json:"total_amount" example:"1000.00"`
-	PaidAmount        float64                 `json:"paid_amount" example:"500.00"`
-	OutstandingAmount float64                 `json:"outstanding_amount" example:"500.00"`
-	Status            string                  `json:"status" example:"PARTIAL"`
-	DueDate           *time.Time              `json:"due_date,omitempty"`
-	PaymentRecords    []PaymentRecordResponse `json:"payment_records,omitempty"`
-	Remark            string                  `json:"remark,omitempty" example:"备注"`
-	PaidAt            *time.Time              `json:"paid_at,omitempty"`
-	CreatedAt         time.Time               `json:"created_at"`
-	UpdatedAt         time.Time               `json:"updated_at"`
-	Version           int                     `json:"version" example:"1"`
+	ID                string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	TenantID          string  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	ReceivableNumber  string  `json:"receivable_number" example:"AR-2026-00001"`
+	CustomerID        string  `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440002"`
+	CustomerName      string  `json:"customer_name" example:"张三"`
+	SourceType        string  `json:"source_type" example:"SALES_ORDER"`
+	SourceID          string  `json:"source_id" example:"550e8400-e29b-41d4-a716-446655440003"`
+	SourceNumber      string  `json:"source_number" example:"SO-2026-00001"`
+	TotalAmount       float64 `json:"total_amount" example:"1000.00"`
+	PaidAmount        float64 `json:"paid_amount" example:"500.00"`
+	OutstandingAmount float64 `json:"outstanding_amount" example:"500.00"`
+	Status            string  `json:"status" example:"PARTIAL"`
+	// @Description Due date for payment in ISO 8601 format
+	// @Example 2026-02-15T00:00:00Z
+	DueDate        *time.Time              `json:"due_date,omitempty" format:"date-time"`
+	PaymentRecords []PaymentRecordResponse `json:"payment_records,omitempty"`
+	Remark         string                  `json:"remark,omitempty" example:"备注"`
+	// @Description Timestamp when fully paid in ISO 8601 format
+	// @Example 2026-01-25T14:00:00Z
+	PaidAt *time.Time `json:"paid_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-15T08:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-25T14:00:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
+	Version   int       `json:"version" example:"1"`
 }
 
 // PaymentRecordResponse represents a payment record in API responses
 //
 //	@Description	Payment record response
 type PaymentRecordResponse struct {
-	ID               string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	ReceiptVoucherID string    `json:"receipt_voucher_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Amount           float64   `json:"amount" example:"500.00"`
-	AppliedAt        time.Time `json:"applied_at"`
-	Remark           string    `json:"remark,omitempty" example:"收款记录"`
+	ID               string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	ReceiptVoucherID string  `json:"receipt_voucher_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Amount           float64 `json:"amount" example:"500.00"`
+	// @Description Timestamp when the payment was applied in ISO 8601 format
+	// @Example 2026-01-25T14:00:00Z
+	AppliedAt time.Time `json:"applied_at" format:"date-time"`
+	Remark    string    `json:"remark,omitempty" example:"收款记录"`
 }
 
 // AccountPayableResponse represents an account payable in API responses
 //
 //	@Description	Account payable response
 type AccountPayableResponse struct {
-	ID                string                         `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	TenantID          string                         `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	PayableNumber     string                         `json:"payable_number" example:"AP-2026-00001"`
-	SupplierID        string                         `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	SupplierName      string                         `json:"supplier_name" example:"供应商A"`
-	SourceType        string                         `json:"source_type" example:"PURCHASE_ORDER"`
-	SourceID          string                         `json:"source_id" example:"550e8400-e29b-41d4-a716-446655440003"`
-	SourceNumber      string                         `json:"source_number" example:"PO-2026-00001"`
-	TotalAmount       float64                        `json:"total_amount" example:"2000.00"`
-	PaidAmount        float64                        `json:"paid_amount" example:"1000.00"`
-	OutstandingAmount float64                        `json:"outstanding_amount" example:"1000.00"`
-	Status            string                         `json:"status" example:"PARTIAL"`
-	DueDate           *time.Time                     `json:"due_date,omitempty"`
-	PaymentRecords    []PayablePaymentRecordResponse `json:"payment_records,omitempty"`
-	Remark            string                         `json:"remark,omitempty" example:"备注"`
-	PaidAt            *time.Time                     `json:"paid_at,omitempty"`
-	CreatedAt         time.Time                      `json:"created_at"`
-	UpdatedAt         time.Time                      `json:"updated_at"`
-	Version           int                            `json:"version" example:"1"`
+	ID                string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	TenantID          string  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	PayableNumber     string  `json:"payable_number" example:"AP-2026-00001"`
+	SupplierID        string  `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440002"`
+	SupplierName      string  `json:"supplier_name" example:"供应商A"`
+	SourceType        string  `json:"source_type" example:"PURCHASE_ORDER"`
+	SourceID          string  `json:"source_id" example:"550e8400-e29b-41d4-a716-446655440003"`
+	SourceNumber      string  `json:"source_number" example:"PO-2026-00001"`
+	TotalAmount       float64 `json:"total_amount" example:"2000.00"`
+	PaidAmount        float64 `json:"paid_amount" example:"1000.00"`
+	OutstandingAmount float64 `json:"outstanding_amount" example:"1000.00"`
+	Status            string  `json:"status" example:"PARTIAL"`
+	// @Description Due date for payment in ISO 8601 format
+	// @Example 2026-02-15T00:00:00Z
+	DueDate        *time.Time                     `json:"due_date,omitempty" format:"date-time"`
+	PaymentRecords []PayablePaymentRecordResponse `json:"payment_records,omitempty"`
+	Remark         string                         `json:"remark,omitempty" example:"备注"`
+	// @Description Timestamp when fully paid in ISO 8601 format
+	// @Example 2026-01-25T14:00:00Z
+	PaidAt *time.Time `json:"paid_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-15T08:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-25T14:00:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
+	Version   int       `json:"version" example:"1"`
 }
 
 // PayablePaymentRecordResponse represents a payment record for payable in API responses
 //
 //	@Description	Payable payment record response
 type PayablePaymentRecordResponse struct {
-	ID               string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	PaymentVoucherID string    `json:"payment_voucher_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Amount           float64   `json:"amount" example:"1000.00"`
-	AppliedAt        time.Time `json:"applied_at"`
-	Remark           string    `json:"remark,omitempty" example:"付款记录"`
+	ID               string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	PaymentVoucherID string  `json:"payment_voucher_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Amount           float64 `json:"amount" example:"1000.00"`
+	// @Description Timestamp when the payment was applied in ISO 8601 format
+	// @Example 2026-01-25T14:00:00Z
+	AppliedAt time.Time `json:"applied_at" format:"date-time"`
+	Remark    string    `json:"remark,omitempty" example:"付款记录"`
 }
 
 // ReceiptVoucherResponse represents a receipt voucher in API responses
 //
 //	@Description	Receipt voucher response
 type ReceiptVoucherResponse struct {
-	ID                string                         `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	TenantID          string                         `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	VoucherNumber     string                         `json:"voucher_number" example:"RV-2026-00001"`
-	CustomerID        string                         `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	CustomerName      string                         `json:"customer_name" example:"张三"`
-	Amount            float64                        `json:"amount" example:"1000.00"`
-	AllocatedAmount   float64                        `json:"allocated_amount" example:"500.00"`
-	UnallocatedAmount float64                        `json:"unallocated_amount" example:"500.00"`
-	PaymentMethod     string                         `json:"payment_method" example:"CASH"`
-	PaymentReference  string                         `json:"payment_reference,omitempty" example:"银行转账-12345"`
-	Status            string                         `json:"status" example:"CONFIRMED"`
-	ReceiptDate       time.Time                      `json:"receipt_date"`
-	Allocations       []ReceivableAllocationResponse `json:"allocations,omitempty"`
-	Remark            string                         `json:"remark,omitempty" example:"备注"`
-	ConfirmedAt       *time.Time                     `json:"confirmed_at,omitempty"`
-	CreatedAt         time.Time                      `json:"created_at"`
-	UpdatedAt         time.Time                      `json:"updated_at"`
-	Version           int                            `json:"version" example:"1"`
+	ID                string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	TenantID          string  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	VoucherNumber     string  `json:"voucher_number" example:"RV-2026-00001"`
+	CustomerID        string  `json:"customer_id" example:"550e8400-e29b-41d4-a716-446655440002"`
+	CustomerName      string  `json:"customer_name" example:"张三"`
+	Amount            float64 `json:"amount" example:"1000.00"`
+	AllocatedAmount   float64 `json:"allocated_amount" example:"500.00"`
+	UnallocatedAmount float64 `json:"unallocated_amount" example:"500.00"`
+	PaymentMethod     string  `json:"payment_method" example:"CASH"`
+	PaymentReference  string  `json:"payment_reference,omitempty" example:"银行转账-12345"`
+	Status            string  `json:"status" example:"CONFIRMED"`
+	// @Description Date when the receipt was received in ISO 8601 format
+	// @Example 2026-01-24T00:00:00Z
+	ReceiptDate time.Time                      `json:"receipt_date" format:"date-time"`
+	Allocations []ReceivableAllocationResponse `json:"allocations,omitempty"`
+	Remark      string                         `json:"remark,omitempty" example:"备注"`
+	// @Description Timestamp when the voucher was confirmed in ISO 8601 format
+	// @Example 2026-01-25T10:00:00Z
+	ConfirmedAt *time.Time `json:"confirmed_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-24T08:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-25T10:00:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
+	Version   int       `json:"version" example:"1"`
 }
 
 // ReceivableAllocationResponse represents a receivable allocation in API responses
 //
 //	@Description	Receivable allocation response
 type ReceivableAllocationResponse struct {
-	ID               string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	ReceivableID     string    `json:"receivable_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	ReceivableNumber string    `json:"receivable_number" example:"AR-2026-00001"`
-	Amount           float64   `json:"amount" example:"500.00"`
-	AllocatedAt      time.Time `json:"allocated_at"`
-	Remark           string    `json:"remark,omitempty" example:"核销备注"`
+	ID               string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	ReceivableID     string  `json:"receivable_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	ReceivableNumber string  `json:"receivable_number" example:"AR-2026-00001"`
+	Amount           float64 `json:"amount" example:"500.00"`
+	// @Description Timestamp when the allocation was made in ISO 8601 format
+	// @Example 2026-01-25T10:00:00Z
+	AllocatedAt time.Time `json:"allocated_at" format:"date-time"`
+	Remark      string    `json:"remark,omitempty" example:"核销备注"`
 }
 
 // PaymentVoucherResponse represents a payment voucher in API responses
 //
 //	@Description	Payment voucher response
 type PaymentVoucherResponse struct {
-	ID                string                      `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	TenantID          string                      `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	VoucherNumber     string                      `json:"voucher_number" example:"PV-2026-00001"`
-	SupplierID        string                      `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	SupplierName      string                      `json:"supplier_name" example:"供应商A"`
-	Amount            float64                     `json:"amount" example:"2000.00"`
-	AllocatedAmount   float64                     `json:"allocated_amount" example:"1000.00"`
-	UnallocatedAmount float64                     `json:"unallocated_amount" example:"1000.00"`
-	PaymentMethod     string                      `json:"payment_method" example:"BANK_TRANSFER"`
-	PaymentReference  string                      `json:"payment_reference,omitempty" example:"银行转账-67890"`
-	Status            string                      `json:"status" example:"CONFIRMED"`
-	PaymentDate       time.Time                   `json:"payment_date"`
-	Allocations       []PayableAllocationResponse `json:"allocations,omitempty"`
-	Remark            string                      `json:"remark,omitempty" example:"备注"`
-	ConfirmedAt       *time.Time                  `json:"confirmed_at,omitempty"`
-	CreatedAt         time.Time                   `json:"created_at"`
-	UpdatedAt         time.Time                   `json:"updated_at"`
-	Version           int                         `json:"version" example:"1"`
+	ID                string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	TenantID          string  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	VoucherNumber     string  `json:"voucher_number" example:"PV-2026-00001"`
+	SupplierID        string  `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440002"`
+	SupplierName      string  `json:"supplier_name" example:"供应商A"`
+	Amount            float64 `json:"amount" example:"2000.00"`
+	AllocatedAmount   float64 `json:"allocated_amount" example:"1000.00"`
+	UnallocatedAmount float64 `json:"unallocated_amount" example:"1000.00"`
+	PaymentMethod     string  `json:"payment_method" example:"BANK_TRANSFER"`
+	PaymentReference  string  `json:"payment_reference,omitempty" example:"银行转账-67890"`
+	Status            string  `json:"status" example:"CONFIRMED"`
+	// @Description Date when the payment was made in ISO 8601 format
+	// @Example 2026-01-24T00:00:00Z
+	PaymentDate time.Time                   `json:"payment_date" format:"date-time"`
+	Allocations []PayableAllocationResponse `json:"allocations,omitempty"`
+	Remark      string                      `json:"remark,omitempty" example:"备注"`
+	// @Description Timestamp when the voucher was confirmed in ISO 8601 format
+	// @Example 2026-01-25T10:00:00Z
+	ConfirmedAt *time.Time `json:"confirmed_at,omitempty" format:"date-time"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-24T08:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-25T10:00:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
+	Version   int       `json:"version" example:"1"`
 }
 
 // PayableAllocationResponse represents a payable allocation in API responses
 //
 //	@Description	Payable allocation response
 type PayableAllocationResponse struct {
-	ID            string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	PayableID     string    `json:"payable_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	PayableNumber string    `json:"payable_number" example:"AP-2026-00001"`
-	Amount        float64   `json:"amount" example:"1000.00"`
-	AllocatedAt   time.Time `json:"allocated_at"`
-	Remark        string    `json:"remark,omitempty" example:"核销备注"`
+	ID            string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	PayableID     string  `json:"payable_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	PayableNumber string  `json:"payable_number" example:"AP-2026-00001"`
+	Amount        float64 `json:"amount" example:"1000.00"`
+	// @Description Timestamp when the allocation was made in ISO 8601 format
+	// @Example 2026-01-25T10:00:00Z
+	AllocatedAt time.Time `json:"allocated_at" format:"date-time"`
+	Remark      string    `json:"remark,omitempty" example:"核销备注"`
 }
 
 // CreateReceiptVoucherRequest represents a request to create a receipt voucher

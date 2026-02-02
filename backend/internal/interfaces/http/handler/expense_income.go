@@ -30,41 +30,57 @@ func NewExpenseIncomeHandler(service *financeapp.ExpenseIncomeService) *ExpenseI
 //
 //	@Description	Expense record response
 type ExpenseRecordResponse struct {
-	ID              string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	TenantID        string     `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	ExpenseNumber   string     `json:"expense_number" example:"EXP-2026-00001"`
-	Category        string     `json:"category" example:"RENT"`
-	CategoryName    string     `json:"category_name" example:"房租"`
-	Amount          float64    `json:"amount" example:"5000.00"`
-	Description     string     `json:"description" example:"2026年1月办公室租金"`
-	IncurredAt      time.Time  `json:"incurred_at"`
-	Status          string     `json:"status" example:"DRAFT"`
-	PaymentStatus   string     `json:"payment_status" example:"UNPAID"`
-	PaymentMethod   *string    `json:"payment_method,omitempty" example:"BANK_TRANSFER"`
-	PaidAt          *time.Time `json:"paid_at,omitempty"`
-	Remark          string     `json:"remark,omitempty" example:"备注"`
-	AttachmentURLs  string     `json:"attachment_urls,omitempty"`
-	SubmittedAt     *time.Time `json:"submitted_at,omitempty"`
-	SubmittedBy     *string    `json:"submitted_by,omitempty"`
-	ApprovedAt      *time.Time `json:"approved_at,omitempty"`
-	ApprovedBy      *string    `json:"approved_by,omitempty"`
-	ApprovalRemark  string     `json:"approval_remark,omitempty"`
-	RejectedAt      *time.Time `json:"rejected_at,omitempty"`
+	ID            string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	TenantID      string  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	ExpenseNumber string  `json:"expense_number" example:"EXP-2026-00001"`
+	Category      string  `json:"category" example:"RENT"`
+	CategoryName  string  `json:"category_name" example:"房租"`
+	Amount        float64 `json:"amount" example:"5000.00"`
+	Description   string  `json:"description" example:"2026年1月办公室租金"`
+	// @Description Timestamp when the expense was incurred in ISO 8601 format
+	// @Example 2026-01-15T00:00:00Z
+	IncurredAt    time.Time `json:"incurred_at" format:"date-time"`
+	Status        string    `json:"status" example:"DRAFT"`
+	PaymentStatus string    `json:"payment_status" example:"UNPAID"`
+	PaymentMethod *string   `json:"payment_method,omitempty" example:"BANK_TRANSFER"`
+	// @Description Timestamp when the expense was paid in ISO 8601 format
+	// @Example 2026-01-20T10:00:00Z
+	PaidAt         *time.Time `json:"paid_at,omitempty" format:"date-time"`
+	Remark         string     `json:"remark,omitempty" example:"备注"`
+	AttachmentURLs string     `json:"attachment_urls,omitempty"`
+	// @Description Timestamp when the expense was submitted in ISO 8601 format
+	// @Example 2026-01-16T09:00:00Z
+	SubmittedAt *time.Time `json:"submitted_at,omitempty" format:"date-time"`
+	SubmittedBy *string    `json:"submitted_by,omitempty"`
+	// @Description Timestamp when the expense was approved in ISO 8601 format
+	// @Example 2026-01-17T14:00:00Z
+	ApprovedAt     *time.Time `json:"approved_at,omitempty" format:"date-time"`
+	ApprovedBy     *string    `json:"approved_by,omitempty"`
+	ApprovalRemark string     `json:"approval_remark,omitempty"`
+	// @Description Timestamp when the expense was rejected in ISO 8601 format
+	// @Example 2026-01-17T14:00:00Z
+	RejectedAt      *time.Time `json:"rejected_at,omitempty" format:"date-time"`
 	RejectedBy      *string    `json:"rejected_by,omitempty"`
 	RejectionReason string     `json:"rejection_reason,omitempty"`
-	CreatedAt       time.Time  `json:"created_at"`
-	UpdatedAt       time.Time  `json:"updated_at"`
-	Version         int        `json:"version" example:"1"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-15T08:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-17T14:00:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
+	Version   int       `json:"version" example:"1"`
 }
 
 // CreateExpenseRecordRequest represents a request to create an expense record
 //
 //	@Description	Create expense record request
 type CreateExpenseRecordRequest struct {
-	Category       string    `json:"category" binding:"required" example:"RENT"`
-	Amount         float64   `json:"amount" binding:"required,gt=0" example:"5000.00"`
-	Description    string    `json:"description" binding:"required" example:"2026年1月办公室租金"`
-	IncurredAt     time.Time `json:"incurred_at" binding:"required"`
+	Category    string  `json:"category" binding:"required" example:"RENT"`
+	Amount      float64 `json:"amount" binding:"required,gt=0" example:"5000.00"`
+	Description string  `json:"description" binding:"required" example:"2026年1月办公室租金"`
+	// @Description Timestamp when the expense was incurred in ISO 8601 format
+	// @Example 2026-01-15T00:00:00Z
+	IncurredAt     time.Time `json:"incurred_at" binding:"required" format:"date-time"`
 	Remark         string    `json:"remark" example:"备注"`
 	AttachmentURLs string    `json:"attachment_urls"`
 }
@@ -73,10 +89,12 @@ type CreateExpenseRecordRequest struct {
 //
 //	@Description	Update expense record request
 type UpdateExpenseRecordRequest struct {
-	Category       string    `json:"category" binding:"required" example:"RENT"`
-	Amount         float64   `json:"amount" binding:"required,gt=0" example:"5000.00"`
-	Description    string    `json:"description" binding:"required" example:"2026年1月办公室租金"`
-	IncurredAt     time.Time `json:"incurred_at" binding:"required"`
+	Category    string  `json:"category" binding:"required" example:"RENT"`
+	Amount      float64 `json:"amount" binding:"required,gt=0" example:"5000.00"`
+	Description string  `json:"description" binding:"required" example:"2026年1月办公室租金"`
+	// @Description Timestamp when the expense was incurred in ISO 8601 format
+	// @Example 2026-01-15T00:00:00Z
+	IncurredAt     time.Time `json:"incurred_at" binding:"required" format:"date-time"`
 	Remark         string    `json:"remark" example:"备注"`
 	AttachmentURLs string    `json:"attachment_urls"`
 }
@@ -124,35 +142,47 @@ type ExpenseSummaryResponse struct {
 //
 //	@Description	Other income record response
 type OtherIncomeRecordResponse struct {
-	ID             string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	TenantID       string     `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	IncomeNumber   string     `json:"income_number" example:"INC-2026-00001"`
-	Category       string     `json:"category" example:"INVESTMENT"`
-	CategoryName   string     `json:"category_name" example:"投资收益"`
-	Amount         float64    `json:"amount" example:"10000.00"`
-	Description    string     `json:"description" example:"理财产品收益"`
-	ReceivedAt     time.Time  `json:"received_at"`
-	Status         string     `json:"status" example:"DRAFT"`
-	ReceiptStatus  string     `json:"receipt_status" example:"PENDING"`
-	PaymentMethod  *string    `json:"payment_method,omitempty" example:"BANK_TRANSFER"`
-	ActualReceived *time.Time `json:"actual_received,omitempty"`
+	ID           string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	TenantID     string  `json:"tenant_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	IncomeNumber string  `json:"income_number" example:"INC-2026-00001"`
+	Category     string  `json:"category" example:"INVESTMENT"`
+	CategoryName string  `json:"category_name" example:"投资收益"`
+	Amount       float64 `json:"amount" example:"10000.00"`
+	Description  string  `json:"description" example:"理财产品收益"`
+	// @Description Timestamp when the income was received in ISO 8601 format
+	// @Example 2026-01-15T00:00:00Z
+	ReceivedAt    time.Time `json:"received_at" format:"date-time"`
+	Status        string    `json:"status" example:"DRAFT"`
+	ReceiptStatus string    `json:"receipt_status" example:"PENDING"`
+	PaymentMethod *string   `json:"payment_method,omitempty" example:"BANK_TRANSFER"`
+	// @Description Timestamp when the income was actually received in ISO 8601 format
+	// @Example 2026-01-20T10:00:00Z
+	ActualReceived *time.Time `json:"actual_received,omitempty" format:"date-time"`
 	Remark         string     `json:"remark,omitempty" example:"备注"`
 	AttachmentURLs string     `json:"attachment_urls,omitempty"`
-	ConfirmedAt    *time.Time `json:"confirmed_at,omitempty"`
-	ConfirmedBy    *string    `json:"confirmed_by,omitempty"`
-	CreatedAt      time.Time  `json:"created_at"`
-	UpdatedAt      time.Time  `json:"updated_at"`
-	Version        int        `json:"version" example:"1"`
+	// @Description Timestamp when the income was confirmed in ISO 8601 format
+	// @Example 2026-01-21T14:00:00Z
+	ConfirmedAt *time.Time `json:"confirmed_at,omitempty" format:"date-time"`
+	ConfirmedBy *string    `json:"confirmed_by,omitempty"`
+	// @Description Timestamp when the record was created in ISO 8601 format
+	// @Example 2026-01-15T08:00:00Z
+	CreatedAt time.Time `json:"created_at" format:"date-time"`
+	// @Description Timestamp when the record was last updated in ISO 8601 format
+	// @Example 2026-01-21T14:00:00Z
+	UpdatedAt time.Time `json:"updated_at" format:"date-time"`
+	Version   int       `json:"version" example:"1"`
 }
 
 // CreateOtherIncomeRecordRequest represents a request to create an income record
 //
 //	@Description	Create other income record request
 type CreateOtherIncomeRecordRequest struct {
-	Category       string    `json:"category" binding:"required" example:"INVESTMENT"`
-	Amount         float64   `json:"amount" binding:"required,gt=0" example:"10000.00"`
-	Description    string    `json:"description" binding:"required" example:"理财产品收益"`
-	ReceivedAt     time.Time `json:"received_at" binding:"required"`
+	Category    string  `json:"category" binding:"required" example:"INVESTMENT"`
+	Amount      float64 `json:"amount" binding:"required,gt=0" example:"10000.00"`
+	Description string  `json:"description" binding:"required" example:"理财产品收益"`
+	// @Description Timestamp when the income was received in ISO 8601 format
+	// @Example 2026-01-15T00:00:00Z
+	ReceivedAt     time.Time `json:"received_at" binding:"required" format:"date-time"`
 	Remark         string    `json:"remark" example:"备注"`
 	AttachmentURLs string    `json:"attachment_urls"`
 }
@@ -161,10 +191,12 @@ type CreateOtherIncomeRecordRequest struct {
 //
 //	@Description	Update other income record request
 type UpdateOtherIncomeRecordRequest struct {
-	Category       string    `json:"category" binding:"required" example:"INVESTMENT"`
-	Amount         float64   `json:"amount" binding:"required,gt=0" example:"10000.00"`
-	Description    string    `json:"description" binding:"required" example:"理财产品收益"`
-	ReceivedAt     time.Time `json:"received_at" binding:"required"`
+	Category    string  `json:"category" binding:"required" example:"INVESTMENT"`
+	Amount      float64 `json:"amount" binding:"required,gt=0" example:"10000.00"`
+	Description string  `json:"description" binding:"required" example:"理财产品收益"`
+	// @Description Timestamp when the income was received in ISO 8601 format
+	// @Example 2026-01-15T00:00:00Z
+	ReceivedAt     time.Time `json:"received_at" binding:"required" format:"date-time"`
 	Remark         string    `json:"remark" example:"备注"`
 	AttachmentURLs string    `json:"attachment_urls"`
 }
@@ -224,14 +256,16 @@ type CashFlowSummaryResponse struct {
 //
 //	@Description	Cash flow item response
 type ExpenseIncomeCashFlowItem struct {
-	ID          string    `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Type        string    `json:"type" example:"EXPENSE"`
-	Category    string    `json:"category" example:"RENT"`
-	Number      string    `json:"number" example:"EXP-2026-00001"`
-	Description string    `json:"description" example:"2026年1月办公室租金"`
-	Amount      float64   `json:"amount" example:"5000.00"`
-	Date        time.Time `json:"date"`
-	Direction   string    `json:"direction" example:"OUTFLOW"`
+	ID          string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Type        string  `json:"type" example:"EXPENSE"`
+	Category    string  `json:"category" example:"RENT"`
+	Number      string  `json:"number" example:"EXP-2026-00001"`
+	Description string  `json:"description" example:"2026年1月办公室租金"`
+	Amount      float64 `json:"amount" example:"5000.00"`
+	// @Description Date of the cash flow transaction in ISO 8601 format
+	// @Example 2026-01-15T00:00:00Z
+	Date      time.Time `json:"date" format:"date-time"`
+	Direction string    `json:"direction" example:"OUTFLOW"`
 }
 
 // ===================== Expense Handlers =====================

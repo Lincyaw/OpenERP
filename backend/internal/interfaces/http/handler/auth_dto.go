@@ -39,10 +39,14 @@ type ForceLogoutRequest struct {
 
 // TokenResponse represents the token data in auth responses
 type TokenResponse struct {
-	AccessToken           string    `json:"access_token"`
-	RefreshToken          string    `json:"refresh_token"`
-	AccessTokenExpiresAt  time.Time `json:"access_token_expires_at"`
-	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	// @Description Timestamp when the access token expires in ISO 8601 format
+	// @Example 2026-02-02T12:00:00Z
+	AccessTokenExpiresAt time.Time `json:"access_token_expires_at" format:"date-time"`
+	// @Description Timestamp when the refresh token expires in ISO 8601 format
+	// @Example 2026-02-09T08:00:00Z
+	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at" format:"date-time"`
 	TokenType             string    `json:"token_type"`
 }
 
