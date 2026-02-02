@@ -18,6 +18,7 @@ import { Container } from '@/components/common/layout'
 import { getExpensCashFlow } from '@/api/expenses/expenses'
 import type { HandlerExpenseIncomeCashFlowItem, HandlerCashFlowSummaryResponse } from '@/api/models'
 import type { PaginationMeta } from '@/types/api'
+import { useFormatters } from '@/hooks/useFormatters'
 import './CashFlow.css'
 
 const { Title, Text } = Typography
@@ -59,22 +60,6 @@ function formatCurrency(amount?: number): string {
 }
 
 /**
- * Format datetime for display (including hours and minutes)
- */
-function formatDateTime(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
-}
-
-/**
  * Get default date range (current month)
  */
 function getDefaultDateRange(): [Date, Date] {
@@ -95,6 +80,16 @@ function getDefaultDateRange(): [Date, Date] {
  */
 export default function CashFlowPage() {
   const { t } = useTranslation('finance')
+  const { formatDateTime: formatDateTimeBase } = useFormatters()
+
+  // Wrapper to handle undefined values
+  const formatDateTime = useCallback(
+    (dateStr?: string): string => {
+      if (!dateStr) return '-'
+      return formatDateTimeBase(dateStr)
+    },
+    [formatDateTimeBase]
+  )
 
   // Direction options for filter
   const DIRECTION_OPTIONS = useMemo(

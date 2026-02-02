@@ -15,6 +15,7 @@ import type {
   HandlerPayablePaymentRecordResponse,
 } from '@/api/models'
 import { useTranslation } from 'react-i18next'
+import { useFormatters } from '@/hooks/useFormatters'
 import './PayableDetail.css'
 
 const { Text } = Typography
@@ -73,21 +74,6 @@ function formatDate(dateStr?: string): string {
 }
 
 /**
- * Format datetime for display
- */
-function formatDateTime(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-/**
  * Check if a payable is overdue
  */
 function isOverdue(payable: HandlerAccountPayableResponse): boolean {
@@ -109,6 +95,16 @@ export default function PayableDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { t } = useTranslation('finance')
+  const { formatDateTime: formatDateTimeBase } = useFormatters()
+
+  // Wrapper to handle undefined values
+  const formatDateTime = useCallback(
+    (dateStr?: string): string => {
+      if (!dateStr) return '-'
+      return formatDateTimeBase(dateStr)
+    },
+    [formatDateTimeBase]
+  )
 
   const [payableData, setPayableData] = useState<HandlerAccountPayableResponse | null>(null)
   const [loading, setLoading] = useState(true)
