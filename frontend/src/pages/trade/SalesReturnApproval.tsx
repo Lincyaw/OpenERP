@@ -35,6 +35,7 @@ import type {
 } from '@/api/models'
 import './SalesReturnApproval.css'
 import { safeToFixed, safeFormatCurrency } from '@/utils'
+import { useFormatters } from '@/hooks/useFormatters'
 
 const { Title, Text } = Typography
 
@@ -84,21 +85,6 @@ function formatPrice(price?: number | string): string {
 }
 
 /**
- * Format datetime for display
- */
-function formatDateTime(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-/**
  * Sales Return Approval Page
  *
  * Features:
@@ -110,6 +96,7 @@ function formatDateTime(dateStr?: string): string {
  */
 export default function SalesReturnApprovalPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const { formatDateTime } = useFormatters()
 
   // View mode: 'list' or 'detail'
   const [viewMode, setViewMode] = useState<'list' | 'detail'>(
@@ -457,7 +444,7 @@ export default function SalesReturnApprovalPage() {
         title: '提交时间',
         dataIndex: 'submitted_at',
         width: 150,
-        render: (date: string) => formatDateTime(date),
+        render: (date: string) => (date ? formatDateTime(date) : '-'),
       },
       {
         title: '退货原因',
@@ -478,7 +465,7 @@ export default function SalesReturnApprovalPage() {
         ),
       },
     ],
-    [handleViewDetail]
+    [handleViewDetail, formatDateTime]
   )
 
   // Build timeline items
@@ -504,7 +491,7 @@ export default function SalesReturnApprovalPage() {
     }
 
     return items
-  }, [selectedReturn])
+  }, [selectedReturn, formatDateTime])
 
   // Render basic info for detail view
   const renderBasicInfo = () => {
@@ -524,7 +511,10 @@ export default function SalesReturnApprovalPage() {
       },
       { key: '商品数量', value: `${selectedReturn.item_count || 0} 件` },
       { key: '总退货数量', value: safeToFixed(selectedReturn.total_quantity, 2, '0.00') },
-      { key: '提交时间', value: formatDateTime(selectedReturn.submitted_at) },
+      {
+        key: '提交时间',
+        value: selectedReturn.submitted_at ? formatDateTime(selectedReturn.submitted_at) : '-',
+      },
       { key: '退货原因', value: selectedReturn.reason || '-' },
       { key: '备注', value: selectedReturn.remark || '-' },
     ]
