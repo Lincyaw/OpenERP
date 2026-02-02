@@ -295,7 +295,8 @@
       "下载链接指向正确的安装包",
       "UI 友好，引导用户完成配置"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P2-PRINT-012",

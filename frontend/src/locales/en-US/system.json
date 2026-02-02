@@ -880,6 +880,93 @@
       "upgradeNow": "Upgrade Now"
     }
   },
+  "printServiceSettings": {
+    "title": "Print Service Settings",
+    "subtitle": "Configure local print service connection, manage printers and view print logs",
+    "infoBanner": "Print Service is a local application for connecting your printers. Please ensure you have downloaded and started the print service.",
+    "serviceStatus": "Service Status",
+    "status": {
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "checking": "Checking..."
+    },
+    "version": "Version",
+    "lastChecked": "Last Checked",
+    "printersCount": "Printers Count",
+    "serviceUrl": "Service URL",
+    "checkConnection": "Check Connection",
+    "availablePrinters": "Available Printers",
+    "printers": {
+      "name": "Printer Name",
+      "status": "Status",
+      "default": "Default",
+      "unknown": "Unknown",
+      "serviceNotConnected": "Print Service Not Connected",
+      "connectFirst": "Please start the print service to view available printers",
+      "empty": {
+        "title": "No Printers Available",
+        "description": "No printers detected. Please check printer connections."
+      }
+    },
+    "downloadService": "Download Print Service",
+    "downloadDescription": "Download and install the print service application to enable local printing. Select the version for your operating system.",
+    "installationGuide": {
+      "title": "Installation Guide",
+      "step1": "Download the installer for your operating system",
+      "step2": "Run the installer and follow the prompts",
+      "step3": "Use the configuration wizard to generate config.yaml",
+      "step4": "Start the print service and refresh this page to check connection"
+    },
+    "configWizard": {
+      "title": "Configuration Wizard",
+      "description": "Generate the print service configuration file. The config file contains API connection information for the print service to communicate with the ERP system.",
+      "openWizard": "Open Configuration Wizard",
+      "modalTitle": "Generate Configuration File",
+      "apiUrl": "API URL",
+      "tenantId": "Tenant ID",
+      "apiToken": "API Token",
+      "apiTokenPlaceholder": "Enter the API Token for print service authentication",
+      "copyConfig": "Copy Configuration",
+      "downloadConfig": "Download Config File",
+      "copied": "Configuration copied to clipboard",
+      "downloaded": "Configuration file downloaded"
+    },
+    "testPrint": {
+      "title": "Test Print",
+      "description": "Select a printer and send a test page to verify the print service is working correctly.",
+      "serviceNotConnected": "Print service is not connected. Cannot perform test print.",
+      "selectPrinter": "Please select a printer",
+      "selectPrinterPlaceholder": "Select a printer to test",
+      "sendTest": "Send Test Page",
+      "success": "Test page sent to printer",
+      "error": "Test print failed. Please check printer status."
+    },
+    "logs": {
+      "title": "Print Logs",
+      "documentType": "Document Type",
+      "documentNumber": "Document Number",
+      "status": "Status",
+      "copies": "Copies",
+      "createdAt": "Created At",
+      "printedAt": "Printed At",
+      "error": "Error Message",
+      "statuses": {
+        "pending": "Pending",
+        "printing": "Printing",
+        "completed": "Completed",
+        "failed": "Failed"
+      },
+      "empty": {
+        "title": "No Print Records",
+        "description": "No print jobs have been recorded yet"
+      }
+    },
+    "tabs": {
+      "connection": "Connection",
+      "configuration": "Configuration",
+      "logs": "Print Logs"
+    }
+  },
   "billing": {
     "title": "Billing History",
     "subtitle": "View your billing history, invoices, and manage payment methods",

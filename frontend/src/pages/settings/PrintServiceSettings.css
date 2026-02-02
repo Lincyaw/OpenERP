@@ -1,0 +1,226 @@
+/**
+ * Print Service Settings Page Styles
+ *
+ * Styles for the print service configuration and management page.
+ */
+
+.print-service-settings-page {
+  padding: var(--spacing-6);
+}
+
+.page-header {
+  margin-bottom: var(--spacing-6);
+}
+
+.page-title {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.info-banner {
+  margin-bottom: var(--spacing-6);
+}
+
+.settings-tabs {
+  margin-top: var(--spacing-4);
+}
+
+.tab-content {
+  padding: var(--spacing-4) 0;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--spacing-64, 400px), 1fr));
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+}
+
+/* Print Service Status Card */
+.print-service-status-card .status-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+  background: var(--semi-color-fill-0);
+  border-radius: var(--semi-border-radius-medium);
+}
+
+.status-icon {
+  width: var(--spacing-14, 3.5rem);
+  height: var(--spacing-14, 3.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--semi-color-fill-1);
+}
+
+.status-icon.connected {
+  color: var(--semi-color-success);
+  background: var(--semi-color-success-light-default);
+}
+
+.status-icon.disconnected {
+  color: var(--semi-color-danger);
+  background: var(--semi-color-danger-light-default);
+}
+
+.status-icon.checking {
+  color: var(--semi-color-text-2);
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.status-error-banner {
+  margin: 0;
+}
+
+.status-details {
+  margin-top: var(--spacing-2);
+}
+
+.refresh-button {
+  align-self: flex-start;
+}
+
+/* Printers List Card */
+.printers-list-card {
+  min-height: var(--spacing-48, 18.75rem);
+}
+
+/* Download Links Card */
+.download-links-card .download-description {
+  margin-bottom: var(--spacing-4);
+}
+
+.download-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+}
+
+.download-button {
+  min-width: var(--spacing-30, 7.5rem);
+}
+
+.installation-guide {
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-4);
+  border-top: var(--spacing-px, 1px) solid var(--semi-color-border);
+}
+
+.installation-guide .guide-content {
+  padding: var(--spacing-3);
+}
+
+.installation-guide ol {
+  padding-left: var(--spacing-6);
+  margin: var(--spacing-3) 0 0 0;
+}
+
+.installation-guide li {
+  margin-bottom: var(--spacing-2);
+  color: var(--semi-color-text-1);
+}
+
+/* Config Wizard Card */
+.config-wizard-card .config-description {
+  margin-bottom: var(--spacing-4);
+}
+
+.config-wizard-form {
+  margin-bottom: var(--spacing-4);
+}
+
+.config-preview {
+  margin-top: var(--spacing-4);
+  border: var(--spacing-px, 1px) solid var(--semi-color-border);
+  border-radius: var(--semi-border-radius-medium);
+  overflow: hidden;
+}
+
+.config-preview .preview-header {
+  padding: var(--spacing-2) var(--spacing-3);
+  background: var(--semi-color-fill-1);
+  border-bottom: var(--spacing-px, 1px) solid var(--semi-color-border);
+}
+
+.config-preview .config-textarea {
+  border: none;
+  border-radius: 0;
+  font-family:
+    'SF Mono', Monaco, Inconsolata, 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
+  font-size: var(--font-size-sm, 0.8125rem);
+  line-height: 1.5;
+  background: var(--semi-color-fill-0);
+}
+
+/* Test Print Card */
+.test-print-card .test-print-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.test-print-form {
+  align-items: flex-start;
+}
+
+/* Print Logs Card */
+.print-logs-card {
+  margin-top: var(--spacing-4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .print-service-settings-page {
+    padding: var(--spacing-4);
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .download-buttons {
+    flex-direction: column;
+  }
+
+  .download-button {
+    width: 100%;
+  }
+
+  .test-print-form {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .test-print-form .semi-select {
+    width: 100%;
+  }
+}
+
+/* Dark mode support */
+[data-theme='dark'] .status-icon.connected {
+  background: rgba(var(--semi-green-5), 0.2);
+}
+
+[data-theme='dark'] .status-icon.disconnected {
+  background: rgba(var(--semi-red-5), 0.2);
+}
+
+[data-theme='dark'] .config-preview .config-textarea {
+  background: var(--semi-color-bg-2);
+}

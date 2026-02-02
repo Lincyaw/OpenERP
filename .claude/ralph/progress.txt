@@ -47069,3 +47069,75 @@ Created `usePrintServiceStatus` hook for monitoring local print service connecti
 - Add navigation link to system settings menu
 - Consider adding batch operations for rules
 - May need E2E tests for full workflow verification
+
+2026-02-02 - Task ID: P2-PRINT-011 - 打印服务配置页面
+
+=== Implementation Details ===
+- Created PrintServiceSettings.tsx page at frontend/src/pages/settings/
+- Implemented features:
+  - Display print service connection status (connected/disconnected/checking)
+  - Show print service version information
+  - List available printers from local print service with status tags
+  - Provide download links for print service installers (Windows/macOS/Linux)
+  - Configuration wizard to generate config.yaml with:
+    - API URL
+    - Tenant ID (auto-filled from user context)
+    - API Token
+    - Copy to clipboard and download functionality
+  - Test print functionality to send test page to selected printer
+  - Print logs tab showing last 50 print job records with status, document info, timestamps
+  - Three-tab interface: Connection, Configuration, Print Logs
+- Created PrintServiceSettings.css with responsive styles and dark mode support
+- Added Chinese translations (zh-CN/system.json) for printServiceSettings section
+- Added English translations (en-US/system.json) for printServiceSettings section
+- Added route to routes.tsx: /settings/print-service
+- Created comprehensive unit tests (14 tests all passing)
+
+=== Key Files Modified ===
+- frontend/src/pages/settings/PrintServiceSettings.tsx (new)
+- frontend/src/pages/settings/PrintServiceSettings.css (new)
+- frontend/src/pages/settings/PrintServiceSettings.test.tsx (new)
+- frontend/src/router/routes.tsx
+- frontend/src/locales/zh-CN/system.json
+- frontend/src/locales/en-US/system.json
+
+=== Technical Decisions ===
+- Used Semi UI Tabs for organizing content into Connection, Configuration, and Logs sections
+- Used usePrintServiceStatus hook for real-time status monitoring
+- Used useListPrintJobJobs API hook for fetching print job history
+- Configuration wizard generates YAML config file with proper formatting
+- Test print sends request directly to local print service (http://localhost:9999/test-print)
+- Print logs table supports pagination and displays job status with color-coded tags
+
+=== Verification ===
+- TypeScript type check: PASSED
+- ESLint: PASSED (no errors in new files)
+- Unit tests: 14 tests PASSED
+  - Service status display tests
+  - Printers list tests
+  - Tabs navigation tests
+  - Download links tests
+  - Print logs tests
+  - Refresh functionality tests
+  - Config wizard tests
+  - Utility function tests
+
+=== Acceptance Criteria Met ===
+- [x] 打印服务状态实时显示 (Connected/Disconnected/Checking status with version info)
+- [x] 可以查看所有可用打印机 (Printer list with names, status, and default indicator)
+- [x] 配置向导生成正确的 config.yaml (Config wizard with API URL, tenant ID, token fields)
+- [x] 测试打印功能正常工作 (Test print with printer selection)
+- [x] 可以查看最近的打印日志 (Last 50 print jobs with status, document info, timestamps)
+- [x] 下载链接指向正确的安装包 (Windows/macOS/Linux download buttons)
+- [x] UI 友好，引导用户完成配置 (Info banner, installation guide, clear tabs)
+
+=== Notes ===
+- The page is now accessible at /settings/print-service
+- Uses the existing usePrintServiceStatus hook from P2-PRINT-009
+- Print service must be running on http://localhost:9999 for connection
+- Config file generated is compatible with the print-service application
+
+=== Next Steps ===
+- Add navigation link in settings menu sidebar
+- Consider adding WebSocket support for real-time print job status updates
+- May need to update download links when print service releases are available

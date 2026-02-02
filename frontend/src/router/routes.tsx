@@ -114,6 +114,8 @@ const UpgradePlanPage = () => lazyLoad(() => import('@/pages/user/UpgradePlan'))
 const SubscriptionPage = () => lazyLoad(() => import('@/pages/settings/SubscriptionPage'))
 const BillingHistoryPage = () => lazyLoad(() => import('@/pages/settings/BillingHistoryPage'))
 const AutoPrintRulesPage = () => lazyLoad(() => import('@/pages/settings/AutoPrintRules'))
+const PrintServiceSettingsPage = () =>
+  lazyLoad(() => import('@/pages/settings/PrintServiceSettings'))
 
 // Super Admin module (platform administration)
 const TenantListPage = () => lazyLoad(() => import('@/pages/super-admin/TenantList'))
@@ -791,7 +793,8 @@ export function getRouteObjects(): RouteObject[] {
     { path: 'upgrade', element: UpgradePlanPage() },
     { path: 'subscription', element: SubscriptionPage() }, // Subscription management - all users can view their plan
     { path: 'billing', element: BillingHistoryPage() }, // Billing history and invoices - all users can view
-    { path: 'settings/auto-print-rules', element: AutoPrintRulesPage() } // Auto print rules configuration
+    { path: 'settings/auto-print-rules', element: AutoPrintRulesPage() }, // Auto print rules configuration
+    { path: 'settings/print-service', element: PrintServiceSettingsPage() } // Print service configuration
   )
 
   return [
