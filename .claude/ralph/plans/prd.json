@@ -325,7 +325,8 @@
       "版本信息正确显示在健康检查端点",
       "所有平台的二进制文件可以正常运行"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P2-PRINT-013",

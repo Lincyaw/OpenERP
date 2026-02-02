@@ -13,6 +13,15 @@ import (
 	"go.uber.org/zap"
 )
 
+// testVersionInfo returns a VersionInfo for testing
+func testVersionInfo() VersionInfo {
+	return VersionInfo{
+		Version:   "1.0.0-test",
+		BuildTime: "2024-01-01T00:00:00Z",
+		GitCommit: "abc1234",
+	}
+}
+
 func TestNewPrintService(t *testing.T) {
 	cfg := &config.Config{
 		Server: config.ServerConfig{
@@ -34,7 +43,7 @@ func TestNewPrintService(t *testing.T) {
 		},
 	}
 
-	svc := NewPrintService(cfg, zap.NewNop())
+	svc := NewPrintService(cfg, zap.NewNop(), testVersionInfo())
 
 	if svc == nil {
 		t.Fatal("Expected non-nil service")
@@ -57,7 +66,7 @@ func TestPrintService_Status(t *testing.T) {
 		},
 	}
 
-	svc := NewPrintService(cfg, zap.NewNop())
+	svc := NewPrintService(cfg, zap.NewNop(), testVersionInfo())
 
 	// Initial status should be stopped
 	if svc.Status() != StatusStopped {
@@ -78,7 +87,7 @@ func TestPrintService_GetClients(t *testing.T) {
 		},
 	}
 
-	svc := NewPrintService(cfg, zap.NewNop())
+	svc := NewPrintService(cfg, zap.NewNop(), testVersionInfo())
 
 	if svc.GetAPIClient() == nil {
 		t.Error("Expected non-nil API client")
@@ -152,7 +161,7 @@ func TestPrintService_HandleEvent(t *testing.T) {
 		},
 	}
 
-	svc := NewPrintService(cfg, zap.NewNop())
+	svc := NewPrintService(cfg, zap.NewNop(), testVersionInfo())
 
 	// Test handling PrintJobCreated event
 	event := client.PrintingEventPayload{
@@ -197,7 +206,7 @@ func TestPrintService_HandlePrintJobCompleted(t *testing.T) {
 		},
 	}
 
-	svc := NewPrintService(cfg, zap.NewNop())
+	svc := NewPrintService(cfg, zap.NewNop(), testVersionInfo())
 
 	event := client.PrintingEventPayload{
 		EventID:      "event-2",
@@ -230,7 +239,7 @@ func TestPrintService_HandlePrintJobFailed(t *testing.T) {
 		},
 	}
 
-	svc := NewPrintService(cfg, zap.NewNop())
+	svc := NewPrintService(cfg, zap.NewNop(), testVersionInfo())
 
 	event := client.PrintingEventPayload{
 		EventID:      "event-3",
@@ -279,7 +288,7 @@ func TestPrintService_GetEventMapper(t *testing.T) {
 		},
 	}
 
-	svc := NewPrintService(cfg, zap.NewNop())
+	svc := NewPrintService(cfg, zap.NewNop(), testVersionInfo())
 
 	mapper := svc.GetEventMapper()
 	if mapper == nil {
@@ -308,7 +317,7 @@ func TestPrintService_GetPrintQueue(t *testing.T) {
 		},
 	}
 
-	svc := NewPrintService(cfg, zap.NewNop())
+	svc := NewPrintService(cfg, zap.NewNop(), testVersionInfo())
 
 	queue := svc.GetPrintQueue()
 	if queue == nil {
@@ -345,7 +354,7 @@ func TestPrintService_HandleDomainEvent_NoRule(t *testing.T) {
 		},
 	}
 
-	svc := NewPrintService(cfg, zap.NewNop())
+	svc := NewPrintService(cfg, zap.NewNop(), testVersionInfo())
 
 	// Test handling SalesOrderConfirmed event (domain event)
 	event := client.PrintingEventPayload{
@@ -429,7 +438,7 @@ func TestPrintService_HandleDomainEvent_WithRule(t *testing.T) {
 		},
 	}
 
-	svc := NewPrintService(cfg, zap.NewNop())
+	svc := NewPrintService(cfg, zap.NewNop(), testVersionInfo())
 
 	// Start the print queue (required for enqueueing)
 	svc.printQueue.Start()
@@ -472,7 +481,7 @@ func TestPrintService_HandleUnsupportedEvent(t *testing.T) {
 		},
 	}
 
-	svc := NewPrintService(cfg, zap.NewNop())
+	svc := NewPrintService(cfg, zap.NewNop(), testVersionInfo())
 
 	// Test handling an unsupported event type
 	event := client.PrintingEventPayload{
@@ -504,7 +513,7 @@ func TestPrintService_GetPrintLogs(t *testing.T) {
 		},
 	}
 
-	svc := NewPrintService(cfg, zap.NewNop())
+	svc := NewPrintService(cfg, zap.NewNop(), testVersionInfo())
 
 	// Initially should have no logs
 	logs := svc.GetPrintLogs()

@@ -55,7 +55,11 @@ func main() {
 		zap.String("config", *configPath))
 
 	// Create and start service
-	svc := service.NewPrintService(cfg, logger)
+	svc := service.NewPrintService(cfg, logger, service.VersionInfo{
+		Version:   Version,
+		BuildTime: BuildTime,
+		GitCommit: GitCommit,
+	})
 
 	if err := svc.Start(); err != nil {
 		logger.Fatal("Failed to start service", zap.Error(err))

@@ -32,6 +32,8 @@ const (
 type HealthStatus struct {
 	Status       ServiceStatus   `json:"status"`
 	Version      string          `json:"version"`
+	BuildTime    string          `json:"build_time,omitempty"`
+	GitCommit    string          `json:"git_commit,omitempty"`
 	Uptime       string          `json:"uptime"`
 	WebSocket    string          `json:"websocket"`
 	API          string          `json:"api"`
@@ -40,6 +42,13 @@ type HealthStatus struct {
 	LastEvent    string          `json:"last_event,omitempty"`
 	EventsCount  int64           `json:"events_count"`
 	PrinterCount int             `json:"printer_count,omitempty"`
+}
+
+// VersionInfo contains version information set at build time.
+type VersionInfo struct {
+	Version   string
+	BuildTime string
+	GitCommit string
 }
 
 // PrintService is the main service that coordinates event listening and printing.
@@ -59,10 +68,11 @@ type PrintService struct {
 	lastEvent      atomic.Value // time.Time
 	healthSrv      *http.Server
 	wg             sync.WaitGroup
+	versionInfo    VersionInfo
 }
 
 // NewPrintService creates a new print service.
-func NewPrintService(cfg *config.Config, logger *zap.Logger) *PrintService {
+func NewPrintService(cfg *config.Config, logger *zap.Logger, versionInfo VersionInfo) *PrintService {
 	if logger == nil {
 		logger = zap.NewNop()
 	}
@@ -128,6 +138,7 @@ func NewPrintService(cfg *config.Config, logger *zap.Logger) *PrintService {
 		logger:         logger,
 		ctx:            ctx,
 		cancel:         cancel,
+		versionInfo:    versionInfo,
 	}
 
 	svc.status.Store(StatusStopped)
@@ -631,7 +642,9 @@ func (s *PrintService) healthHandler(w http.ResponseWriter, r *http.Request) {
 
 	health := HealthStatus{
 		Status:       status,
-		Version:      "1.0.0",
+		Version:      s.versionInfo.Version,
+		BuildTime:    s.versionInfo.BuildTime,
+		GitCommit:    s.versionInfo.GitCommit,
 		Uptime:       time.Since(s.startTime).String(),
 		WebSocket:    wsStatus,
 		API:          apiStatus,

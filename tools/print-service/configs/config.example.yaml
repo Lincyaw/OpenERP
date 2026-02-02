@@ -1,0 +1,234 @@
+# ERP Print Service Configuration
+# ================================
+#
+# This is an example configuration file for the ERP Print Service.
+# Copy this file to 'config.yaml' and modify the settings as needed.
+#
+# IMPORTANT: This file may contain sensitive information (API tokens).
+# Ensure proper file permissions: chmod 600 config.yaml
+#
+# Environment Variables:
+# ----------------------
+# You can use environment variables in any value using ${VAR_NAME} syntax.
+# Default values are supported: ${VAR_NAME:-default_value}
+#
+# Required Settings:
+# ------------------
+# - server.api_url: URL of the ERP backend API
+# - server.websocket_url: WebSocket URL for real-time events
+# - server.tenant_id: Your tenant identifier
+# - server.api_token: Your API authentication token
+#
+# Quick Start:
+# ------------
+# 1. Set PRINT_SERVICE_TENANT_ID and PRINT_SERVICE_API_TOKEN environment variables
+# 2. Or edit this file directly with your credentials
+# 3. Start the service: ./print-service -config config.yaml
+
+
+# =============================================================================
+# Server Connection Settings
+# =============================================================================
+server:
+  # ERP backend API URL
+  # This is the base URL for API calls (template rendering, print job status)
+  # Default: http://localhost:8080
+  api_url: "${PRINT_SERVICE_API_URL:-http://localhost:8080}"
+
+  # WebSocket URL for real-time print events
+  # The service connects here to receive printing events
+  # Default: ws://localhost:8080/api/v1/printing/ws
+  websocket_url: "${PRINT_SERVICE_WS_URL:-ws://localhost:8080/api/v1/printing/ws}"
+
+  # Tenant ID for multi-tenancy
+  # REQUIRED: Must be set to your organization's tenant ID
+  # This identifies your organization in the ERP system
+  tenant_id: "${PRINT_SERVICE_TENANT_ID}"
+
+  # API authentication token
+  # REQUIRED: Must be a valid API token for the print service
+  # Generate this in the ERP system under Settings > API Tokens
+  api_token: "${PRINT_SERVICE_API_TOKEN}"
+
+  # Request timeout for API calls
+  # How long to wait for API responses before timing out
+  # Default: 30s
+  timeout: 30s
+
+  # WebSocket reconnection interval
+  # How long to wait before attempting to reconnect after a disconnect
+  # Default: 5s
+  reconnect_interval: 5s
+
+  # Maximum reconnection attempts
+  # Set to 0 for unlimited attempts (recommended for production)
+  # Default: 0
+  max_reconnect_attempts: 0
+
+
+# =============================================================================
+# Printing Settings
+# =============================================================================
+printing:
+  # Default printer name
+  # Leave empty to use the system default printer
+  # Example: "HP LaserJet Pro"
+  default_printer: ""
+
+  # Rendering method for HTML to PDF conversion
+  # Options:
+  #   - chromedp: Uses headless Chrome (recommended, best quality)
+  #   - wkhtmltopdf: Uses wkhtmltopdf (faster, requires installation)
+  #   - gotenberg: Uses Gotenberg API (requires Gotenberg server)
+  # Default: chromedp
+  renderer: chromedp
+
+  # Printing protocol
+  # Options:
+  #   - ipp: Internet Printing Protocol (recommended for network printers)
+  #   - cups: CUPS printing system (Linux/macOS)
+  #   - raw: Direct raw printing (advanced use cases)
+  #   - windows: Windows Print Spooler (Windows only)
+  # Default: ipp
+  protocol: ipp
+
+  # IPP server URL (required when protocol is 'ipp')
+  # This is typically your CUPS server address
+  # Default: http://localhost:631
+  ipp_server: "http://localhost:631"
+
+  # CUPS server address (required when protocol is 'cups')
+  # Only needed when using CUPS protocol directly
+  # Default: (empty, uses local socket)
+  cups_server: ""
+
+  # Temporary directory for PDF files
+  # Leave empty to use the system temp directory
+  # Files are automatically cleaned up
+  temp_dir: ""
+
+  # Cleanup interval for temporary files
+  # How often to scan and remove old temporary files
+  # Default: 1h
+  cleanup_interval: 1h
+
+
+# =============================================================================
+# Logging Settings
+# =============================================================================
+logging:
+  # Log level
+  # Options: debug, info, warn, error
+  # Use 'debug' for troubleshooting, 'info' for normal operation
+  # Default: info
+  level: info
+
+  # Log file path
+  # Leave empty to log to stdout (recommended for containers)
+  # Example: /var/log/print-service/print-service.log
+  # Windows example: C:\ProgramData\PrintService\logs\print-service.log
+  file: ""
+
+  # Maximum log file size in megabytes before rotation
+  # Only applies when logging to a file
+  # Default: 100
+  max_size: 100
+
+  # Maximum number of old log files to retain
+  # Older files are deleted
+  # Default: 3
+  max_backups: 3
+
+  # Maximum days to retain old log files
+  # Files older than this are deleted
+  # Default: 28
+  max_age: 28
+
+  # Compress rotated log files
+  # Uses gzip compression to save space
+  # Default: true
+  compress: true
+
+
+# =============================================================================
+# Health Check Settings
+# =============================================================================
+health:
+  # Enable health check endpoint
+  # Provides a REST endpoint for monitoring service health
+  # Default: true
+  enabled: true
+
+  # Port for health check endpoint
+  # The endpoint will be available at http://localhost:{port}/health
+  # Default: 9999
+  port: 9999
+
+  # URL path for health check endpoint
+  # Default: /health
+  path: /health
+
+
+# =============================================================================
+# Example Configurations
+# =============================================================================
+#
+# Minimal Production Configuration (using environment variables):
+# ---------------------------------------------------------------
+# server:
+#   api_url: "${ERP_API_URL}"
+#   websocket_url: "${ERP_WS_URL}"
+#   tenant_id: "${ERP_TENANT_ID}"
+#   api_token: "${ERP_API_TOKEN}"
+#
+#
+# Development Configuration:
+# --------------------------
+# server:
+#   api_url: "http://localhost:8080"
+#   websocket_url: "ws://localhost:8080/api/v1/printing/ws"
+#   tenant_id: "dev-tenant"
+#   api_token: "dev-token-12345"
+#
+# logging:
+#   level: debug
+#
+#
+# Production Configuration (with TLS):
+# ------------------------------------
+# server:
+#   api_url: "https://erp.example.com"
+#   websocket_url: "wss://erp.example.com/api/v1/printing/ws"
+#   tenant_id: "${ERP_TENANT_ID}"
+#   api_token: "${ERP_API_TOKEN}"
+#
+# logging:
+#   level: info
+#   file: "/var/log/print-service/print-service.log"
+#
+#
+# Docker/Container Configuration:
+# --------------------------------
+# server:
+#   api_url: "http://erp-backend:8080"
+#   websocket_url: "ws://erp-backend:8080/api/v1/printing/ws"
+#   tenant_id: "${TENANT_ID}"
+#   api_token: "${API_TOKEN}"
+#
+# printing:
+#   protocol: ipp
+#   ipp_server: "http://cups:631"
+#
+# logging:
+#   level: info
+#   file: ""  # stdout for container logging
+#
+#
+# Windows with Network Printer:
+# -----------------------------
+# printing:
+#   protocol: windows
+#   default_printer: "\\\\printserver\\MainPrinter"
+#
+# logging:
+#   file: "C:\\ProgramData\\PrintService\\logs\\print-service.log"
