@@ -37,6 +37,62 @@
     "activate": "激活",
     "batchSuspend": "批量暂停",
     "batchActivate": "批量激活",
+    "tabs": {
+      "overview": "概览",
+      "users": "用户",
+      "activityLog": "活动日志"
+    },
+    "detail": {
+      "name": "名称",
+      "code": "编码",
+      "shortName": "简称",
+      "contactEmail": "联系邮箱",
+      "contactName": "联系人",
+      "contactPhone": "联系电话",
+      "address": "地址",
+      "domain": "域名",
+      "createdAt": "创建时间",
+      "updatedAt": "更新时间",
+      "plan": "套餐",
+      "status": "状态",
+      "expiresAt": "到期时间",
+      "trialEndsAt": "试用结束时间",
+      "noExpiration": "永不过期",
+      "currency": "货币",
+      "locale": "语言",
+      "timezone": "时区",
+      "costStrategy": "成本策略",
+      "basicInfo": "基本信息",
+      "subscriptionInfo": "订阅信息",
+      "quotaUsage": "配额使用",
+      "configuration": "配置",
+      "statusHistory": "状态历史",
+      "subscriptionHistory": "订阅历史",
+      "users": "用户数",
+      "products": "商品数",
+      "warehouses": "仓库数",
+      "noStatusHistory": "暂无状态历史",
+      "noSubscriptionHistory": "暂无订阅历史",
+      "notFound": "租户未找到",
+      "notFoundDescription": "请求的租户不存在",
+      "backToList": "返回列表"
+    },
+    "actions": {
+      "changePlan": "变更套餐",
+      "updateQuota": "更新配额"
+    },
+    "history": {
+      "created": "创建",
+      "activated": "激活",
+      "suspended": "暂停",
+      "deactivated": "停用",
+      "by": "由"
+    },
+    "modal": {
+      "changePlanTitle": "变更套餐",
+      "changePlanDescription": "为租户 \"{{name}}\" 选择新套餐",
+      "selectPlan": "选择套餐"
+    },
     "filter": {
       "status": "状态",
       "plan": "套餐",
@@ -58,6 +114,9 @@
       "activateTitle": "确认激活",
       "activateContent": "确定要激活租户 \"{{name}}\" 吗？",
       "activateOk": "激活",
+      "deleteTitle": "确认删除",
+      "deleteContent": "确定要删除租户 \"{{name}}\" 吗？此操作无法撤销。",
+      "deleteOk": "删除",
       "batchSuspendTitle": "确认批量暂停",
       "batchSuspendContent": "确定要暂停选中的 {{count}} 个租户吗？",
       "batchActivateTitle": "确认批量激活",
@@ -68,6 +127,10 @@
       "suspendError": "暂停租户失败",
       "activateSuccess": "租户激活成功",
       "activateError": "激活租户失败",
+      "deleteSuccess": "租户删除成功",
+      "deleteError": "删除租户失败",
+      "planChangeSuccess": "套餐变更成功",
+      "planChangeError": "套餐变更失败",
       "batchPartialError": "{{total}} 个操作中有 {{failed}} 个失败",
       "invalidTenant": "无效的租户 ID"
     }
@@ -321,6 +384,7 @@
     }
   },
   "common": {
+    "back": "返回",
     "refresh": "刷新",
     "save": "保存",
     "cancel": "取消",

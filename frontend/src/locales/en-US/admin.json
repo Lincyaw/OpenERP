@@ -37,6 +37,62 @@
     "activate": "Activate",
     "batchSuspend": "Suspend Selected",
     "batchActivate": "Activate Selected",
+    "tabs": {
+      "overview": "Overview",
+      "users": "Users",
+      "activityLog": "Activity Log"
+    },
+    "detail": {
+      "name": "Name",
+      "code": "Code",
+      "shortName": "Short Name",
+      "contactEmail": "Contact Email",
+      "contactName": "Contact Name",
+      "contactPhone": "Contact Phone",
+      "address": "Address",
+      "domain": "Domain",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "plan": "Plan",
+      "status": "Status",
+      "expiresAt": "Expires At",
+      "trialEndsAt": "Trial Ends At",
+      "noExpiration": "No expiration",
+      "currency": "Currency",
+      "locale": "Locale",
+      "timezone": "Timezone",
+      "costStrategy": "Cost Strategy",
+      "basicInfo": "Basic Information",
+      "subscriptionInfo": "Subscription Information",
+      "quotaUsage": "Quota Usage",
+      "configuration": "Configuration",
+      "statusHistory": "Status History",
+      "subscriptionHistory": "Subscription History",
+      "users": "Users",
+      "products": "Products",
+      "warehouses": "Warehouses",
+      "noStatusHistory": "No status history",
+      "noSubscriptionHistory": "No subscription history",
+      "notFound": "Tenant not found",
+      "notFoundDescription": "The requested tenant does not exist",
+      "backToList": "Back to list"
+    },
+    "actions": {
+      "changePlan": "Change Plan",
+      "updateQuota": "Update Quota"
+    },
+    "history": {
+      "created": "Created",
+      "activated": "Activated",
+      "suspended": "Suspended",
+      "deactivated": "Deactivated",
+      "by": "by"
+    },
+    "modal": {
+      "changePlanTitle": "Change Plan",
+      "changePlanDescription": "Select a new plan for tenant \"{{name}}\"",
+      "selectPlan": "Select a plan"
+    },
     "filter": {
       "status": "Status",
       "plan": "Plan",
@@ -58,6 +114,9 @@
       "activateTitle": "Confirm Activate",
       "activateContent": "Are you sure you want to activate tenant \"{{name}}\"?",
       "activateOk": "Activate",
+      "deleteTitle": "Confirm Delete",
+      "deleteContent": "Are you sure you want to delete tenant \"{{name}}\"? This action cannot be undone.",
+      "deleteOk": "Delete",
       "batchSuspendTitle": "Confirm Batch Suspend",
       "batchSuspendContent": "Are you sure you want to suspend {{count}} selected tenants?",
       "batchActivateTitle": "Confirm Batch Activate",
@@ -68,6 +127,10 @@
       "suspendError": "Failed to suspend tenant",
       "activateSuccess": "Tenant activated successfully",
       "activateError": "Failed to activate tenant",
+      "deleteSuccess": "Tenant deleted successfully",
+      "deleteError": "Failed to delete tenant",
+      "planChangeSuccess": "Plan changed successfully",
+      "planChangeError": "Failed to change plan",
       "batchPartialError": "{{failed}} of {{total}} operations failed",
       "invalidTenant": "Invalid tenant ID"
     }
@@ -321,6 +384,7 @@
     }
   },
   "common": {
+    "back": "Back",
     "refresh": "Refresh",
     "save": "Save",
     "cancel": "Cancel",
