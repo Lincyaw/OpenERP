@@ -81,7 +81,7 @@ export function useDateFormatter() {
       const d = date instanceof Date ? date : new Date(date)
       if (isNaN(d.getTime())) return ''
 
-      const { hour12 = language === 'en-US', showSeconds = false } = options
+      const { hour12 = language === 'en-US', showSeconds = true } = options
 
       return new Intl.DateTimeFormat(language, {
         hour: '2-digit',
@@ -104,7 +104,7 @@ export function useDateFormatter() {
       const d = date instanceof Date ? date : new Date(date)
       if (isNaN(d.getTime())) return ''
 
-      const { dateStyle = 'medium', showSeconds = false } = options
+      const { dateStyle = 'medium', showSeconds = true } = options
       const dateStr = formatDate(d, dateStyle)
       const timeStr = formatTime(d, { showSeconds })
 
