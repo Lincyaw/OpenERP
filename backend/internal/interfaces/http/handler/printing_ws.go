@@ -518,8 +518,8 @@ func (h *PrintingWSHandler) GetClientCountForTenant(tenantID string) int {
 //	@Produce		json
 //	@Param			token	query		string	false	"JWT token (alternative to Authorization header)"
 //	@Success		101		{string}	string	"Switching Protocols"
-//	@Failure		401		{object}	gin.H	"Unauthorized"
-//	@Failure		503		{object}	gin.H	"Service Unavailable - Max connections reached"
+//	@Failure		401		{object}	dto.ErrorResponse	"Unauthorized"
+//	@Failure		503		{object}	dto.ErrorResponse	"Service Unavailable - Max connections reached"
 //	@Security		BearerAuth
 //	@Router			/printing/ws [get]
 func (h *PrintingWSHandler) Connect(c *gin.Context) {
