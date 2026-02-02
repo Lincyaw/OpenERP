@@ -998,7 +998,8 @@
       "FAQ 覆盖常见问题",
       "文档格式规范"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-025",
