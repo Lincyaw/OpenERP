@@ -273,12 +273,12 @@ export function generateExportFilename(baseName: string, extension: string): str
  * Format date value for export
  *
  * @param value - Date value (string, Date, or undefined)
- * @param format - Date format (default: 'YYYY-MM-DD HH:mm')
+ * @param format - Date format (default: 'YYYY-MM-DD HH:mm:ss')
  * @returns Formatted date string
  */
 export function formatDateForExport(
   value: string | Date | undefined | null,
-  format: 'YYYY-MM-DD' | 'YYYY-MM-DD HH:mm' | 'YYYY-MM-DD HH:mm:ss' = 'YYYY-MM-DD HH:mm'
+  format: 'YYYY-MM-DD' | 'YYYY-MM-DD HH:mm' | 'YYYY-MM-DD HH:mm:ss' = 'YYYY-MM-DD HH:mm:ss'
 ): string {
   if (!value) return ''
 
