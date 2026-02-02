@@ -1500,6 +1500,10 @@ func main() {
 	printRoutes := handler.PrintRoutes(printHandler, printJWTMiddleware)
 	r.Register(printRoutes)
 
+	// Printing template routes for template rendering API
+	printingTemplateRoutes := handler.PrintingTemplateRoutes(printHandler, printJWTMiddleware)
+	r.Register(printingTemplateRoutes)
+
 	// Printing WebSocket routes for real-time event push
 	// Note: WebSocket endpoint handles its own auth via query param for clients that can't set headers
 	if printingWSHandler != nil {

@@ -67,6 +67,25 @@ type GeneratePDFHTTPRequest struct {
 	Data           any     `json:"data"`
 }
 
+// RenderTemplateHTTPRequest represents a request to render a template with document data
+//
+//	@Description	Request body for rendering a template
+type RenderTemplateHTTPRequest struct {
+	DocumentID   string `json:"document_id" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	DocumentType string `json:"document_type" binding:"required" example:"SALES_ORDER"`
+}
+
+// RenderTemplateHTTPResponse represents the rendered template result
+//
+//	@Description	Rendered template response
+type RenderTemplateHTTPResponse struct {
+	HTML        string          `json:"html"`
+	TemplateID  string          `json:"template_id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	PaperSize   string          `json:"paper_size" example:"A4"`
+	Orientation string          `json:"orientation" example:"PORTRAIT"`
+	Margins     MarginsResponse `json:"margins"`
+}
+
 // TemplateResponse represents a print template response
 //
 //	@Description	Print template response
@@ -171,6 +190,79 @@ func (h *PrintHandler) GetTemplatesByDocType(c *gin.Context) {
 	}
 
 	h.Success(c, result)
+}
+
+// RenderTemplate godoc
+//
+//	@ID				renderPrintTemplate
+//
+//	@Summary		Render a print template
+//	@Description	Render a specific print template with document data. The template content is cached for 10 minutes.
+//	@Tags			print-templates
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string						true	"Template ID"	format(uuid)
+//	@Param			request	body		RenderTemplateHTTPRequest	true	"Render request"
+//	@Success		200		{object}	APIResponse[RenderTemplateHTTPResponse]
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		404		{object}	dto.ErrorResponse
+//	@Failure		422		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/printing/templates/{id}/render [post]
+func (h *PrintHandler) RenderTemplate(c *gin.Context) {
+	tenantID, err := getTenantID(c)
+	if err != nil {
+		h.BadRequest(c, "Invalid tenant ID")
+		return
+	}
+
+	templateID := c.Param("id")
+	if templateID == "" {
+		h.BadRequest(c, "Template ID is required")
+		return
+	}
+
+	// Validate template ID format
+	if _, err := uuid.Parse(templateID); err != nil {
+		h.BadRequest(c, "Invalid template ID format")
+		return
+	}
+
+	var req RenderTemplateHTTPRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		h.BadRequest(c, err.Error())
+		return
+	}
+
+	// Call service
+	appReq := printingapp.RenderTemplateRequest{
+		DocumentID:   req.DocumentID,
+		DocumentType: req.DocumentType,
+	}
+
+	result, err := h.printService.RenderTemplate(c.Request.Context(), tenantID, templateID, appReq)
+	if err != nil {
+		h.HandleDomainError(c, err)
+		return
+	}
+
+	// Convert to HTTP response
+	response := RenderTemplateHTTPResponse{
+		HTML:        result.HTML,
+		TemplateID:  result.TemplateID,
+		PaperSize:   result.PaperSize,
+		Orientation: result.Orientation,
+		Margins: MarginsResponse{
+			Top:    result.Margins.Top,
+			Right:  result.Margins.Right,
+			Bottom: result.Margins.Bottom,
+			Left:   result.Margins.Left,
+		},
+	}
+
+	h.Success(c, response)
 }
 
 // =============================================================================

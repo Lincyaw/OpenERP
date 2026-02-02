@@ -30,6 +30,19 @@ func PrintRoutes(handler *PrintHandler, authMiddleware gin.HandlerFunc) *router.
 	return group
 }
 
+// PrintingTemplateRoutes creates the route group for printing template endpoints
+// This includes the template rendering API at /api/v1/printing/templates/:id/render
+func PrintingTemplateRoutes(handler *PrintHandler, authMiddleware gin.HandlerFunc) *router.DomainGroup {
+	group := router.NewDomainGroup("printing-templates", "/printing")
+	group.Use(authMiddleware)
+
+	// Template rendering endpoint
+	// POST /api/v1/printing/templates/:id/render
+	group.POST("/templates/:id/render", handler.RenderTemplate)
+
+	return group
+}
+
 // PrintingWSRoutes creates the route group for printing WebSocket endpoints
 // Note: WebSocket endpoint uses its own authentication via query param or header
 // because WebSocket clients may not be able to set Authorization headers

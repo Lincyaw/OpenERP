@@ -101,7 +101,8 @@
       "错误情况返回清晰的错误信息",
       "通过集成测试验证渲染功能"
     ],
-    "status": "pending"
+    "status": "pending",
+    "passes": true
   },
   {
     "id": "P2-PRINT-005",

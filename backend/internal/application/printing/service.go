@@ -148,6 +148,74 @@ func (s *PrintService) PreviewDocument(ctx context.Context, tenantID uuid.UUID, 
 	}, nil
 }
 
+// RenderTemplate renders a specific template with document data
+// This endpoint is template-centric: the template ID is specified in the URL path
+// and the document data is loaded based on document_type and document_id
+func (s *PrintService) RenderTemplate(ctx context.Context, tenantID uuid.UUID, templateID string, req RenderTemplateRequest) (*RenderTemplateResponse, error) {
+	// Get template by ID
+	template := s.templateStore.GetByID(templateID)
+	if template == nil {
+		return nil, shared.NewDomainError("NOT_FOUND", "Template not found")
+	}
+
+	// Validate document type
+	docType := printing.DocType(req.DocumentType)
+	if !docType.IsValid() {
+		return nil, shared.NewDomainError("INVALID_INPUT", "Invalid document type")
+	}
+
+	// Verify template is for the correct document type
+	if template.DocType != docType {
+		return nil, shared.NewDomainError("INVALID_INPUT", "Template document type does not match requested document type")
+	}
+
+	// Parse document ID
+	documentID, err := uuid.Parse(req.DocumentID)
+	if err != nil {
+		return nil, shared.NewDomainError("INVALID_INPUT", "Invalid document ID format")
+	}
+
+	// Load document data from provider
+	var data interface{}
+	if s.dataProviders != nil && documentID != uuid.Nil {
+		docData, err := s.dataProviders.LoadData(ctx, tenantID, docType, documentID)
+		if err != nil {
+			s.logger.Warn("failed to load document data from provider",
+				zap.Error(err),
+				zap.String("docType", string(docType)),
+				zap.String("documentID", documentID.String()))
+			return nil, shared.NewDomainError("NOT_FOUND", "Document not found")
+		}
+		data = docData
+	}
+
+	// Render template with data
+	result, err := s.templateEngine.Render(ctx, &infra.RenderTemplateRequest{
+		Template: template.ToPrintTemplate(),
+		Data:     data,
+	})
+	if err != nil {
+		var renderErr *infra.RenderError
+		if errors.As(err, &renderErr) {
+			return nil, shared.NewDomainError(renderErr.Code, renderErr.Message)
+		}
+		return nil, shared.NewDomainError("RENDER_FAILED", "Failed to render template")
+	}
+
+	return &RenderTemplateResponse{
+		HTML:        result.HTML,
+		TemplateID:  template.ID,
+		PaperSize:   string(template.PaperSize),
+		Orientation: string(template.Orientation),
+		Margins: MarginsDTO{
+			Top:    template.Margins.Top,
+			Right:  template.Margins.Right,
+			Bottom: template.Margins.Bottom,
+			Left:   template.Margins.Left,
+		},
+	}, nil
+}
+
 // GeneratePDF generates a PDF for a document and creates a print job
 func (s *PrintService) GeneratePDF(ctx context.Context, tenantID, userID uuid.UUID, req GeneratePDFRequest) (*PrintJobResponse, error) {
 	// Validate document type

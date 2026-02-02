@@ -184,3 +184,22 @@ type TriggerEventResponse struct {
 	Code        string `json:"code"`
 	DisplayName string `json:"display_name"`
 }
+
+// =============================================================================
+// Template Rendering DTOs
+// =============================================================================
+
+// RenderTemplateRequest represents a request to render a template with document data
+type RenderTemplateRequest struct {
+	DocumentID   string `json:"document_id" binding:"required,uuid"`
+	DocumentType string `json:"document_type" binding:"required"`
+}
+
+// RenderTemplateResponse represents the rendered template result
+type RenderTemplateResponse struct {
+	HTML        string     `json:"html"`
+	TemplateID  string     `json:"template_id"`
+	PaperSize   string     `json:"paper_size"`
+	Orientation string     `json:"orientation"`
+	Margins     MarginsDTO `json:"margins"`
+}
