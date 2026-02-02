@@ -617,7 +617,8 @@
       "Swagger 文档自动生成",
       "通过集成测试验证所有端点"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-011",
