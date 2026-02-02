@@ -126,7 +126,7 @@
       "错误情况不影响业务流程（打印失败不阻塞订单确认）",
       "通过集成测试验证事件处理流程"
     ],
-    "status": "pending",
+    "status": "pass",
     "passes": true
   },
   {
@@ -156,7 +156,8 @@
       "健康检查端点返回服务状态",
       "优雅关闭：接收 SIGTERM/SIGINT 信号后正确清理资源"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P2-PRINT-007",

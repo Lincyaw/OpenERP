@@ -1,0 +1,72 @@
+# Print Service Configuration
+# Environment variables can be used with ${VAR_NAME} syntax
+
+server:
+  # ERP backend API URL
+  api_url: "${PRINT_SERVICE_API_URL:-http://localhost:8080}"
+
+  # WebSocket URL for real-time events
+  websocket_url: "${PRINT_SERVICE_WS_URL:-ws://localhost:8080/api/v1/printing/ws}"
+
+  # Tenant ID for multi-tenancy
+  tenant_id: "${PRINT_SERVICE_TENANT_ID}"
+
+  # API authentication token
+  api_token: "${PRINT_SERVICE_API_TOKEN}"
+
+  # Request timeout
+  timeout: 30s
+
+  # WebSocket reconnection interval
+  reconnect_interval: 5s
+
+  # Maximum reconnection attempts (0 = unlimited)
+  max_reconnect_attempts: 0
+
+printing:
+  # Default printer name (leave empty to use system default)
+  default_printer: ""
+
+  # Rendering method: chromedp, wkhtmltopdf, gotenberg
+  renderer: chromedp
+
+  # Printing protocol: ipp, cups, raw, windows
+  protocol: ipp
+
+  # IPP server URL (required when protocol is ipp)
+  ipp_server: "http://localhost:631"
+
+  # Temporary directory for PDF files
+  temp_dir: ""
+
+  # Cleanup interval for temporary files
+  cleanup_interval: 1h
+
+logging:
+  # Log level: debug, info, warn, error
+  level: info
+
+  # Log file path (empty = stdout)
+  file: ""
+
+  # Maximum log file size in MB before rotation
+  max_size: 100
+
+  # Maximum number of old log files to retain
+  max_backups: 3
+
+  # Maximum days to retain old log files
+  max_age: 28
+
+  # Compress rotated log files
+  compress: true
+
+health:
+  # Enable health check endpoint
+  enabled: true
+
+  # Health check port
+  port: 9999
+
+  # Health check path
+  path: /health
