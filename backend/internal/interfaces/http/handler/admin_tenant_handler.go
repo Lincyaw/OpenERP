@@ -7,7 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
-// AdminTenantHandler handles admin tenant management HTTP requests
+// AdminTenantHandler handles admin tenant management HTTP requests.
+// This handler manages subscription and quota operations.
+//
+// All endpoints require SuperAdmin privileges (is_super_admin: true in JWT).
 type AdminTenantHandler struct {
 	BaseHandler
 	adminTenantService *appIdentity.AdminTenantService

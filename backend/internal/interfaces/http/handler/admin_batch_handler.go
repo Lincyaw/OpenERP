@@ -12,17 +12,32 @@ import (
 // PreviewBatchSuspend godoc
 // @ID          adminPreviewBatchSuspend
 // @Summary     Preview batch suspend operation
-// @Description Preview the batch suspend operation before execution. Shows which tenants can be suspended and which will be skipped.
+// @Description Preview the batch suspend operation before execution. Returns which tenants can be suspended and which will be skipped.
+// @Description
+// @Description **Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)
+// @Description
+// @Description **Preview shows**:
+// @Description - Total number of tenants in the request
+// @Description - How many can be processed
+// @Description - How many will be skipped (with reasons)
+// @Description - Warnings about potential issues
+// @Description
+// @Description **Skip reasons**:
+// @Description - Tenant is already suspended
+// @Description - Tenant is a system tenant (protected)
+// @Description - Tenant not found
+// @Description
+// @Description **Tip**: Always preview before executing batch operations
 // @Tags        admin-batch
 // @Accept      json
 // @Produce     json
-// @Param       request body     BatchSuspendRequest true "Batch suspend preview request"
-// @Success     200     {object} APIResponse[BatchPreviewResponse]
-// @Failure     400     {object} ErrorResponse
-// @Failure     401     {object} ErrorResponse
-// @Failure     403     {object} ErrorResponse
-// @Failure     422     {object} ErrorResponse
-// @Failure     500     {object} ErrorResponse
+// @Param       request body     BatchSuspendRequest true "Batch suspend preview request (max 100 tenants)"
+// @Success     200     {object} APIResponse[BatchPreviewResponse] "Preview of batch operation"
+// @Failure     400     {object} ErrorResponse "ERR_BAD_REQUEST: Invalid request"
+// @Failure     401     {object} ErrorResponse "ERR_UNAUTHORIZED: Missing or invalid token"
+// @Failure     403     {object} ErrorResponse "ERR_FORBIDDEN: Not a super admin"
+// @Failure     422     {object} ErrorResponse "ERR_BUSINESS_RULE: Business rule violation"
+// @Failure     500     {object} ErrorResponse "ERR_INTERNAL: Server error"
 // @Security    BearerAuth
 // @Router      /admin/batch/suspend/preview [post]
 func (h *AdminHandler) PreviewBatchSuspend(c *gin.Context) {
@@ -57,16 +72,29 @@ func (h *AdminHandler) PreviewBatchSuspend(c *gin.Context) {
 // @ID          adminBatchSuspend
 // @Summary     Execute batch suspend operation
 // @Description Suspend multiple tenants at once. All operations are recorded in audit logs.
+// @Description
+// @Description **Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)
+// @Description
+// @Description **Behavior**:
+// @Description - Processes all valid tenants in the list
+// @Description - Skips tenants that cannot be suspended
+// @Description - Creates individual audit log entries for each tenant
+// @Description - Optional reason is applied to all suspensions
+// @Description - Optional scheduled_reactivate_at sets auto-reactivation for all
+// @Description
+// @Description **Limits**: Maximum 100 tenants per batch operation
+// @Description
+// @Description **Recommendation**: Use preview endpoint first to check impact
 // @Tags        admin-batch
 // @Accept      json
 // @Produce     json
-// @Param       request body     BatchSuspendRequest true "Batch suspend request"
-// @Success     200     {object} APIResponse[BatchOperationResponse]
-// @Failure     400     {object} ErrorResponse
-// @Failure     401     {object} ErrorResponse
-// @Failure     403     {object} ErrorResponse
-// @Failure     422     {object} ErrorResponse
-// @Failure     500     {object} ErrorResponse
+// @Param       request body     BatchSuspendRequest true "Batch suspend request (max 100 tenants)"
+// @Success     200     {object} APIResponse[BatchOperationResponse] "Batch operation result"
+// @Failure     400     {object} ErrorResponse "ERR_BAD_REQUEST: Invalid request"
+// @Failure     401     {object} ErrorResponse "ERR_UNAUTHORIZED: Missing or invalid token"
+// @Failure     403     {object} ErrorResponse "ERR_FORBIDDEN: Not a super admin"
+// @Failure     422     {object} ErrorResponse "ERR_BUSINESS_RULE: Business rule violation"
+// @Failure     500     {object} ErrorResponse "ERR_INTERNAL: Server error"
 // @Security    BearerAuth
 // @Router      /admin/batch/suspend [post]
 func (h *AdminHandler) BatchSuspend(c *gin.Context) {
@@ -105,17 +133,23 @@ func (h *AdminHandler) BatchSuspend(c *gin.Context) {
 // PreviewBatchActivate godoc
 // @ID          adminPreviewBatchActivate
 // @Summary     Preview batch activate operation
-// @Description Preview the batch activate operation before execution. Shows which tenants can be activated and which will be skipped.
+// @Description Preview the batch activate operation before execution. Returns which tenants can be activated and which will be skipped.
+// @Description
+// @Description **Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)
+// @Description
+// @Description **Skip reasons**:
+// @Description - Tenant is already active
+// @Description - Tenant not found
 // @Tags        admin-batch
 // @Accept      json
 // @Produce     json
-// @Param       request body     BatchActivateRequest true "Batch activate preview request"
-// @Success     200     {object} APIResponse[BatchPreviewResponse]
-// @Failure     400     {object} ErrorResponse
-// @Failure     401     {object} ErrorResponse
-// @Failure     403     {object} ErrorResponse
-// @Failure     422     {object} ErrorResponse
-// @Failure     500     {object} ErrorResponse
+// @Param       request body     BatchActivateRequest true "Batch activate preview request (max 100 tenants)"
+// @Success     200     {object} APIResponse[BatchPreviewResponse] "Preview of batch operation"
+// @Failure     400     {object} ErrorResponse "ERR_BAD_REQUEST: Invalid request"
+// @Failure     401     {object} ErrorResponse "ERR_UNAUTHORIZED: Missing or invalid token"
+// @Failure     403     {object} ErrorResponse "ERR_FORBIDDEN: Not a super admin"
+// @Failure     422     {object} ErrorResponse "ERR_BUSINESS_RULE: Business rule violation"
+// @Failure     500     {object} ErrorResponse "ERR_INTERNAL: Server error"
 // @Security    BearerAuth
 // @Router      /admin/batch/activate/preview [post]
 func (h *AdminHandler) PreviewBatchActivate(c *gin.Context) {
@@ -148,16 +182,25 @@ func (h *AdminHandler) PreviewBatchActivate(c *gin.Context) {
 // @ID          adminBatchActivate
 // @Summary     Execute batch activate operation
 // @Description Activate multiple tenants at once. All operations are recorded in audit logs.
+// @Description
+// @Description **Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)
+// @Description
+// @Description **Behavior**:
+// @Description - Sets all valid tenants to "active" status
+// @Description - Clears any scheduled reactivation dates
+// @Description - Creates individual audit log entries for each tenant
+// @Description
+// @Description **Limits**: Maximum 100 tenants per batch operation
 // @Tags        admin-batch
 // @Accept      json
 // @Produce     json
-// @Param       request body     BatchActivateRequest true "Batch activate request"
-// @Success     200     {object} APIResponse[BatchOperationResponse]
-// @Failure     400     {object} ErrorResponse
-// @Failure     401     {object} ErrorResponse
-// @Failure     403     {object} ErrorResponse
-// @Failure     422     {object} ErrorResponse
-// @Failure     500     {object} ErrorResponse
+// @Param       request body     BatchActivateRequest true "Batch activate request (max 100 tenants)"
+// @Success     200     {object} APIResponse[BatchOperationResponse] "Batch operation result"
+// @Failure     400     {object} ErrorResponse "ERR_BAD_REQUEST: Invalid request"
+// @Failure     401     {object} ErrorResponse "ERR_UNAUTHORIZED: Missing or invalid token"
+// @Failure     403     {object} ErrorResponse "ERR_FORBIDDEN: Not a super admin"
+// @Failure     422     {object} ErrorResponse "ERR_BUSINESS_RULE: Business rule violation"
+// @Failure     500     {object} ErrorResponse "ERR_INTERNAL: Server error"
 // @Security    BearerAuth
 // @Router      /admin/batch/activate [post]
 func (h *AdminHandler) BatchActivate(c *gin.Context) {
@@ -194,17 +237,25 @@ func (h *AdminHandler) BatchActivate(c *gin.Context) {
 // PreviewBatchChangePlan godoc
 // @ID          adminPreviewBatchChangePlan
 // @Summary     Preview batch plan change operation
-// @Description Preview the batch plan change operation before execution. Shows which tenants can be changed and which will be skipped.
+// @Description Preview the batch plan change operation before execution. Returns which tenants can have their plan changed and which will be skipped.
+// @Description
+// @Description **Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)
+// @Description
+// @Description **Skip reasons**:
+// @Description - Tenant already on the target plan
+// @Description - Tenant not found
+// @Description
+// @Description **Note**: Upgrades are immediate, downgrades are scheduled
 // @Tags        admin-batch
 // @Accept      json
 // @Produce     json
-// @Param       request body     BatchChangePlanRequest true "Batch plan change preview request"
-// @Success     200     {object} APIResponse[BatchPreviewResponse]
-// @Failure     400     {object} ErrorResponse
-// @Failure     401     {object} ErrorResponse
-// @Failure     403     {object} ErrorResponse
-// @Failure     422     {object} ErrorResponse
-// @Failure     500     {object} ErrorResponse
+// @Param       request body     BatchChangePlanRequest true "Batch plan change preview request (max 100 tenants)"
+// @Success     200     {object} APIResponse[BatchPreviewResponse] "Preview of batch operation"
+// @Failure     400     {object} ErrorResponse "ERR_BAD_REQUEST: Invalid request"
+// @Failure     401     {object} ErrorResponse "ERR_UNAUTHORIZED: Missing or invalid token"
+// @Failure     403     {object} ErrorResponse "ERR_FORBIDDEN: Not a super admin"
+// @Failure     422     {object} ErrorResponse "ERR_BUSINESS_RULE: Invalid plan"
+// @Failure     500     {object} ErrorResponse "ERR_INTERNAL: Server error"
 // @Security    BearerAuth
 // @Router      /admin/batch/change-plan/preview [post]
 func (h *AdminHandler) PreviewBatchChangePlan(c *gin.Context) {
@@ -239,16 +290,28 @@ func (h *AdminHandler) PreviewBatchChangePlan(c *gin.Context) {
 // @ID          adminBatchChangePlan
 // @Summary     Execute batch plan change operation
 // @Description Change subscription plan for multiple tenants at once. Upgrades are immediate, downgrades are scheduled. All operations are recorded in audit logs.
+// @Description
+// @Description **Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)
+// @Description
+// @Description **Upgrade behavior**:
+// @Description - Takes effect immediately for all tenants
+// @Description - New quotas apply instantly
+// @Description
+// @Description **Downgrade behavior**:
+// @Description - Scheduled for end of current billing cycle
+// @Description - Each tenant's effective date may differ
+// @Description
+// @Description **Limits**: Maximum 100 tenants per batch operation
 // @Tags        admin-batch
 // @Accept      json
 // @Produce     json
-// @Param       request body     BatchChangePlanRequest true "Batch plan change request"
-// @Success     200     {object} APIResponse[BatchOperationResponse]
-// @Failure     400     {object} ErrorResponse
-// @Failure     401     {object} ErrorResponse
-// @Failure     403     {object} ErrorResponse
-// @Failure     422     {object} ErrorResponse
-// @Failure     500     {object} ErrorResponse
+// @Param       request body     BatchChangePlanRequest true "Batch plan change request (max 100 tenants)"
+// @Success     200     {object} APIResponse[BatchOperationResponse] "Batch operation result"
+// @Failure     400     {object} ErrorResponse "ERR_BAD_REQUEST: Invalid request"
+// @Failure     401     {object} ErrorResponse "ERR_UNAUTHORIZED: Missing or invalid token"
+// @Failure     403     {object} ErrorResponse "ERR_FORBIDDEN: Not a super admin"
+// @Failure     422     {object} ErrorResponse "ERR_BUSINESS_RULE: Invalid plan"
+// @Failure     500     {object} ErrorResponse "ERR_INTERNAL: Server error"
 // @Security    BearerAuth
 // @Router      /admin/batch/change-plan [post]
 func (h *AdminHandler) BatchChangePlan(c *gin.Context) {
@@ -287,17 +350,24 @@ func (h *AdminHandler) BatchChangePlan(c *gin.Context) {
 // PreviewBatchDelete godoc
 // @ID          adminPreviewBatchDelete
 // @Summary     Preview batch delete operation
-// @Description Preview the batch delete operation before execution. Shows which tenants can be deleted and which will be skipped.
+// @Description Preview the batch delete operation before execution. Returns which tenants can be deleted and which will be skipped.
+// @Description
+// @Description **Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)
+// @Description
+// @Description **Skip reasons**:
+// @Description - System tenant (protected)
+// @Description - Tenant not found
+// @Description - Tenant already inactive
 // @Tags        admin-batch
 // @Accept      json
 // @Produce     json
-// @Param       request body     BatchDeleteRequest true "Batch delete preview request"
-// @Success     200     {object} APIResponse[BatchPreviewResponse]
-// @Failure     400     {object} ErrorResponse
-// @Failure     401     {object} ErrorResponse
-// @Failure     403     {object} ErrorResponse
-// @Failure     422     {object} ErrorResponse
-// @Failure     500     {object} ErrorResponse
+// @Param       request body     BatchDeleteRequest true "Batch delete preview request (max 100 tenants)"
+// @Success     200     {object} APIResponse[BatchPreviewResponse] "Preview of batch operation"
+// @Failure     400     {object} ErrorResponse "ERR_BAD_REQUEST: Invalid request"
+// @Failure     401     {object} ErrorResponse "ERR_UNAUTHORIZED: Missing or invalid token"
+// @Failure     403     {object} ErrorResponse "ERR_FORBIDDEN: Not a super admin"
+// @Failure     422     {object} ErrorResponse "ERR_BUSINESS_RULE: Business rule violation"
+// @Failure     500     {object} ErrorResponse "ERR_INTERNAL: Server error"
 // @Security    BearerAuth
 // @Router      /admin/batch/delete/preview [post]
 func (h *AdminHandler) PreviewBatchDelete(c *gin.Context) {
@@ -330,16 +400,28 @@ func (h *AdminHandler) PreviewBatchDelete(c *gin.Context) {
 // @ID          adminBatchDelete
 // @Summary     Execute batch delete operation
 // @Description Soft delete multiple tenants at once (marks as inactive, data preserved). All operations are recorded in audit logs.
+// @Description
+// @Description **Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)
+// @Description
+// @Description **Behavior**:
+// @Description - Sets all valid tenants to "inactive" status
+// @Description - All tenant data is preserved (soft delete)
+// @Description - Users of deleted tenants cannot log in
+// @Description - Tenants can be reactivated using batch activate
+// @Description
+// @Description **Limits**: Maximum 100 tenants per batch operation
+// @Description
+// @Description **Warning**: This operation affects user access immediately
 // @Tags        admin-batch
 // @Accept      json
 // @Produce     json
-// @Param       request body     BatchDeleteRequest true "Batch delete request"
-// @Success     200     {object} APIResponse[BatchOperationResponse]
-// @Failure     400     {object} ErrorResponse
-// @Failure     401     {object} ErrorResponse
-// @Failure     403     {object} ErrorResponse
-// @Failure     422     {object} ErrorResponse
-// @Failure     500     {object} ErrorResponse
+// @Param       request body     BatchDeleteRequest true "Batch delete request (max 100 tenants)"
+// @Success     200     {object} APIResponse[BatchOperationResponse] "Batch operation result"
+// @Failure     400     {object} ErrorResponse "ERR_BAD_REQUEST: Invalid request"
+// @Failure     401     {object} ErrorResponse "ERR_UNAUTHORIZED: Missing or invalid token"
+// @Failure     403     {object} ErrorResponse "ERR_FORBIDDEN: Not a super admin"
+// @Failure     422     {object} ErrorResponse "ERR_BUSINESS_RULE: Cannot delete system tenant"
+// @Failure     500     {object} ErrorResponse "ERR_INTERNAL: Server error"
 // @Security    BearerAuth
 // @Router      /admin/batch/delete [post]
 func (h *AdminHandler) BatchDelete(c *gin.Context) {

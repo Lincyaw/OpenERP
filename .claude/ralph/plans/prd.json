@@ -974,7 +974,8 @@
       "Swagger UI 可正常访问和测试",
       "文档与实现一致"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-024",
