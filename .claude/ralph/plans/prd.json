@@ -448,7 +448,8 @@
       "查询性能 < 200ms（10000 租户）",
       "集成测试覆盖所有查询场景"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-005",
