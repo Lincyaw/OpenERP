@@ -17,6 +17,7 @@ import { DataTable, TableToolbar, useTableState, type DataTableColumn } from '@/
 import { getInventoryById, listInventoryTransactionsByItem } from '@/api/inventory/inventory'
 import { listWarehouses } from '@/api/warehouses/warehouses'
 import { listProducts } from '@/api/products/products'
+import { useFormatters } from '@/hooks/useFormatters'
 import type {
   HandlerInventoryItemResponse,
   HandlerTransactionResponse,
@@ -119,21 +120,6 @@ function formatCurrency(value?: number | string): string {
 }
 
 /**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-/**
  * Format date to ISO string for API
  */
 function formatDateToISO(date: Date | null): string | undefined {
@@ -154,6 +140,7 @@ function formatDateToISO(date: Date | null): string | undefined {
 export default function StockTransactionsPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const { formatDateTime } = useFormatters()
 
   // State for inventory item info (for header display)
   const [inventoryItem, setInventoryItem] = useState<HandlerInventoryItemResponse | null>(null)
@@ -342,7 +329,10 @@ export default function StockTransactionsPage() {
         dataIndex: 'transaction_date',
         width: 160,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined),
+        render: (date: unknown) => {
+          const dateStr = date as string | undefined
+          return dateStr ? formatDateTime(dateStr) : '-'
+        },
       },
       {
         title: '类型',
@@ -433,7 +423,7 @@ export default function StockTransactionsPage() {
         render: (reason: unknown) => (reason as string) || '-',
       },
     ],
-    []
+    [formatDateTime]
   )
 
   return (
