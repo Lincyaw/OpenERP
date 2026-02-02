@@ -8,20 +8,32 @@
  * Purchase return list item response
  */
 export interface HandlerPurchaseReturnListResponse {
+  /** @Description Timestamp when the return was approved in ISO 8601 format
+@Example 2026-01-16T14:30:00Z */
   approved_at?: string
+  /** @Description Timestamp when the return was completed in ISO 8601 format
+@Example 2026-01-20T16:00:00Z */
   completed_at?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-15T08:00:00Z */
   created_at?: string
   id?: string
   item_count?: number
   purchase_order_id?: string
   purchase_order_number?: string
   return_number?: string
+  /** @Description Timestamp when the return was shipped in ISO 8601 format
+@Example 2026-01-17T09:00:00Z */
   shipped_at?: string
   status?: string
+  /** @Description Timestamp when the return was submitted in ISO 8601 format
+@Example 2026-01-15T10:00:00Z */
   submitted_at?: string
   supplier_id?: string
   supplier_name?: string
   total_refund?: number
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-17T09:00:00Z */
   updated_at?: string
   warehouse_id?: string
 }

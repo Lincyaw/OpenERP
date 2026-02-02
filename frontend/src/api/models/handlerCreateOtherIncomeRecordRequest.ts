@@ -12,6 +12,8 @@ export interface HandlerCreateOtherIncomeRecordRequest {
   attachment_urls?: string
   category: string
   description: string
+  /** @Description Timestamp when the income was received in ISO 8601 format
+@Example 2026-01-15T00:00:00Z */
   received_at: string
   remark?: string
 }

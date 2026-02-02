@@ -11,6 +11,8 @@ import type { HandlerRelatedEntityResponse } from './handlerRelatedEntityRespons
 export interface HandlerDiscrepancyResponse {
   actual_amount?: number
   description?: string
+  /** @Description Timestamp when the discrepancy was detected in ISO 8601 format
+@Example 2026-01-31T23:59:59Z */
   detected_at?: string
   difference?: number
   entity_id?: string

@@ -9,6 +9,8 @@
  */
 export interface HandlerReceivedItemResponse {
   batch_number?: string
+  /** @Description Expiry date of the batch in ISO 8601 format
+@Example 2027-12-31T00:00:00Z */
   expiry_date?: string
   item_id?: string
   product_code?: string

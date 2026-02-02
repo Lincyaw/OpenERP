@@ -10,9 +10,17 @@ import type { HandlerSalesOrderItemResponse } from './handlerSalesOrderItemRespo
  */
 export interface HandlerSalesOrderResponse {
   cancel_reason?: string
+  /** @Description Order cancellation timestamp
+@Example "2026-02-02T14:30:00Z" */
   cancelled_at?: string
+  /** @Description Order completion timestamp
+@Example "2026-02-02T16:00:00Z" */
   completed_at?: string
+  /** @Description Order confirmation timestamp
+@Example "2026-02-02T14:00:00Z" */
   confirmed_at?: string
+  /** @Description Record creation timestamp
+@Example "2026-02-02T10:00:00Z" */
   created_at?: string
   customer_id?: string
   customer_name?: string
@@ -23,11 +31,15 @@ export interface HandlerSalesOrderResponse {
   order_number?: string
   payable_amount?: number
   remark?: string
+  /** @Description Order shipment timestamp
+@Example "2026-02-02T15:00:00Z" */
   shipped_at?: string
   status?: string
   tenant_id?: string
   total_amount?: number
   total_quantity?: number
+  /** @Description Record last update timestamp
+@Example "2026-02-02T14:00:00Z" */
   updated_at?: string
   version?: number
   warehouse_id?: string

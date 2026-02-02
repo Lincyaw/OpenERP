@@ -9,6 +9,8 @@ import type { HandlerDiscrepancyResponse } from './handlerDiscrepancyResponse'
  * Trial balance check response
  */
 export interface HandlerTrialBalanceResponse {
+  /** @Description Timestamp when the balance was checked in ISO 8601 format
+@Example 2026-01-31T23:59:59Z */
   checked_at?: string
   checked_by?: string
   credit_memo_count?: number
@@ -22,7 +24,11 @@ export interface HandlerTrialBalanceResponse {
   notes?: string
   payable_count?: number
   payment_count?: number
+  /** @Description End of the period being checked in ISO 8601 format
+@Example 2026-01-31T23:59:59Z */
   period_end?: string
+  /** @Description Start of the period being checked in ISO 8601 format
+@Example 2026-01-01T00:00:00Z */
   period_start?: string
   receipt_count?: number
   receivable_count?: number

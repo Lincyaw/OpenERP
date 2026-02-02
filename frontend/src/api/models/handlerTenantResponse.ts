@@ -12,8 +12,12 @@ export interface HandlerTenantResponse {
   contact_email?: string
   contact_name?: string
   contact_phone?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-01T00:00:00Z */
   created_at?: string
   domain?: string
+  /** @Description Timestamp when the tenant subscription expires in ISO 8601 format
+@Example 2027-01-31T23:59:59Z */
   expires_at?: string
   id?: string
   logo_url?: string
@@ -22,6 +26,10 @@ export interface HandlerTenantResponse {
   plan?: string
   short_name?: string
   status?: string
+  /** @Description Timestamp when the trial period ends in ISO 8601 format
+@Example 2026-02-15T23:59:59Z */
   trial_ends_at?: string
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-15T10:30:00Z */
   updated_at?: string
 }

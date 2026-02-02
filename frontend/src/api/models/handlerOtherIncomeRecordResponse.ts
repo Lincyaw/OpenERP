@@ -8,23 +8,33 @@
  * Other income record response
  */
 export interface HandlerOtherIncomeRecordResponse {
+  /** @Description Timestamp when the income was actually received in ISO 8601 format
+@Example 2026-01-20T10:00:00Z */
   actual_received?: string
   amount?: number
   attachment_urls?: string
   category?: string
   category_name?: string
+  /** @Description Timestamp when the income was confirmed in ISO 8601 format
+@Example 2026-01-21T14:00:00Z */
   confirmed_at?: string
   confirmed_by?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-15T08:00:00Z */
   created_at?: string
   description?: string
   id?: string
   income_number?: string
   payment_method?: string
   receipt_status?: string
+  /** @Description Timestamp when the income was received in ISO 8601 format
+@Example 2026-01-15T00:00:00Z */
   received_at?: string
   remark?: string
   status?: string
   tenant_id?: string
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-21T14:00:00Z */
   updated_at?: string
   version?: number
 }

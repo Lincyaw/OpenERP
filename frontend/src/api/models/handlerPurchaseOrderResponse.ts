@@ -10,9 +10,17 @@ import type { HandlerPurchaseOrderItemResponse } from './handlerPurchaseOrderIte
  */
 export interface HandlerPurchaseOrderResponse {
   cancel_reason?: string
+  /** @Description Timestamp when the order was cancelled in ISO 8601 format
+@Example 2026-01-18T09:15:00Z */
   cancelled_at?: string
+  /** @Description Timestamp when the order was completed in ISO 8601 format
+@Example 2026-01-20T14:45:00Z */
   completed_at?: string
+  /** @Description Timestamp when the order was confirmed in ISO 8601 format
+@Example 2026-01-15T10:30:00Z */
   confirmed_at?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-10T08:00:00Z */
   created_at?: string
   discount_amount?: number
   id?: string
@@ -29,6 +37,8 @@ export interface HandlerPurchaseOrderResponse {
   tenant_id?: string
   total_amount?: number
   total_quantity?: number
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-15T10:30:00Z */
   updated_at?: string
   version?: number
   warehouse_id?: string

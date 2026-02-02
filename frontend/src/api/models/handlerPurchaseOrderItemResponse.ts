@@ -9,6 +9,8 @@
  */
 export interface HandlerPurchaseOrderItemResponse {
   amount?: number
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-10T08:00:00Z */
   created_at?: string
   id?: string
   ordered_quantity?: number
@@ -20,5 +22,7 @@ export interface HandlerPurchaseOrderItemResponse {
   remark?: string
   unit?: string
   unit_cost?: number
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-15T10:30:00Z */
   updated_at?: string
 }

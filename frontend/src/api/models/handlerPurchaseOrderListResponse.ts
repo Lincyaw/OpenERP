@@ -8,8 +8,14 @@
  * Purchase order list item response
  */
 export interface HandlerPurchaseOrderListResponse {
+  /** @Description Timestamp when the order was completed in ISO 8601 format
+@Example 2026-01-20T14:45:00Z */
   completed_at?: string
+  /** @Description Timestamp when the order was confirmed in ISO 8601 format
+@Example 2026-01-15T10:30:00Z */
   confirmed_at?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-10T08:00:00Z */
   created_at?: string
   id?: string
   item_count?: number
@@ -20,6 +26,8 @@ export interface HandlerPurchaseOrderListResponse {
   supplier_id?: string
   supplier_name?: string
   total_amount?: number
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-15T10:30:00Z */
   updated_at?: string
   warehouse_id?: string
 }

@@ -9,6 +9,8 @@
  */
 export interface HandlerPaymentRecordResponse {
   amount?: number
+  /** @Description Timestamp when the payment was applied in ISO 8601 format
+@Example 2026-01-25T14:00:00Z */
   applied_at?: string
   id?: string
   receipt_voucher_id?: string

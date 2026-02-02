@@ -8,20 +8,32 @@
  * Sales return list item response
  */
 export interface HandlerSalesReturnListResponse {
+  /** @Description Timestamp when the return was approved in ISO 8601 format
+@Example 2026-01-16T14:30:00Z */
   approved_at?: string
+  /** @Description Timestamp when the return was completed in ISO 8601 format
+@Example 2026-01-20T16:00:00Z */
   completed_at?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-15T08:00:00Z */
   created_at?: string
   customer_id?: string
   customer_name?: string
   id?: string
   item_count?: number
+  /** @Description Timestamp when the returned goods were received in ISO 8601 format
+@Example 2026-01-18T09:00:00Z */
   received_at?: string
   return_number?: string
   sales_order_id?: string
   sales_order_number?: string
   status?: string
+  /** @Description Timestamp when the return was submitted in ISO 8601 format
+@Example 2026-01-15T10:00:00Z */
   submitted_at?: string
   total_refund?: number
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-18T09:00:00Z */
   updated_at?: string
   warehouse_id?: string
 }

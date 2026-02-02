@@ -3,20 +3,28 @@
  * // Do not edit manually
  *
  */
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query'
 
-import type { DtoErrorResponse, HandlerAPIResponseArrayHandlerTemplateResponse } from '.././models'
+import type {
+  DtoErrorResponse,
+  HandlerAPIResponseArrayHandlerTemplateResponse,
+  HandlerAPIResponseHandlerRenderTemplateHTTPResponse,
+  RenderPrintTemplateBody,
+} from '.././models'
 
 import { customInstance } from '../../services/axios-instance'
 
@@ -194,4 +202,137 @@ export function useGetPrintTemplateTemplatesByDocType<
   }
 
   return { ...query, queryKey: queryOptions.queryKey }
+}
+
+/**
+ * Render a specific print template with document data. The template content is cached for 10 minutes.
+ * @summary Render a print template
+ */
+export type renderPrintTemplateResponse200 = {
+  data: HandlerAPIResponseHandlerRenderTemplateHTTPResponse
+  status: 200
+}
+
+export type renderPrintTemplateResponse400 = {
+  data: DtoErrorResponse
+  status: 400
+}
+
+export type renderPrintTemplateResponse401 = {
+  data: DtoErrorResponse
+  status: 401
+}
+
+export type renderPrintTemplateResponse404 = {
+  data: DtoErrorResponse
+  status: 404
+}
+
+export type renderPrintTemplateResponse422 = {
+  data: DtoErrorResponse
+  status: 422
+}
+
+export type renderPrintTemplateResponse500 = {
+  data: DtoErrorResponse
+  status: 500
+}
+
+export type renderPrintTemplateResponseSuccess = renderPrintTemplateResponse200 & {
+  headers: Headers
+}
+export type renderPrintTemplateResponseError = (
+  | renderPrintTemplateResponse400
+  | renderPrintTemplateResponse401
+  | renderPrintTemplateResponse404
+  | renderPrintTemplateResponse422
+  | renderPrintTemplateResponse500
+) & {
+  headers: Headers
+}
+
+export type renderPrintTemplateResponse =
+  | renderPrintTemplateResponseSuccess
+  | renderPrintTemplateResponseError
+
+export const getRenderPrintTemplateUrl = (id: string) => {
+  return `/printing/templates/${id}/render`
+}
+
+export const renderPrintTemplate = async (
+  id: string,
+  renderPrintTemplateBody: RenderPrintTemplateBody,
+  options?: RequestInit
+): Promise<renderPrintTemplateResponse> => {
+  return customInstance<renderPrintTemplateResponse>(getRenderPrintTemplateUrl(id), {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(renderPrintTemplateBody),
+  })
+}
+
+export const getRenderPrintTemplateMutationOptions = <
+  TError = DtoErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof renderPrintTemplate>>,
+    TError,
+    { id: string; data: RenderPrintTemplateBody },
+    TContext
+  >
+  request?: SecondParameter<typeof customInstance>
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof renderPrintTemplate>>,
+  TError,
+  { id: string; data: RenderPrintTemplateBody },
+  TContext
+> => {
+  const mutationKey = ['renderPrintTemplate']
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined }
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof renderPrintTemplate>>,
+    { id: string; data: RenderPrintTemplateBody }
+  > = (props) => {
+    const { id, data } = props ?? {}
+
+    return renderPrintTemplate(id, data, requestOptions)
+  }
+
+  return { mutationFn, ...mutationOptions }
+}
+
+export type RenderPrintTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof renderPrintTemplate>>
+>
+export type RenderPrintTemplateMutationBody = RenderPrintTemplateBody
+export type RenderPrintTemplateMutationError = DtoErrorResponse
+
+/**
+ * @summary Render a print template
+ */
+export const useRenderPrintTemplate = <TError = DtoErrorResponse, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof renderPrintTemplate>>,
+      TError,
+      { id: string; data: RenderPrintTemplateBody },
+      TContext
+    >
+    request?: SecondParameter<typeof customInstance>
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof renderPrintTemplate>>,
+  TError,
+  { id: string; data: RenderPrintTemplateBody },
+  TContext
+> => {
+  return useMutation(getRenderPrintTemplateMutationOptions(options), queryClient)
 }

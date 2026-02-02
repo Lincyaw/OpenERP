@@ -8,6 +8,8 @@
  * Payable allocation response
  */
 export interface HandlerPayableAllocationResponse {
+  /** @Description Timestamp when the allocation was made in ISO 8601 format
+@Example 2026-01-25T10:00:00Z */
   allocated_at?: string
   amount?: number
   id?: string

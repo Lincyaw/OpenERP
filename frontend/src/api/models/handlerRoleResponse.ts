@@ -6,6 +6,8 @@
 
 export interface HandlerRoleResponse {
   code?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-01T00:00:00Z */
   created_at?: string
   description?: string
   id?: string
@@ -15,6 +17,8 @@ export interface HandlerRoleResponse {
   permissions?: string[]
   sort_order?: number
   tenant_id?: string
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-15T10:30:00Z */
   updated_at?: string
   user_count?: number
 }

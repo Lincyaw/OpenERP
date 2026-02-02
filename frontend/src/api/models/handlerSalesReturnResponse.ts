@@ -10,11 +10,19 @@ import type { HandlerSalesReturnItemResponse } from './handlerSalesReturnItemRes
  */
 export interface HandlerSalesReturnResponse {
   approval_note?: string
+  /** @Description Timestamp when the return was approved in ISO 8601 format
+@Example 2026-01-16T14:30:00Z */
   approved_at?: string
   approved_by?: string
   cancel_reason?: string
+  /** @Description Timestamp when the return was cancelled in ISO 8601 format
+@Example 2026-01-18T11:00:00Z */
   cancelled_at?: string
+  /** @Description Timestamp when the return was completed in ISO 8601 format
+@Example 2026-01-20T16:00:00Z */
   completed_at?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-15T08:00:00Z */
   created_at?: string
   customer_id?: string
   customer_name?: string
@@ -22,7 +30,11 @@ export interface HandlerSalesReturnResponse {
   item_count?: number
   items?: HandlerSalesReturnItemResponse[]
   reason?: string
+  /** @Description Timestamp when the returned goods were received in ISO 8601 format
+@Example 2026-01-18T09:00:00Z */
   received_at?: string
+  /** @Description Timestamp when the return was rejected in ISO 8601 format
+@Example 2026-01-16T14:30:00Z */
   rejected_at?: string
   rejected_by?: string
   rejection_reason?: string
@@ -31,10 +43,14 @@ export interface HandlerSalesReturnResponse {
   sales_order_id?: string
   sales_order_number?: string
   status?: string
+  /** @Description Timestamp when the return was submitted in ISO 8601 format
+@Example 2026-01-15T10:00:00Z */
   submitted_at?: string
   tenant_id?: string
   total_quantity?: number
   total_refund?: number
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-18T09:00:00Z */
   updated_at?: string
   version?: number
   warehouse_id?: string

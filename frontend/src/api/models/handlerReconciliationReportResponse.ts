@@ -9,6 +9,8 @@ import type { HandlerTrialBalanceResponse } from './handlerTrialBalanceResponse'
  * Reconciliation report response
  */
 export interface HandlerReconciliationReportResponse {
+  /** @Description Timestamp when the report was generated in ISO 8601 format
+@Example 2026-01-31T23:59:59Z */
   generated_at?: string
   generated_by?: string
   health_score?: number

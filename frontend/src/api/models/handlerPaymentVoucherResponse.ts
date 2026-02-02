@@ -12,9 +12,15 @@ export interface HandlerPaymentVoucherResponse {
   allocated_amount?: number
   allocations?: HandlerPayableAllocationResponse[]
   amount?: number
+  /** @Description Timestamp when the voucher was confirmed in ISO 8601 format
+@Example 2026-01-25T10:00:00Z */
   confirmed_at?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-24T08:00:00Z */
   created_at?: string
   id?: string
+  /** @Description Date when the payment was made in ISO 8601 format
+@Example 2026-01-24T00:00:00Z */
   payment_date?: string
   payment_method?: string
   payment_reference?: string
@@ -24,6 +30,8 @@ export interface HandlerPaymentVoucherResponse {
   supplier_name?: string
   tenant_id?: string
   unallocated_amount?: number
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-25T10:00:00Z */
   updated_at?: string
   version?: number
   voucher_number?: string

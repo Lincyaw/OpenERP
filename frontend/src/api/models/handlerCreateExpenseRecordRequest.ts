@@ -12,6 +12,8 @@ export interface HandlerCreateExpenseRecordRequest {
   attachment_urls?: string
   category: string
   description: string
+  /** @Description Timestamp when the expense was incurred in ISO 8601 format
+@Example 2026-01-15T00:00:00Z */
   incurred_at: string
   remark?: string
 }

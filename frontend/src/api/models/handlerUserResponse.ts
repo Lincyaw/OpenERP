@@ -6,15 +6,21 @@
 
 export interface HandlerUserResponse {
   avatar?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-01T00:00:00Z */
   created_at?: string
   display_name?: string
   email?: string
   id?: string
+  /** @Description Timestamp of the user's last login in ISO 8601 format
+@Example 2026-01-31T15:30:00Z */
   last_login_at?: string
   phone?: string
   role_ids?: string[]
   status?: string
   tenant_id?: string
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-15T10:30:00Z */
   updated_at?: string
   username?: string
 }

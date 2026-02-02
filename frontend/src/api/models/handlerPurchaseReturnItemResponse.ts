@@ -10,6 +10,8 @@
 export interface HandlerPurchaseReturnItemResponse {
   batch_number?: string
   condition_on_return?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-15T08:00:00Z */
   created_at?: string
   id?: string
   original_quantity?: number
@@ -20,11 +22,17 @@ export interface HandlerPurchaseReturnItemResponse {
   reason?: string
   refund_amount?: number
   return_quantity?: number
+  /** @Description Timestamp when the item was shipped in ISO 8601 format
+@Example 2026-01-17T09:00:00Z */
   shipped_at?: string
   shipped_quantity?: number
+  /** @Description Timestamp when the supplier received the item in ISO 8601 format
+@Example 2026-01-20T14:00:00Z */
   supplier_received_at?: string
   supplier_received_qty?: number
   unit?: string
   unit_cost?: number
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-17T09:00:00Z */
   updated_at?: string
 }

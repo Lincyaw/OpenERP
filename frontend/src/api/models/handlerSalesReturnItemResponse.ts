@@ -9,6 +9,8 @@
  */
 export interface HandlerSalesReturnItemResponse {
   condition_on_return?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-15T08:00:00Z */
   created_at?: string
   id?: string
   original_quantity?: number
@@ -21,5 +23,7 @@ export interface HandlerSalesReturnItemResponse {
   sales_order_item_id?: string
   unit?: string
   unit_price?: number
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-18T09:00:00Z */
   updated_at?: string
 }

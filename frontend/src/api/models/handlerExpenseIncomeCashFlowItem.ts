@@ -10,6 +10,8 @@
 export interface HandlerExpenseIncomeCashFlowItem {
   amount?: number
   category?: string
+  /** @Description Date of the cash flow transaction in ISO 8601 format
+@Example 2026-01-15T00:00:00Z */
   date?: string
   description?: string
   direction?: string

@@ -10,27 +10,41 @@
 export interface HandlerExpenseRecordResponse {
   amount?: number
   approval_remark?: string
+  /** @Description Timestamp when the expense was approved in ISO 8601 format
+@Example 2026-01-17T14:00:00Z */
   approved_at?: string
   approved_by?: string
   attachment_urls?: string
   category?: string
   category_name?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-15T08:00:00Z */
   created_at?: string
   description?: string
   expense_number?: string
   id?: string
+  /** @Description Timestamp when the expense was incurred in ISO 8601 format
+@Example 2026-01-15T00:00:00Z */
   incurred_at?: string
+  /** @Description Timestamp when the expense was paid in ISO 8601 format
+@Example 2026-01-20T10:00:00Z */
   paid_at?: string
   payment_method?: string
   payment_status?: string
+  /** @Description Timestamp when the expense was rejected in ISO 8601 format
+@Example 2026-01-17T14:00:00Z */
   rejected_at?: string
   rejected_by?: string
   rejection_reason?: string
   remark?: string
   status?: string
+  /** @Description Timestamp when the expense was submitted in ISO 8601 format
+@Example 2026-01-16T09:00:00Z */
   submitted_at?: string
   submitted_by?: string
   tenant_id?: string
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-17T14:00:00Z */
   updated_at?: string
   version?: number
 }

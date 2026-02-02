@@ -9,6 +9,8 @@
  */
 export interface HandlerSalesOrderItemResponse {
   amount?: number
+  /** @Description Record creation timestamp
+@Example "2026-02-02T10:00:00Z" */
   created_at?: string
   id?: string
   product_code?: string
@@ -18,5 +20,7 @@ export interface HandlerSalesOrderItemResponse {
   remark?: string
   unit?: string
   unit_price?: number
+  /** @Description Record last update timestamp
+@Example "2026-02-02T14:00:00Z" */
   updated_at?: string
 }

@@ -9,11 +9,17 @@ import type { HandlerPayablePaymentRecordResponse } from './handlerPayablePaymen
  * Account payable response
  */
 export interface HandlerAccountPayableResponse {
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-15T08:00:00Z */
   created_at?: string
+  /** @Description Due date for payment in ISO 8601 format
+@Example 2026-02-15T00:00:00Z */
   due_date?: string
   id?: string
   outstanding_amount?: number
   paid_amount?: number
+  /** @Description Timestamp when fully paid in ISO 8601 format
+@Example 2026-01-25T14:00:00Z */
   paid_at?: string
   payable_number?: string
   payment_records?: HandlerPayablePaymentRecordResponse[]
@@ -26,6 +32,8 @@ export interface HandlerAccountPayableResponse {
   supplier_name?: string
   tenant_id?: string
   total_amount?: number
+  /** @Description Timestamp when the record was last updated in ISO 8601 format
+@Example 2026-01-25T14:00:00Z */
   updated_at?: string
   version?: number
 }

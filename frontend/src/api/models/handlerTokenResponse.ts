@@ -6,8 +6,12 @@
 
 export interface HandlerTokenResponse {
   access_token?: string
+  /** @Description Timestamp when the access token expires in ISO 8601 format
+@Example 2026-02-02T12:00:00Z */
   access_token_expires_at?: string
   refresh_token?: string
+  /** @Description Timestamp when the refresh token expires in ISO 8601 format
+@Example 2026-02-09T08:00:00Z */
   refresh_token_expires_at?: string
   token_type?: string
 }

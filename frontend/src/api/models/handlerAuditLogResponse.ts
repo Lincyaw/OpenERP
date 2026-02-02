@@ -8,8 +8,12 @@
  * Trial balance audit log response
  */
 export interface HandlerAuditLogResponse {
+  /** @Description Timestamp when the balance was checked in ISO 8601 format
+@Example 2026-01-31T23:59:59Z */
   checked_at?: string
   checked_by?: string
+  /** @Description Timestamp when the record was created in ISO 8601 format
+@Example 2026-01-31T23:59:59Z */
   created_at?: string
   critical_count?: number
   discrepancy_count?: number
@@ -17,7 +21,11 @@ export interface HandlerAuditLogResponse {
   id?: string
   net_balance?: number
   notes?: string
+  /** @Description End of the period being checked in ISO 8601 format
+@Example 2026-01-31T23:59:59Z */
   period_end?: string
+  /** @Description Start of the period being checked in ISO 8601 format
+@Example 2026-01-01T00:00:00Z */
   period_start?: string
   status?: string
   tenant_id?: string
