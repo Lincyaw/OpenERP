@@ -726,7 +726,8 @@
       "错误情况显示友好提示",
       "表单支持键盘操作（Enter 提交、Esc 取消）"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-015",

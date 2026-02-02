@@ -91,7 +91,9 @@
     "modal": {
       "changePlanTitle": "变更套餐",
       "changePlanDescription": "为租户 \"{{name}}\" 选择新套餐",
-      "selectPlan": "选择套餐"
+      "selectPlan": "选择套餐",
+      "createTitle": "创建租户",
+      "editTitle": "编辑租户"
     },
     "filter": {
       "status": "状态",
@@ -129,10 +131,51 @@
       "activateError": "激活租户失败",
       "deleteSuccess": "租户删除成功",
       "deleteError": "删除租户失败",
+      "createSuccess": "租户创建成功",
+      "createError": "创建租户失败",
+      "updateSuccess": "租户更新成功",
+      "updateError": "更新租户失败",
+      "loadError": "加载租户数据失败",
       "planChangeSuccess": "套餐变更成功",
       "planChangeError": "套餐变更失败",
       "batchPartialError": "{{total}} 个操作中有 {{failed}} 个失败",
       "invalidTenant": "无效的租户 ID"
+    },
+    "form": {
+      "name": "名称",
+      "namePlaceholder": "请输入租户名称",
+      "code": "编码",
+      "codePlaceholder": "请输入租户编码（如 acme-corp）",
+      "codeHelp": "唯一标识符，只能包含小写字母、数字、下划线和连字符",
+      "shortName": "简称",
+      "shortNamePlaceholder": "请输入简称（可选）",
+      "contactEmail": "联系邮箱",
+      "contactEmailPlaceholder": "请输入联系邮箱",
+      "contactName": "联系人",
+      "contactNamePlaceholder": "请输入联系人姓名",
+      "contactPhone": "联系电话",
+      "contactPhonePlaceholder": "请输入联系电话",
+      "plan": "初始套餐",
+      "planPlaceholder": "请选择套餐",
+      "trialDays": "试用天数",
+      "trialDaysPlaceholder": "请输入试用天数",
+      "domain": "域名",
+      "domainPlaceholder": "请输入域名（可选）",
+      "address": "地址",
+      "addressPlaceholder": "请输入地址（可选）",
+      "notes": "备注",
+      "notesPlaceholder": "请输入备注（可选）"
+    },
+    "delete": {
+      "tenantInfo": "租户信息",
+      "impactScope": "影响范围",
+      "impactDescription": "以下数据将被永久删除：",
+      "impactUsers": "用户数",
+      "impactProducts": "商品数",
+      "impactOrders": "订单数",
+      "impactWarehouses": "仓库数",
+      "finalWarning": "此操作不可逆。所有租户数据、用户和相关记录将被永久删除。",
+      "unknownTenant": "未知租户"
     }
   },
   "stats": {

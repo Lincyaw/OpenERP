@@ -46364,3 +46364,82 @@ Key files modified:
 - Implement actual API calls for status/subscription history
 - Add user management functionality to Users tab
 - Add activity log functionality to Activity Log tab
+
+## 2026-02-02 - P3-ADMIN-014: Tenant CRUD Forms Implementation
+
+### Task ID: P3-ADMIN-014
+### Status: PASSED ✓
+
+### Implementation Details
+
+#### 1. TenantForm Component (`frontend/src/components/admin/TenantForm.tsx`)
+- Created reusable form component with React Hook Form + Zod validation
+- Supports both create and edit modes with different field sets
+- Create mode includes: name, code, short_name, contact_email, contact_name, contact_phone, plan, trial_days, domain, address, notes
+- Edit mode includes: name, short_name, contact_email, contact_name, contact_phone, domain, address, notes
+- Validation rules:
+  - Name: required, max 200 chars
+  - Code: required, 2-50 chars, lowercase alphanumeric with underscores/hyphens
+  - Email: valid email format
+  - Trial days: 1-365 integer
+- Keyboard navigation support (Enter to submit)
+- Loading state support
+
+#### 2. CreateTenantModal Component (`frontend/src/components/admin/CreateTenantModal.tsx`)
+- Modal dialog for creating new tenants
+- Integrates with useCreateTenant API hook
+- Success/error toast notifications
+- Keyboard support (Esc to cancel)
+- Auto-refreshes tenant list on success
+
+#### 3. EditTenantModal Component (`frontend/src/components/admin/EditTenantModal.tsx`)
+- Modal dialog for editing existing tenants
+- Fetches tenant data on open using useGetTenantById
+- Integrates with useUpdateTenant API hook
+- Loading state during fetch
+- Error state handling
+- Auto-refreshes tenant list and detail on success
+
+#### 4. DeleteTenantModal Component (`frontend/src/components/admin/DeleteTenantModal.tsx`)
+- Confirmation dialog with impact scope display
+- Shows tenant info and estimated data to be deleted
+- Warning messages about irreversible action
+- Integrates with useDeleteTenant API hook
+- Auto-refreshes tenant list on success
+
+#### 5. TenantList Integration
+- Updated TenantList page to use modal dialogs instead of navigation
+- Added delete action to dropdown menu
+- Modal state management for create, edit, and delete operations
+
+#### 6. i18n Translations
+- Added English translations in `frontend/src/locales/en-US/admin.json`
+- Added Chinese translations in `frontend/src/locales/zh-CN/admin.json`
+- Form labels, placeholders, validation messages, modal titles, delete warnings
+
+### Files Modified
+- `frontend/src/components/admin/TenantForm.tsx` (new)
+- `frontend/src/components/admin/CreateTenantModal.tsx` (new)
+- `frontend/src/components/admin/EditTenantModal.tsx` (new)
+- `frontend/src/components/admin/DeleteTenantModal.tsx` (new)
+- `frontend/src/components/admin/index.ts` (updated exports)
+- `frontend/src/pages/super-admin/TenantList.tsx` (integrated modals)
+- `frontend/src/locales/en-US/admin.json` (added translations)
+- `frontend/src/locales/zh-CN/admin.json` (added translations)
+
+### Verification
+- TypeScript type-check: PASSED
+- Production build: PASSED
+- ESLint: No new errors (pre-existing warnings only)
+
+### Design Decisions
+1. Used discriminated union types for TenantFormProps to ensure type safety between create and edit modes
+2. Separated form component from modal components for reusability
+3. Used React Query for data fetching and mutations with automatic cache invalidation
+4. Implemented keyboard navigation for better UX
+5. Added impact scope display in delete modal to warn users about data loss
+
+### Next Steps
+- Consider adding unit tests for form validation
+- Consider adding E2E tests for CRUD operations
+- May need to implement actual usage API for accurate impact scope in delete modal

@@ -91,7 +91,9 @@
     "modal": {
       "changePlanTitle": "Change Plan",
       "changePlanDescription": "Select a new plan for tenant \"{{name}}\"",
-      "selectPlan": "Select a plan"
+      "selectPlan": "Select a plan",
+      "createTitle": "Create Tenant",
+      "editTitle": "Edit Tenant"
     },
     "filter": {
       "status": "Status",
@@ -129,10 +131,51 @@
       "activateError": "Failed to activate tenant",
       "deleteSuccess": "Tenant deleted successfully",
       "deleteError": "Failed to delete tenant",
+      "createSuccess": "Tenant created successfully",
+      "createError": "Failed to create tenant",
+      "updateSuccess": "Tenant updated successfully",
+      "updateError": "Failed to update tenant",
+      "loadError": "Failed to load tenant data",
       "planChangeSuccess": "Plan changed successfully",
       "planChangeError": "Failed to change plan",
       "batchPartialError": "{{failed}} of {{total}} operations failed",
       "invalidTenant": "Invalid tenant ID"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Enter tenant name",
+      "code": "Code",
+      "codePlaceholder": "Enter tenant code (e.g., acme-corp)",
+      "codeHelp": "Unique identifier, lowercase letters, numbers, underscores, and hyphens",
+      "shortName": "Short Name",
+      "shortNamePlaceholder": "Enter short name (optional)",
+      "contactEmail": "Contact Email",
+      "contactEmailPlaceholder": "Enter contact email",
+      "contactName": "Contact Name",
+      "contactNamePlaceholder": "Enter contact name",
+      "contactPhone": "Contact Phone",
+      "contactPhonePlaceholder": "Enter contact phone",
+      "plan": "Initial Plan",
+      "planPlaceholder": "Select a plan",
+      "trialDays": "Trial Days",
+      "trialDaysPlaceholder": "Enter trial days",
+      "domain": "Domain",
+      "domainPlaceholder": "Enter domain (optional)",
+      "address": "Address",
+      "addressPlaceholder": "Enter address (optional)",
+      "notes": "Notes",
+      "notesPlaceholder": "Enter notes (optional)"
+    },
+    "delete": {
+      "tenantInfo": "Tenant Information",
+      "impactScope": "Impact Scope",
+      "impactDescription": "The following data will be permanently deleted:",
+      "impactUsers": "Users",
+      "impactProducts": "Products",
+      "impactOrders": "Orders",
+      "impactWarehouses": "Warehouses",
+      "finalWarning": "This action is irreversible. All tenant data, users, and associated records will be permanently deleted.",
+      "unknownTenant": "Unknown Tenant"
     }
   },
   "stats": {

@@ -21,6 +21,7 @@ import {
   IconEdit,
   IconStop,
   IconPlay,
+  IconDelete,
 } from '@douyinfe/semi-icons'
 import {
   DataTable,
@@ -30,6 +31,7 @@ import {
   type BulkAction,
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
+import { CreateTenantModal, EditTenantModal, DeleteTenantModal } from '@/components/admin'
 import {
   useListTenants,
   useSuspendTenant,
@@ -141,6 +143,13 @@ export default function TenantListPage() {
   // Selection state for batch operations
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
 
+  // Modal state
+  const [createModalVisible, setCreateModalVisible] = useState(false)
+  const [editModalVisible, setEditModalVisible] = useState(false)
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null)
+  const [selectedTenantName, setSelectedTenantName] = useState<string>('')
+
   // Table state hook
   const { state, handleStateChange, setFilter } = useTableState({
     defaultPageSize: 20,
@@ -244,12 +253,32 @@ export default function TenantListPage() {
     [navigate]
   )
 
-  // Handle edit tenant
+  // Handle edit tenant - open modal
   const handleEdit = useCallback(
     (tenant: TenantRow) => {
-      navigate(`/super-admin/tenants/${tenant.id}/edit`)
+      if (!tenant.id) {
+        Toast.error(t('tenants.messages.invalidTenant', 'Invalid tenant ID'))
+        return
+      }
+      setSelectedTenantId(tenant.id)
+      setSelectedTenantName(tenant.name || '')
+      setEditModalVisible(true)
     },
-    [navigate]
+    [t]
+  )
+
+  // Handle delete tenant - open modal
+  const handleDelete = useCallback(
+    (tenant: TenantRow) => {
+      if (!tenant.id) {
+        Toast.error(t('tenants.messages.invalidTenant', 'Invalid tenant ID'))
+        return
+      }
+      setSelectedTenantId(tenant.id)
+      setSelectedTenantName(tenant.name || '')
+      setDeleteModalVisible(true)
+    },
+    [t]
   )
 
   // Handle suspend tenant
@@ -309,10 +338,10 @@ export default function TenantListPage() {
     [t, activateMutation]
   )
 
-  // Handle create tenant
+  // Handle create tenant - open modal
   const handleCreate = useCallback(() => {
-    navigate('/super-admin/tenants/new')
-  }, [navigate])
+    setCreateModalVisible(true)
+  }, [])
 
   // Refresh handler
   const handleRefresh = useCallback(() => {
@@ -480,6 +509,11 @@ export default function TenantListPage() {
                     {t('tenants.suspend', 'Suspend')}
                   </Dropdown.Item>
                 )}
+                <Dropdown.Divider />
+                <Dropdown.Item type="danger" onClick={() => handleDelete(record)}>
+                  <IconDelete style={{ marginRight: 8 }} />
+                  {t('common.delete', 'Delete')}
+                </Dropdown.Item>
               </Dropdown.Menu>
             }
           >
@@ -488,7 +522,7 @@ export default function TenantListPage() {
         ),
       },
     ],
-    [t, formatDateTime, handleViewDetail, handleEdit, handleActivate, handleSuspend]
+    [t, formatDateTime, handleViewDetail, handleEdit, handleActivate, handleSuspend, handleDelete]
   )
 
   // Bulk actions
@@ -578,6 +612,35 @@ export default function TenantListPage() {
           bulkActions={bulkActions}
         />
       </Card>
+
+      {/* Create Tenant Modal */}
+      <CreateTenantModal
+        visible={createModalVisible}
+        onClose={() => setCreateModalVisible(false)}
+      />
+
+      {/* Edit Tenant Modal */}
+      <EditTenantModal
+        visible={editModalVisible}
+        tenantId={selectedTenantId}
+        onClose={() => {
+          setEditModalVisible(false)
+          setSelectedTenantId(null)
+          setSelectedTenantName('')
+        }}
+      />
+
+      {/* Delete Tenant Modal */}
+      <DeleteTenantModal
+        visible={deleteModalVisible}
+        tenantId={selectedTenantId}
+        tenantName={selectedTenantName}
+        onClose={() => {
+          setDeleteModalVisible(false)
+          setSelectedTenantId(null)
+          setSelectedTenantName('')
+        }}
+      />
     </Container>
   )
 }
