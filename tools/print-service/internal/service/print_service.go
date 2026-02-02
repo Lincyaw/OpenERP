@@ -13,6 +13,7 @@ import (
 	"github.com/example/erp/tools/print-service/internal/client"
 	"github.com/example/erp/tools/print-service/internal/config"
 	"github.com/example/erp/tools/print-service/internal/printer"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -29,15 +30,16 @@ const (
 
 // HealthStatus represents the health check response.
 type HealthStatus struct {
-	Status       ServiceStatus `json:"status"`
-	Version      string        `json:"version"`
-	Uptime       string        `json:"uptime"`
-	WebSocket    string        `json:"websocket"`
-	API          string        `json:"api"`
-	Printer      string        `json:"printer"`
-	LastEvent    string        `json:"last_event,omitempty"`
-	EventsCount  int64         `json:"events_count"`
-	PrinterCount int           `json:"printer_count,omitempty"`
+	Status       ServiceStatus   `json:"status"`
+	Version      string          `json:"version"`
+	Uptime       string          `json:"uptime"`
+	WebSocket    string          `json:"websocket"`
+	API          string          `json:"api"`
+	Printer      string          `json:"printer"`
+	PrintQueue   PrintQueueStats `json:"print_queue,omitempty"`
+	LastEvent    string          `json:"last_event,omitempty"`
+	EventsCount  int64           `json:"events_count"`
+	PrinterCount int             `json:"printer_count,omitempty"`
 }
 
 // PrintService is the main service that coordinates event listening and printing.
@@ -46,6 +48,8 @@ type PrintService struct {
 	wsClient       *client.WSClient
 	apiClient      *client.APIClient
 	printerManager *printer.Manager
+	eventMapper    *EventMapper
+	printQueue     *PrintQueue
 	logger         *zap.Logger
 	ctx            context.Context
 	cancel         context.CancelFunc
@@ -100,17 +104,38 @@ func NewPrintService(cfg *config.Config, logger *zap.Logger) *PrintService {
 		printerManager = printerMgr
 	}
 
+	// Create event mapper
+	eventMapper := NewEventMapper()
+
+	// Create print queue with configuration
+	printQueueConfig := PrintQueueConfig{
+		QueueSize:      100, // Buffer 100 print tasks
+		MaxConcurrent:  5,   // Max 5 concurrent print tasks
+		MaxRetries:     3,   // Retry 3 times
+		BaseRetryDelay: 1 * time.Second,
+		MaxRetryDelay:  30 * time.Second,
+		Logger:         logger,
+	}
+	printQueue := NewPrintQueue(printQueueConfig)
+
 	svc := &PrintService{
 		config:         cfg,
 		wsClient:       wsClient,
 		apiClient:      apiClient,
 		printerManager: printerManager,
+		eventMapper:    eventMapper,
+		printQueue:     printQueue,
 		logger:         logger,
 		ctx:            ctx,
 		cancel:         cancel,
 	}
 
 	svc.status.Store(StatusStopped)
+
+	// Set print queue handler (must be done before Start)
+	if err := printQueue.SetHandler(svc.executePrintTask); err != nil {
+		logger.Error("Failed to set print queue handler", zap.Error(err))
+	}
 
 	// Set event handler (must be done before Start)
 	if err := wsClient.SetHandler(svc.handleEvent); err != nil {
@@ -137,6 +162,12 @@ func (s *PrintService) Start() error {
 		}
 	}
 
+	// Start print queue
+	if err := s.printQueue.Start(); err != nil {
+		s.logger.Error("Failed to start print queue", zap.Error(err))
+		return fmt.Errorf("failed to start print queue: %w", err)
+	}
+
 	// Start WebSocket client
 	if err := s.wsClient.Start(); err != nil {
 		s.status.Store(StatusDegraded)
@@ -145,7 +176,8 @@ func (s *PrintService) Start() error {
 	}
 
 	s.status.Store(StatusRunning)
-	s.logger.Info("Print service started successfully")
+	s.logger.Info("Print service started successfully",
+		zap.Strings("supported_events", s.eventMapper.SupportedEvents()))
 
 	return nil
 }
@@ -160,6 +192,9 @@ func (s *PrintService) Stop() {
 
 	// Stop WebSocket client
 	s.wsClient.Stop()
+
+	// Stop print queue (waits for pending tasks)
+	s.printQueue.Stop()
 
 	// Close printer manager
 	if s.printerManager != nil {
@@ -180,8 +215,14 @@ func (s *PrintService) Stop() {
 	// Wait for goroutines
 	s.wg.Wait()
 
+	// Log final statistics
+	stats := s.printQueue.Stats()
+	s.logger.Info("Print service stopped",
+		zap.Int64("total_tasks", stats.TotalTasks),
+		zap.Int64("successful", stats.SuccessCount),
+		zap.Int64("failed", stats.FailedCount))
+
 	s.status.Store(StatusStopped)
-	s.logger.Info("Print service stopped")
 }
 
 // Status returns the current service status.
@@ -200,7 +241,7 @@ func (s *PrintService) handleEvent(ctx context.Context, event client.PrintingEve
 		zap.String("document_type", event.DocumentType),
 		zap.String("document_id", event.DocumentID))
 
-	// Handle different event types
+	// Handle internal print job events
 	switch event.EventType {
 	case "PrintJobCreated":
 		return s.handlePrintJobCreated(ctx, event)
@@ -208,10 +249,175 @@ func (s *PrintService) handleEvent(ctx context.Context, event client.PrintingEve
 		return s.handlePrintJobCompleted(ctx, event)
 	case "PrintJobFailed":
 		return s.handlePrintJobFailed(ctx, event)
-	default:
-		s.logger.Debug("Ignoring event type",
-			zap.String("event_type", event.EventType))
 	}
+
+	// Handle domain events using event mapper
+	if s.eventMapper.IsSupported(event.EventType) {
+		return s.handleDomainEvent(ctx, event)
+	}
+
+	s.logger.Debug("Ignoring unsupported event type",
+		zap.String("event_type", event.EventType))
+
+	return nil
+}
+
+// handleDomainEvent handles domain events (e.g., SalesOrderConfirmed) by triggering auto-print.
+func (s *PrintService) handleDomainEvent(ctx context.Context, event client.PrintingEventPayload) error {
+	mapping := s.eventMapper.GetMapping(event.EventType)
+	if mapping == nil {
+		return nil
+	}
+
+	s.logger.Info("Processing domain event for auto-print",
+		zap.String("event_type", event.EventType),
+		zap.String("document_type", string(mapping.DocumentType)),
+		zap.String("trigger_event", string(mapping.TriggerEvent)),
+		zap.String("aggregate_id", event.AggregateID))
+
+	// Query auto-print rules for this document type and trigger
+	rule, err := s.apiClient.GetAutoPrintRule(ctx, string(mapping.DocumentType), string(mapping.TriggerEvent))
+	if err != nil {
+		s.logger.Error("Failed to get auto-print rule",
+			zap.String("document_type", string(mapping.DocumentType)),
+			zap.String("trigger_event", string(mapping.TriggerEvent)),
+			zap.Error(err))
+		return err
+	}
+
+	if rule == nil {
+		s.logger.Debug("No auto-print rule found",
+			zap.String("document_type", string(mapping.DocumentType)),
+			zap.String("trigger_event", string(mapping.TriggerEvent)))
+		return nil
+	}
+
+	if !rule.Enabled || !rule.AutoPrint {
+		s.logger.Debug("Auto-print disabled for this rule",
+			zap.String("rule_id", rule.ID))
+		return nil
+	}
+
+	s.logger.Info("Auto-print rule matched",
+		zap.String("rule_id", rule.ID),
+		zap.String("template_id", rule.TemplateID),
+		zap.Int("copies", rule.Copies),
+		zap.String("printer", rule.PrinterName))
+
+	// Trigger the complete print flow
+	return s.triggerPrintFlow(ctx, event, rule, mapping)
+}
+
+// triggerPrintFlow executes the complete print flow: render template -> generate PDF -> enqueue print task.
+func (s *PrintService) triggerPrintFlow(ctx context.Context, event client.PrintingEventPayload, rule *client.AutoPrintRule, mapping *EventMapping) error {
+	// Step 1: Render template to get PDF
+	renderReq := client.RenderRequest{
+		TemplateID:   rule.TemplateID,
+		DocumentType: string(mapping.DocumentType),
+		DocumentID:   event.AggregateID,
+	}
+
+	s.logger.Info("Rendering template",
+		zap.String("template_id", rule.TemplateID),
+		zap.String("document_type", string(mapping.DocumentType)),
+		zap.String("document_id", event.AggregateID))
+
+	renderResp, err := s.apiClient.RenderTemplate(ctx, renderReq)
+	if err != nil {
+		s.logger.Error("Failed to render template",
+			zap.String("template_id", rule.TemplateID),
+			zap.Error(err))
+		return err
+	}
+
+	s.logger.Info("Template rendered successfully",
+		zap.String("job_id", renderResp.JobID),
+		zap.String("pdf_url", renderResp.PdfURL))
+
+	// Step 2: Download PDF
+	pdfData, err := s.apiClient.DownloadPDF(ctx, renderResp.PdfURL)
+	if err != nil {
+		s.logger.Error("Failed to download PDF",
+			zap.String("pdf_url", renderResp.PdfURL),
+			zap.Error(err))
+		return err
+	}
+
+	s.logger.Info("PDF downloaded",
+		zap.String("job_id", renderResp.JobID),
+		zap.Int("size", len(pdfData)))
+
+	// Step 3: Create print task and enqueue
+	task := &PrintTask{
+		ID:             uuid.New().String(),
+		DocumentType:   string(mapping.DocumentType),
+		DocumentID:     event.AggregateID,
+		DocumentNumber: event.DocumentNumber,
+		TemplateID:     rule.TemplateID,
+		PrinterName:    rule.PrinterName,
+		Copies:         rule.Copies,
+		PdfData:        pdfData,
+	}
+
+	// Enqueue without blocking (non-blocking)
+	if err := s.printQueue.Enqueue(task); err != nil {
+		s.logger.Error("Failed to enqueue print task",
+			zap.String("task_id", task.ID),
+			zap.Error(err))
+		return err
+	}
+
+	s.logger.Info("Print task enqueued",
+		zap.String("task_id", task.ID),
+		zap.String("document_type", task.DocumentType),
+		zap.String("document_id", task.DocumentID),
+		zap.Int("copies", task.Copies))
+
+	return nil
+}
+
+// executePrintTask is the handler called by the print queue to execute a print task.
+func (s *PrintService) executePrintTask(ctx context.Context, task *PrintTask) error {
+	printerName := task.PrinterName
+	if printerName == "" {
+		printerName = s.config.Printing.DefaultPrinter
+	}
+
+	s.logger.Info("Executing print task",
+		zap.String("task_id", task.ID),
+		zap.String("document_type", task.DocumentType),
+		zap.String("document_id", task.DocumentID),
+		zap.String("printer", printerName),
+		zap.Int("copies", task.Copies))
+
+	// Check if printer manager is available
+	if s.printerManager == nil {
+		return fmt.Errorf("printer manager not available")
+	}
+
+	if !s.printerManager.IsAvailable() {
+		return fmt.Errorf("printer backend not available")
+	}
+
+	// Build print options
+	opts := printer.DefaultPrintOptions()
+	opts.Copies = task.Copies
+	opts.JobName = fmt.Sprintf("ERP-%s-%s", task.DocumentType, task.ID)
+
+	// Send to printer
+	printJobID, err := s.printerManager.Print(ctx, printerName, task.PdfData, opts)
+	if err != nil {
+		s.logger.Error("Failed to send to printer",
+			zap.String("task_id", task.ID),
+			zap.String("printer", printerName),
+			zap.Error(err))
+		return err
+	}
+
+	s.logger.Info("Print task completed successfully",
+		zap.String("task_id", task.ID),
+		zap.Int("print_job_id", printJobID),
+		zap.String("printer", printerName))
 
 	return nil
 }
@@ -420,6 +626,9 @@ func (s *PrintService) healthHandler(w http.ResponseWriter, r *http.Request) {
 		lastEventStr = lastEvent.(time.Time).Format(time.RFC3339)
 	}
 
+	// Get print queue stats
+	queueStats := s.printQueue.Stats()
+
 	health := HealthStatus{
 		Status:       status,
 		Version:      "1.0.0",
@@ -427,6 +636,7 @@ func (s *PrintService) healthHandler(w http.ResponseWriter, r *http.Request) {
 		WebSocket:    wsStatus,
 		API:          apiStatus,
 		Printer:      printerStatus,
+		PrintQueue:   queueStats,
 		LastEvent:    lastEventStr,
 		EventsCount:  s.eventsCount.Load(),
 		PrinterCount: printerCount,
@@ -440,7 +650,9 @@ func (s *PrintService) healthHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(httpStatus)
-	json.NewEncoder(w).Encode(health)
+	if err := json.NewEncoder(w).Encode(health); err != nil {
+		s.logger.Error("Failed to encode health response", zap.Error(err))
+	}
 }
 
 // GetAPIClient returns the API client for external use.
@@ -456,4 +668,24 @@ func (s *PrintService) GetWSClient() *client.WSClient {
 // GetPrinterManager returns the printer manager for external use.
 func (s *PrintService) GetPrinterManager() *printer.Manager {
 	return s.printerManager
+}
+
+// GetPrintQueue returns the print queue for external use.
+func (s *PrintService) GetPrintQueue() *PrintQueue {
+	return s.printQueue
+}
+
+// GetEventMapper returns the event mapper for external use.
+func (s *PrintService) GetEventMapper() *EventMapper {
+	return s.eventMapper
+}
+
+// GetPrintLogs returns the print logs.
+func (s *PrintService) GetPrintLogs() []PrintLog {
+	return s.printQueue.GetLogs()
+}
+
+// GetRecentPrintLogs returns the most recent n print logs.
+func (s *PrintService) GetRecentPrintLogs(n int) []PrintLog {
+	return s.printQueue.GetRecentLogs(n)
 }

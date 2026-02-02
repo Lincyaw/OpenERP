@@ -265,3 +265,298 @@ func TestServiceStatus_Values(t *testing.T) {
 		})
 	}
 }
+
+func TestPrintService_GetEventMapper(t *testing.T) {
+	cfg := &config.Config{
+		Server: config.ServerConfig{
+			APIURL:       "http://localhost:8080",
+			WebSocketURL: "ws://localhost:8080/ws",
+			TenantID:     "test-tenant",
+			APIToken:     "test-token",
+		},
+		Health: config.HealthConfig{
+			Enabled: false,
+		},
+	}
+
+	svc := NewPrintService(cfg, zap.NewNop())
+
+	mapper := svc.GetEventMapper()
+	if mapper == nil {
+		t.Fatal("Expected non-nil EventMapper")
+	}
+
+	// Verify supported events
+	if !mapper.IsSupported("SalesOrderConfirmed") {
+		t.Error("Expected SalesOrderConfirmed to be supported")
+	}
+	if !mapper.IsSupported("PurchaseOrderReceived") {
+		t.Error("Expected PurchaseOrderReceived to be supported")
+	}
+}
+
+func TestPrintService_GetPrintQueue(t *testing.T) {
+	cfg := &config.Config{
+		Server: config.ServerConfig{
+			APIURL:       "http://localhost:8080",
+			WebSocketURL: "ws://localhost:8080/ws",
+			TenantID:     "test-tenant",
+			APIToken:     "test-token",
+		},
+		Health: config.HealthConfig{
+			Enabled: false,
+		},
+	}
+
+	svc := NewPrintService(cfg, zap.NewNop())
+
+	queue := svc.GetPrintQueue()
+	if queue == nil {
+		t.Fatal("Expected non-nil PrintQueue")
+	}
+
+	stats := queue.Stats()
+	if stats.MaxConcurrent != 5 {
+		t.Errorf("Expected MaxConcurrent 5, got %d", stats.MaxConcurrent)
+	}
+}
+
+func TestPrintService_HandleDomainEvent_NoRule(t *testing.T) {
+	// Create a mock API server that returns no rules
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		resp := map[string]interface{}{
+			"success": true,
+			"data":    []interface{}{}, // Empty rules
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+	}))
+	defer server.Close()
+
+	cfg := &config.Config{
+		Server: config.ServerConfig{
+			APIURL:       server.URL,
+			WebSocketURL: "ws://localhost:8080/ws",
+			TenantID:     "test-tenant",
+			APIToken:     "test-token",
+		},
+		Health: config.HealthConfig{
+			Enabled: false,
+		},
+	}
+
+	svc := NewPrintService(cfg, zap.NewNop())
+
+	// Test handling SalesOrderConfirmed event (domain event)
+	event := client.PrintingEventPayload{
+		EventID:     "event-domain-1",
+		EventType:   "SalesOrderConfirmed",
+		AggregateID: "order-789",
+		TenantID:    "test-tenant",
+	}
+
+	err := svc.handleEvent(context.Background(), event)
+	if err != nil {
+		t.Fatalf("handleEvent failed: %v", err)
+	}
+
+	// Verify events count was incremented
+	if svc.eventsCount.Load() != 1 {
+		t.Errorf("Expected eventsCount 1, got %d", svc.eventsCount.Load())
+	}
+}
+
+func TestPrintService_HandleDomainEvent_WithRule(t *testing.T) {
+	// Create a mock API server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+
+		switch {
+		case path == "/api/v1/printing/auto-print-rules":
+			// Return a matching rule
+			rules := []map[string]interface{}{
+				{
+					"id":            "rule-1",
+					"tenant_id":     "test-tenant",
+					"document_type": "SALES_ORDER",
+					"trigger_event": "CONFIRMED",
+					"template_id":   "template-1",
+					"auto_print":    true,
+					"copies":        2,
+					"printer_name":  "Test Printer",
+					"enabled":       true,
+				},
+			}
+			resp := map[string]interface{}{
+				"success": true,
+				"data":    rules,
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(resp)
+
+		case path == "/api/v1/printing/render":
+			// Return render response
+			resp := map[string]interface{}{
+				"success": true,
+				"data": map[string]interface{}{
+					"job_id":  "render-job-1",
+					"pdf_url": "http://localhost/pdfs/render-job-1.pdf",
+				},
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(resp)
+
+		default:
+			// Return PDF data for any other path (PDF download)
+			w.Header().Set("Content-Type", "application/pdf")
+			w.Write([]byte("%PDF-1.4 mock pdf content"))
+		}
+	}))
+	defer server.Close()
+
+	cfg := &config.Config{
+		Server: config.ServerConfig{
+			APIURL:       server.URL,
+			WebSocketURL: "ws://localhost:8080/ws",
+			TenantID:     "test-tenant",
+			APIToken:     "test-token",
+		},
+		Printing: config.PrintingConfig{
+			Protocol: "ipp",
+		},
+		Health: config.HealthConfig{
+			Enabled: false,
+		},
+	}
+
+	svc := NewPrintService(cfg, zap.NewNop())
+
+	// Start the print queue (required for enqueueing)
+	svc.printQueue.Start()
+	defer svc.printQueue.Stop()
+
+	// Test handling SalesOrderConfirmed event (domain event)
+	event := client.PrintingEventPayload{
+		EventID:        "event-domain-2",
+		EventType:      "SalesOrderConfirmed",
+		AggregateID:    "order-999",
+		DocumentNumber: "SO-2024-001",
+		TenantID:       "test-tenant",
+	}
+
+	err := svc.handleEvent(context.Background(), event)
+	if err != nil {
+		t.Fatalf("handleEvent failed: %v", err)
+	}
+
+	// Wait for task to be processed
+	time.Sleep(100 * time.Millisecond)
+
+	// Verify a task was enqueued
+	stats := svc.printQueue.Stats()
+	if stats.TotalTasks != 1 {
+		t.Errorf("Expected 1 task enqueued, got %d", stats.TotalTasks)
+	}
+}
+
+func TestPrintService_HandleUnsupportedEvent(t *testing.T) {
+	cfg := &config.Config{
+		Server: config.ServerConfig{
+			APIURL:       "http://localhost:8080",
+			WebSocketURL: "ws://localhost:8080/ws",
+			TenantID:     "test-tenant",
+			APIToken:     "test-token",
+		},
+		Health: config.HealthConfig{
+			Enabled: false,
+		},
+	}
+
+	svc := NewPrintService(cfg, zap.NewNop())
+
+	// Test handling an unsupported event type
+	event := client.PrintingEventPayload{
+		EventID:   "event-unsupported",
+		EventType: "SomeRandomEvent",
+	}
+
+	err := svc.handleEvent(context.Background(), event)
+	if err != nil {
+		t.Fatalf("handleEvent should not fail for unsupported events: %v", err)
+	}
+
+	// Verify events count was still incremented
+	if svc.eventsCount.Load() != 1 {
+		t.Errorf("Expected eventsCount 1, got %d", svc.eventsCount.Load())
+	}
+}
+
+func TestPrintService_GetPrintLogs(t *testing.T) {
+	cfg := &config.Config{
+		Server: config.ServerConfig{
+			APIURL:       "http://localhost:8080",
+			WebSocketURL: "ws://localhost:8080/ws",
+			TenantID:     "test-tenant",
+			APIToken:     "test-token",
+		},
+		Health: config.HealthConfig{
+			Enabled: false,
+		},
+	}
+
+	svc := NewPrintService(cfg, zap.NewNop())
+
+	// Initially should have no logs
+	logs := svc.GetPrintLogs()
+	if len(logs) != 0 {
+		t.Errorf("Expected 0 logs initially, got %d", len(logs))
+	}
+
+	recentLogs := svc.GetRecentPrintLogs(10)
+	if len(recentLogs) != 0 {
+		t.Errorf("Expected 0 recent logs initially, got %d", len(recentLogs))
+	}
+}
+
+func TestHealthStatus_WithPrintQueue(t *testing.T) {
+	status := HealthStatus{
+		Status:    StatusRunning,
+		Version:   "1.0.0",
+		Uptime:    "1h30m",
+		WebSocket: "connected",
+		API:       "healthy",
+		Printer:   "available",
+		PrintQueue: PrintQueueStats{
+			TotalTasks:    100,
+			SuccessCount:  95,
+			FailedCount:   5,
+			QueueLength:   3,
+			QueueSize:     100,
+			MaxConcurrent: 5,
+			IsRunning:     true,
+		},
+		LastEvent:    "2024-01-15T10:30:00Z",
+		EventsCount:  42,
+		PrinterCount: 2,
+	}
+
+	data, err := json.Marshal(status)
+	if err != nil {
+		t.Fatalf("Failed to marshal HealthStatus: %v", err)
+	}
+
+	var decoded HealthStatus
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("Failed to unmarshal HealthStatus: %v", err)
+	}
+
+	if decoded.PrintQueue.TotalTasks != 100 {
+		t.Errorf("Expected PrintQueue.TotalTasks 100, got %d", decoded.PrintQueue.TotalTasks)
+	}
+	if decoded.PrintQueue.SuccessCount != 95 {
+		t.Errorf("Expected PrintQueue.SuccessCount 95, got %d", decoded.PrintQueue.SuccessCount)
+	}
+	if decoded.PrintQueue.MaxConcurrent != 5 {
+		t.Errorf("Expected PrintQueue.MaxConcurrent 5, got %d", decoded.PrintQueue.MaxConcurrent)
+	}
+}

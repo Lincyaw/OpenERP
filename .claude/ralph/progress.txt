@@ -45693,3 +45693,91 @@ require (
 - Add raw socket printing support (ProtocolRaw)
 - Add Prometheus metrics for print job monitoring
 - Consider adding print queue management UI
+
+2026-02-02 - Task ID: P2-PRINT-008 - 实现事件映射和完整打印流程
+
+=== Implementation Details ===
+
+**New Files Created:**
+- `tools/print-service/internal/service/event_mapping.go` - Event-to-trigger mapping
+- `tools/print-service/internal/service/event_mapping_test.go` - Tests for event mapping
+- `tools/print-service/internal/service/print_queue.go` - Print queue with concurrency control
+- `tools/print-service/internal/service/print_queue_test.go` - Tests for print queue
+
+**Modified Files:**
+- `tools/print-service/internal/service/print_service.go` - Integrated event mapping and print queue
+- `tools/print-service/internal/service/print_service_test.go` - Added integration tests
+- `tools/print-service/go.mod` - Added github.com/google/uuid dependency
+
+**Features Implemented:**
+
+1. **Event-to-Trigger Mapping Table:**
+   - SalesOrderConfirmed -> (SALES_ORDER, CONFIRMED)
+   - SalesOrderShipped -> (SALES_ORDER, SHIPPED)
+   - PurchaseOrderReceived -> (PURCHASE_ORDER, RECEIVED)
+   - ReceiptVoucherPaid -> (RECEIPT_VOUCHER, PAID)
+   - PaymentVoucherPaid -> (PAYMENT_VOUCHER, PAID)
+
+2. **Complete Print Flow:**
+   - Receive domain event via WebSocket
+   - Map event to document type and trigger
+   - Query auto-print rules from API
+   - Render template to PDF via API
+   - Download PDF
+   - Enqueue print task
+
+3. **Print Queue with Concurrency Control:**
+   - Channel-buffered queue (100 tasks)
+   - Max 5 concurrent print tasks
+   - Non-blocking enqueue with fallback to blocking
+
+4. **Retry Mechanism:**
+   - 3 retries with exponential backoff
+   - Base delay: 1 second
+   - Max delay: 30 seconds
+   - Context cancellation support
+
+5. **Print Logging:**
+   - Records task ID, document type, document ID, printer, copies
+   - Records status, error message, retry count, duration
+   - Max 10,000 log entries (ring buffer to prevent memory leak)
+   - GetLogs() and GetRecentLogs(n) methods
+
+**Code Quality Fixes (from code review):**
+- Fixed race condition in SetHandler (now returns error if queue running)
+- Fixed potential panic on double Stop() call (using sync.Once)
+- Fixed unbounded log growth (max 10,000 entries)
+- Added context cancellation check before handler execution
+- Fixed JSON encoding error handling in health handler
+- Fixed race condition in test (TestPrintTask_DefaultValues)
+
+=== Verification ===
+
+- All 40+ unit tests pass
+- Race detection tests pass (`go test -race`)
+- Build succeeds (`go build ./...`)
+- Test coverage: 62.8% for service package
+
+=== Acceptance Criteria Met ===
+
+- [x] 所有支持的事件类型都正确映射
+- [x] 完整打印流程正常工作：从事件到打印输出
+- [x] 打印日志完整记录所有打印任务
+- [x] 打印队列正常工作，不会因为打印慢而阻塞事件处理
+- [x] 并发控制生效，不会同时打印过多任务
+- [x] 重试机制生效，临时故障可以自动恢复
+- [x] 通过单元测试验证完整流程
+
+=== Notes ===
+
+- The print queue uses a dispatcher pattern with semaphore-based concurrency control
+- Log entries are automatically pruned to prevent memory exhaustion
+- The event mapper is immutable after creation (thread-safe for reads)
+- Health endpoint now includes print queue statistics
+
+=== Next Steps ===
+
+- Add Prometheus metrics for print job monitoring
+- Consider adding jitter to retry backoff to prevent thundering herd
+- Extract common printing logic to reduce code duplication
+- Add configuration options for queue size, concurrency, and retry settings

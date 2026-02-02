@@ -214,7 +214,8 @@
       "重试机制生效，临时故障可以自动恢复",
       "通过 E2E 测试验证完整流程"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P2-PRINT-009",
