@@ -234,7 +234,6 @@ Centers content with responsive max-width:
 
 ```tsx
 import { Container } from '@/components/common'
-
 ;<Container size="lg" padding="md">
   <PageContent />
 </Container>
@@ -418,6 +417,68 @@ function Component() {
 - Use skeleton screens instead of spinners where possible
 - Show progress indicators for long operations
 - Disable interactive elements during loading
+
+---
+
+## Date and Time Formatting
+
+### Centralized Formatters
+
+All date/time formatting should use the `useFormatters()` hook:
+
+```typescript
+import { useFormatters } from '@/hooks/useFormatters'
+
+function MyComponent() {
+  const { formatDate, formatTime, formatDateTime } = useFormatters()
+
+  return (
+    <div>
+      {/* Date only: 2026-02-02 */}
+      <span>{formatDate(record.created_at, 'medium')}</span>
+
+      {/* Time only: 14:30:45 */}
+      <span>{formatTime(record.created_at)}</span>
+
+      {/* Date and time: 2026-02-02 14:30:45 */}
+      <span>{formatDateTime(record.created_at)}</span>
+
+      {/* Hide seconds if needed */}
+      <span>{formatDateTime(record.created_at, { showSeconds: false })}</span>
+    </div>
+  )
+}
+```
+
+### Default Precision
+
+- **Timestamps** (`created_at`, `updated_at`, etc.): Display with **second precision** by default
+- **Dates** (`due_date`, `birth_date`, etc.): Display date only (no time)
+- **Export**: CSV/Excel exports include seconds by default
+
+### Locale Support
+
+The formatters automatically use the user's locale setting:
+
+- `zh-CN`: Chinese format (2026年2月2日 14:30:45)
+- `en-US`: US format (2/2/2026, 2:30:45 PM)
+
+### Legacy Patterns (Deprecated)
+
+❌ **Don't use:**
+
+```typescript
+new Date(date).toLocaleDateString()
+new Date(date).toLocaleString()
+```
+
+✅ **Use instead:**
+
+```typescript
+const { formatDate, formatDateTime } = useFormatters()
+formatDate(date, 'medium')
+formatDateTime(date)
+```
 
 ---
 
