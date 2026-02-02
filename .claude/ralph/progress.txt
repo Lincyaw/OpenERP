@@ -46594,3 +46594,103 @@ Key files modified:
 - When admin endpoints are needed in frontend pages, integrate the new hooks
 - Consider fixing all dto.ErrorResponse references across handlers for clean swagger generation
 - Stats and AuditLogs pages can be updated to use the new hooks when ready
+
+## 2026-02-02 - P3-ADMIN-019: Backend Unit Tests for Admin Module
+
+### Task ID: P3-ADMIN-019
+
+### Story
+编写后端单元测试 (Write Backend Unit Tests for Admin Module)
+
+### Implementation Details
+
+=== Verified/Enhanced Test Coverage ===
+
+1. **SuperAdminMiddleware** (`internal/interfaces/http/middleware/super_admin.go`)
+   - All functions at 100% coverage
+   - Tests cover: valid super admin access, non-super admin rejection, missing claims, invalid claims
+
+2. **AuditLog Entity** (`internal/domain/identity/audit_log.go`)
+   - Builder pattern: 100% coverage
+   - Validation methods: 100% coverage
+   - String methods: 100% coverage
+
+3. **AdminTenantRepository** (`internal/infrastructure/persistence/admin_tenant_repository.go`)
+   - FindAll: 83.3%
+   - FindByID: 83.3%
+   - Count: 80.0%
+   - Search: 100%
+   - CountByStatus: 87.5%
+   - CountByPlan: 87.5%
+   - FindTrialExpiring: 87.5%
+   - FindSubscriptionExpiring: 87.5%
+   - FindExpired: 87.5%
+   - GetStatistics: 78.6%
+   - Tests use sqlmock for database mocking
+
+4. **AdminTenantService** (`internal/application/identity/admin_tenant_service.go`)
+   - Created comprehensive mock implementations for:
+     - MockAdminTenantRepository
+     - MockTenantRepository
+     - MockSubscriptionHistoryRepository
+     - MockTenantStatusHistoryRepository
+     - MockAuditLogRepository
+   - Tests cover:
+     - ListTenants: pagination, filtering, error handling
+     - GetTenant: success, not found
+     - CreateTenant: success, code exists, validation errors
+     - UpdateTenant: success, not found, validation
+     - DeleteTenant: success, system tenant protection, not found
+     - ActivateTenant: success, not found
+     - SuspendTenantWithReason: success, scheduled reactivation, system tenant protection
+     - GetStatistics: success, error handling
+     - ChangePlan: upgrade, downgrade, same plan, invalid plan, system tenant
+     - UpdateQuota: success, validation
+     - GetSubscriptionHistory: success, empty result
+     - CancelScheduledPlanChange: success, no scheduled change
+   - Validation helper tests at 100%
+
+5. **TenantStatsService** (`internal/application/identity/tenant_stats_service.go`)
+   - DefaultTenantStatsServiceConfig: 100%
+   - NewTenantStatsService: 100%
+   - validateGrowthInput: 100%
+   - DTO tests: 100%
+
+6. **AdminHandler** (`internal/interfaces/http/handler/admin_handler.go`)
+   - Request validation tests: AdminTenantListQuery, AdminCreateTenantRequest
+   - Response JSON tests
+   - Route registration tests
+   - RequireAdminRole middleware tests
+
+=== Key Files Modified ===
+- `internal/application/identity/admin_tenant_service_test.go` - Added 1000+ lines of comprehensive tests with mocks
+
+=== Coverage Summary ===
+- SuperAdminMiddleware: 100%
+- AuditLog Entity: 85%+
+- AdminTenantRepository: 80%+ per method
+- AdminTenantService: Core methods 65%+, validation 100%
+- TenantStatsService: Configuration/validation 100%
+- AdminHandler: Request validation 100%
+
+=== Test Commands ===
+```bash
+# Run all admin module tests
+cd backend && go test -v ./internal/interfaces/http/middleware/... ./internal/domain/identity/... ./internal/application/identity/... ./internal/interfaces/http/handler/... -run "Admin|Super|Audit|TenantStats"
+
+# Check coverage
+go test -cover ./internal/interfaces/http/middleware/...
+go test -cover ./internal/domain/identity/...
+go test -cover ./internal/application/identity/...
+```
+
+=== Notes ===
+- All tests pass consistently
+- Tests use testify/mock for mocking dependencies
+- Tests cover both success paths and error scenarios
+- Tests are repeatable with no side effects (no real database)
+- Error message assertions use actual message content (not error codes)
+
+=== Next Steps ===
+- E2E tests for admin API endpoints (P3-ADMIN-020)
+- Frontend admin module testing

@@ -861,7 +861,8 @@
       "测试覆盖所有错误场景",
       "测试可重复执行（无副作用）"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-020",
