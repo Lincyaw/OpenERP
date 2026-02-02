@@ -119,7 +119,7 @@ export default function ReceiptReconcilePage() {
   const { t } = useTranslation('finance')
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const { formatDate: formatDateBase } = useFormatters()
+  const { formatDate: formatDateBase, formatDateTime: formatDateTimeBase } = useFormatters()
 
   // Wrapper to handle undefined values
   const formatDate = useCallback(
@@ -129,6 +129,15 @@ export default function ReceiptReconcilePage() {
       return result || '-'
     },
     [formatDateBase]
+  )
+
+  const formatDateTime = useCallback(
+    (dateStr?: string): string => {
+      if (!dateStr) return '-'
+      const result = formatDateTimeBase(dateStr)
+      return result || '-'
+    },
+    [formatDateTimeBase]
   )
 
   // State
@@ -884,7 +893,7 @@ export default function ReceiptReconcilePage() {
                 title: t('receiptReconcile.existingAllocations.allocatedAt'),
                 dataIndex: 'allocated_at',
                 key: 'allocated_at',
-                render: (value: string) => (value ? formatDate(value) : '-'),
+                render: (value: string) => (value ? formatDateTime(value) : '-'),
               },
               {
                 title: t('receiptReconcile.existingAllocations.remark'),
