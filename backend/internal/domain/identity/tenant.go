@@ -70,23 +70,29 @@ func DefaultTenantConfig() TenantConfig {
 // It is the aggregate root for tenant-related operations
 type Tenant struct {
 	shared.BaseAggregateRoot
-	Code                 string
-	Name                 string
-	ShortName            string
-	Status               TenantStatus
-	Plan                 TenantPlan
-	ContactName          string
-	ContactPhone         string
-	ContactEmail         string
-	Address              string
-	LogoURL              string
-	Domain               string // Custom subdomain
-	ExpiresAt            *time.Time
-	TrialEndsAt          *time.Time // Trial period end date
-	Config               TenantConfig
-	Notes                string
-	StripeCustomerID     string // Stripe customer ID for billing
-	StripeSubscriptionID string // Active Stripe subscription ID
+	Code                     string
+	Name                     string
+	ShortName                string
+	Status                   TenantStatus
+	Plan                     TenantPlan
+	ScheduledPlan            *TenantPlan // Plan to change to at billing cycle end (for downgrades)
+	ScheduledPlanEffectiveAt *time.Time  // When scheduled plan change takes effect
+	ContactName              string
+	ContactPhone             string
+	ContactEmail             string
+	Address                  string
+	LogoURL                  string
+	Domain                   string // Custom subdomain
+	ExpiresAt                *time.Time
+	TrialEndsAt              *time.Time // Trial period end date
+	Config                   TenantConfig
+	Notes                    string
+	StripeCustomerID         string // Stripe customer ID for billing
+	StripeSubscriptionID     string // Active Stripe subscription ID
+	// Suspension-related fields
+	SuspensionReason      string     // Reason for suspension
+	SuspendedAt           *time.Time // When the tenant was suspended
+	ScheduledReactivateAt *time.Time // Scheduled time for automatic reactivation
 }
 
 // NewTenant creates a new tenant with required fields
@@ -273,6 +279,114 @@ func (t *Tenant) ClearExpiration() {
 	t.IncrementVersion()
 }
 
+// SchedulePlanDowngrade schedules a plan downgrade for the end of billing cycle
+// The downgrade will take effect at the specified effectiveAt time
+func (t *Tenant) SchedulePlanDowngrade(newPlan TenantPlan, effectiveAt time.Time) error {
+	if err := validateTenantPlan(newPlan); err != nil {
+		return err
+	}
+
+	// Verify this is actually a downgrade
+	if !newPlan.IsDowngradeFrom(t.Plan) {
+		return shared.NewDomainError("NOT_A_DOWNGRADE", "New plan must be a lower tier than current plan")
+	}
+
+	// Verify effective date is in the future
+	if effectiveAt.Before(time.Now()) {
+		return shared.NewDomainError("INVALID_EFFECTIVE_DATE", "Effective date must be in the future")
+	}
+
+	t.ScheduledPlan = &newPlan
+	t.ScheduledPlanEffectiveAt = &effectiveAt
+	t.UpdatedAt = time.Now()
+	t.IncrementVersion()
+
+	return nil
+}
+
+// CancelScheduledPlanChange cancels a pending plan change
+func (t *Tenant) CancelScheduledPlanChange() error {
+	if t.ScheduledPlan == nil {
+		return shared.NewDomainError("NO_SCHEDULED_CHANGE", "No scheduled plan change to cancel")
+	}
+
+	t.ScheduledPlan = nil
+	t.ScheduledPlanEffectiveAt = nil
+	t.UpdatedAt = time.Now()
+	t.IncrementVersion()
+
+	return nil
+}
+
+// ApplyScheduledPlanChange applies a scheduled plan change if it's due
+// Returns true if a change was applied, false otherwise
+func (t *Tenant) ApplyScheduledPlanChange() (bool, error) {
+	if !t.HasScheduledPlanChange() {
+		return false, nil
+	}
+
+	// Check if the scheduled change is due
+	if t.ScheduledPlanEffectiveAt.After(time.Now()) {
+		return false, nil
+	}
+
+	// Apply the plan change
+	newPlan := *t.ScheduledPlan
+	if err := t.SetPlan(newPlan); err != nil {
+		return false, err
+	}
+
+	// Clear the scheduled change
+	t.ScheduledPlan = nil
+	t.ScheduledPlanEffectiveAt = nil
+
+	return true, nil
+}
+
+// HasScheduledPlanChange returns true if there's a pending plan change
+func (t *Tenant) HasScheduledPlanChange() bool {
+	return t.ScheduledPlan != nil && t.ScheduledPlanEffectiveAt != nil
+}
+
+// GetScheduledPlanInfo returns the scheduled plan and effective date, or nil if none
+func (t *Tenant) GetScheduledPlanInfo() (*TenantPlan, *time.Time) {
+	if !t.HasScheduledPlanChange() {
+		return nil, nil
+	}
+	return t.ScheduledPlan, t.ScheduledPlanEffectiveAt
+}
+
+// SetCustomQuota sets custom quota limits (overrides plan defaults)
+// This allows super admins to customize quotas beyond plan defaults
+func (t *Tenant) SetCustomQuota(maxUsers, maxWarehouses, maxProducts int) error {
+	if maxUsers < 0 {
+		return shared.NewDomainError("INVALID_MAX_USERS", "Max users cannot be negative")
+	}
+	if maxWarehouses < 0 {
+		return shared.NewDomainError("INVALID_MAX_WAREHOUSES", "Max warehouses cannot be negative")
+	}
+	if maxProducts < 0 {
+		return shared.NewDomainError("INVALID_MAX_PRODUCTS", "Max products cannot be negative")
+	}
+
+	t.Config.MaxUsers = maxUsers
+	t.Config.MaxWarehouses = maxWarehouses
+	t.Config.MaxProducts = maxProducts
+	t.UpdatedAt = time.Now()
+	t.IncrementVersion()
+
+	return nil
+}
+
+// GetCurrentQuota returns the current quota as a TenantQuota value object
+func (t *Tenant) GetCurrentQuota() TenantQuota {
+	return TenantQuota{
+		MaxUsers:      t.Config.MaxUsers,
+		MaxWarehouses: t.Config.MaxWarehouses,
+		MaxProducts:   t.Config.MaxProducts,
+	}
+}
+
 // UpdateConfig updates the tenant's configuration
 func (t *Tenant) UpdateConfig(config TenantConfig) error {
 	if config.MaxUsers < 0 {
@@ -307,10 +421,17 @@ func (t *Tenant) Activate() error {
 
 	oldStatus := t.Status
 	t.Status = TenantStatusActive
+	// Clear suspension-related fields when activating
+	t.SuspensionReason = ""
+	t.SuspendedAt = nil
+	t.ScheduledReactivateAt = nil
 	t.UpdatedAt = time.Now()
 	t.IncrementVersion()
 
 	t.AddDomainEvent(NewTenantStatusChangedEvent(t, oldStatus, TenantStatusActive))
+	if oldStatus == TenantStatusSuspended {
+		t.AddDomainEvent(NewTenantActivatedEvent(t))
+	}
 
 	return nil
 }
@@ -333,16 +454,31 @@ func (t *Tenant) Deactivate() error {
 
 // Suspend suspends the tenant (e.g., due to payment issues)
 func (t *Tenant) Suspend() error {
+	return t.SuspendWithReason("", nil)
+}
+
+// SuspendWithReason suspends the tenant with a reason and optional scheduled reactivation time
+func (t *Tenant) SuspendWithReason(reason string, scheduledReactivateAt *time.Time) error {
 	if t.Status == TenantStatusSuspended {
 		return shared.NewDomainError("ALREADY_SUSPENDED", "Tenant is already suspended")
 	}
 
+	// Validate scheduled reactivation time if provided
+	if scheduledReactivateAt != nil && scheduledReactivateAt.Before(time.Now()) {
+		return shared.NewDomainError("INVALID_REACTIVATE_TIME", "Scheduled reactivation time must be in the future")
+	}
+
 	oldStatus := t.Status
 	t.Status = TenantStatusSuspended
+	t.SuspensionReason = reason
+	now := time.Now()
+	t.SuspendedAt = &now
+	t.ScheduledReactivateAt = scheduledReactivateAt
 	t.UpdatedAt = time.Now()
 	t.IncrementVersion()
 
 	t.AddDomainEvent(NewTenantStatusChangedEvent(t, oldStatus, TenantStatusSuspended))
+	t.AddDomainEvent(NewTenantSuspendedEvent(t, reason, scheduledReactivateAt))
 
 	return nil
 }

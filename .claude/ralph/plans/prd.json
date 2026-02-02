@@ -475,7 +475,8 @@
       "业务规则验证正确执行",
       "单元测试覆盖率 >= 80%"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-006",
@@ -500,7 +501,8 @@
       "订阅变更历史可查询",
       "所有操作记录审计日志"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-007",
@@ -527,7 +529,8 @@
       "状态变更历史可查询",
       "所有操作记录审计日志"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-008",

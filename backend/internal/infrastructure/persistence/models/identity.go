@@ -131,19 +131,22 @@ func (m *UserRoleModel) FromDomain(ur identity.UserRole) {
 // TenantModel is the persistence model for the Tenant domain entity.
 type TenantModel struct {
 	AggregateModel
-	Code         string                `gorm:"type:varchar(50);not null;uniqueIndex"`
-	Name         string                `gorm:"type:varchar(200);not null"`
-	ShortName    string                `gorm:"type:varchar(100)"`
-	Status       identity.TenantStatus `gorm:"type:varchar(20);not null;default:'active'"`
-	Plan         identity.TenantPlan   `gorm:"type:varchar(20);not null;default:'free'"`
-	ContactName  string                `gorm:"type:varchar(100)"`
-	ContactPhone string                `gorm:"type:varchar(50)"`
-	ContactEmail string                `gorm:"type:varchar(200)"`
-	Address      string                `gorm:"type:text"`
-	LogoURL      string                `gorm:"type:varchar(500)"`
-	Domain       string                `gorm:"type:varchar(200);uniqueIndex"`
-	ExpiresAt    *time.Time            `gorm:"index"`
-	TrialEndsAt  *time.Time
+	Code      string                `gorm:"type:varchar(50);not null;uniqueIndex"`
+	Name      string                `gorm:"type:varchar(200);not null"`
+	ShortName string                `gorm:"type:varchar(100)"`
+	Status    identity.TenantStatus `gorm:"type:varchar(20);not null;default:'active'"`
+	Plan      identity.TenantPlan   `gorm:"type:varchar(20);not null;default:'free'"`
+	// Scheduled plan change fields (for downgrades)
+	ScheduledPlan            *string    `gorm:"column:scheduled_plan;type:varchar(20)"`
+	ScheduledPlanEffectiveAt *time.Time `gorm:"column:scheduled_plan_effective_at"`
+	ContactName              string     `gorm:"type:varchar(100)"`
+	ContactPhone             string     `gorm:"type:varchar(50)"`
+	ContactEmail             string     `gorm:"type:varchar(200)"`
+	Address                  string     `gorm:"type:text"`
+	LogoURL                  string     `gorm:"type:varchar(500)"`
+	Domain                   string     `gorm:"type:varchar(200);uniqueIndex"`
+	ExpiresAt                *time.Time `gorm:"index"`
+	TrialEndsAt              *time.Time
 	// Embedded config fields
 	ConfigMaxUsers      int    `gorm:"column:config_max_users;not null;default:5"`
 	ConfigMaxWarehouses int    `gorm:"column:config_max_warehouses;not null;default:3"`
@@ -158,6 +161,10 @@ type TenantModel struct {
 	// Stripe billing fields
 	StripeCustomerID     string `gorm:"column:stripe_customer_id;type:varchar(255);index"`
 	StripeSubscriptionID string `gorm:"column:stripe_subscription_id;type:varchar(255);index"`
+	// Suspension-related fields
+	SuspensionReason      string     `gorm:"column:suspension_reason;type:text"`
+	SuspendedAt           *time.Time `gorm:"column:suspended_at"`
+	ScheduledReactivateAt *time.Time `gorm:"column:scheduled_reactivate_at;index"`
 }
 
 // TableName returns the table name for GORM
@@ -167,7 +174,7 @@ func (TenantModel) TableName() string {
 
 // ToDomain converts the persistence model to a domain Tenant entity.
 func (m *TenantModel) ToDomain() *identity.Tenant {
-	return &identity.Tenant{
+	tenant := &identity.Tenant{
 		BaseAggregateRoot: shared.BaseAggregateRoot{
 			BaseEntity: shared.BaseEntity{
 				ID:        m.ID,
@@ -176,19 +183,20 @@ func (m *TenantModel) ToDomain() *identity.Tenant {
 			},
 			Version: m.Version,
 		},
-		Code:         m.Code,
-		Name:         m.Name,
-		ShortName:    m.ShortName,
-		Status:       m.Status,
-		Plan:         m.Plan,
-		ContactName:  m.ContactName,
-		ContactPhone: m.ContactPhone,
-		ContactEmail: m.ContactEmail,
-		Address:      m.Address,
-		LogoURL:      m.LogoURL,
-		Domain:       m.Domain,
-		ExpiresAt:    m.ExpiresAt,
-		TrialEndsAt:  m.TrialEndsAt,
+		Code:                     m.Code,
+		Name:                     m.Name,
+		ShortName:                m.ShortName,
+		Status:                   m.Status,
+		Plan:                     m.Plan,
+		ScheduledPlanEffectiveAt: m.ScheduledPlanEffectiveAt,
+		ContactName:              m.ContactName,
+		ContactPhone:             m.ContactPhone,
+		ContactEmail:             m.ContactEmail,
+		Address:                  m.Address,
+		LogoURL:                  m.LogoURL,
+		Domain:                   m.Domain,
+		ExpiresAt:                m.ExpiresAt,
+		TrialEndsAt:              m.TrialEndsAt,
 		Config: identity.TenantConfig{
 			MaxUsers:      m.ConfigMaxUsers,
 			MaxWarehouses: m.ConfigMaxWarehouses,
@@ -200,10 +208,21 @@ func (m *TenantModel) ToDomain() *identity.Tenant {
 			Timezone:      m.ConfigTimezone,
 			Locale:        m.ConfigLocale,
 		},
-		Notes:                m.Notes,
-		StripeCustomerID:     m.StripeCustomerID,
-		StripeSubscriptionID: m.StripeSubscriptionID,
+		Notes:                 m.Notes,
+		StripeCustomerID:      m.StripeCustomerID,
+		StripeSubscriptionID:  m.StripeSubscriptionID,
+		SuspensionReason:      m.SuspensionReason,
+		SuspendedAt:           m.SuspendedAt,
+		ScheduledReactivateAt: m.ScheduledReactivateAt,
 	}
+
+	// Convert scheduled plan string to TenantPlan pointer
+	if m.ScheduledPlan != nil && *m.ScheduledPlan != "" {
+		plan := identity.TenantPlan(*m.ScheduledPlan)
+		tenant.ScheduledPlan = &plan
+	}
+
+	return tenant
 }
 
 // FromDomain populates the persistence model from a domain Tenant entity.
@@ -214,6 +233,14 @@ func (m *TenantModel) FromDomain(t *identity.Tenant) {
 	m.ShortName = t.ShortName
 	m.Status = t.Status
 	m.Plan = t.Plan
+	// Convert scheduled plan pointer to string pointer
+	if t.ScheduledPlan != nil {
+		planStr := string(*t.ScheduledPlan)
+		m.ScheduledPlan = &planStr
+	} else {
+		m.ScheduledPlan = nil
+	}
+	m.ScheduledPlanEffectiveAt = t.ScheduledPlanEffectiveAt
 	m.ContactName = t.ContactName
 	m.ContactPhone = t.ContactPhone
 	m.ContactEmail = t.ContactEmail
@@ -234,6 +261,9 @@ func (m *TenantModel) FromDomain(t *identity.Tenant) {
 	m.Notes = t.Notes
 	m.StripeCustomerID = t.StripeCustomerID
 	m.StripeSubscriptionID = t.StripeSubscriptionID
+	m.SuspensionReason = t.SuspensionReason
+	m.SuspendedAt = t.SuspendedAt
+	m.ScheduledReactivateAt = t.ScheduledReactivateAt
 }
 
 // TenantModelFromDomain creates a new persistence model from a domain Tenant entity.
@@ -617,4 +647,175 @@ func AdminAuditLogModelFromDomain(log *identity.AuditLog) (*AdminAuditLogModel, 
 		return nil, err
 	}
 	return m, nil
+}
+
+// SubscriptionHistoryModel is the persistence model for subscription history.
+type SubscriptionHistoryModel struct {
+	ID              uuid.UUID                       `gorm:"type:uuid;primaryKey"`
+	TenantID        uuid.UUID                       `gorm:"type:uuid;not null;index"`
+	ChangeType      identity.SubscriptionChangeType `gorm:"column:change_type;type:varchar(30);not null"`
+	OldPlan         *string                         `gorm:"column:old_plan;type:varchar(20)"`
+	NewPlan         *string                         `gorm:"column:new_plan;type:varchar(20)"`
+	OldQuota        *string                         `gorm:"column:old_quota;type:jsonb"`
+	NewQuota        *string                         `gorm:"column:new_quota;type:jsonb"`
+	EffectiveAt     time.Time                       `gorm:"column:effective_at;not null"`
+	ScheduledAt     *time.Time                      `gorm:"column:scheduled_at"`
+	ChangedByUserID uuid.UUID                       `gorm:"column:changed_by_user_id;type:uuid;not null"`
+	Reason          string                          `gorm:"column:reason;type:text"`
+	CreatedAt       time.Time                       `gorm:"not null"`
+}
+
+// TableName returns the table name for GORM
+func (SubscriptionHistoryModel) TableName() string {
+	return "subscription_history"
+}
+
+// ToDomain converts the persistence model to a domain SubscriptionHistory entity.
+func (m *SubscriptionHistoryModel) ToDomain() *identity.SubscriptionHistory {
+	history := &identity.SubscriptionHistory{
+		ID:              m.ID,
+		TenantID:        m.TenantID,
+		ChangeType:      m.ChangeType,
+		EffectiveAt:     m.EffectiveAt,
+		ScheduledAt:     m.ScheduledAt,
+		ChangedByUserID: m.ChangedByUserID,
+		Reason:          m.Reason,
+		CreatedAt:       m.CreatedAt,
+	}
+
+	// Convert plan strings to TenantPlan
+	if m.OldPlan != nil && *m.OldPlan != "" {
+		plan := identity.TenantPlan(*m.OldPlan)
+		history.OldPlan = plan
+	}
+	if m.NewPlan != nil && *m.NewPlan != "" {
+		plan := identity.TenantPlan(*m.NewPlan)
+		history.NewPlan = plan
+	}
+
+	// Parse quota JSON
+	if m.OldQuota != nil && *m.OldQuota != "" {
+		var quota identity.TenantQuota
+		if err := json.Unmarshal([]byte(*m.OldQuota), &quota); err == nil {
+			history.OldQuota = &quota
+		}
+	}
+	if m.NewQuota != nil && *m.NewQuota != "" {
+		var quota identity.TenantQuota
+		if err := json.Unmarshal([]byte(*m.NewQuota), &quota); err == nil {
+			history.NewQuota = &quota
+		}
+	}
+
+	return history
+}
+
+// FromDomain populates the persistence model from a domain SubscriptionHistory entity.
+func (m *SubscriptionHistoryModel) FromDomain(h *identity.SubscriptionHistory) error {
+	m.ID = h.ID
+	m.TenantID = h.TenantID
+	m.ChangeType = h.ChangeType
+	m.EffectiveAt = h.EffectiveAt
+	m.ScheduledAt = h.ScheduledAt
+	m.ChangedByUserID = h.ChangedByUserID
+	m.Reason = h.Reason
+	m.CreatedAt = h.CreatedAt
+
+	// Convert plan to string pointer
+	if h.OldPlan != "" {
+		planStr := string(h.OldPlan)
+		m.OldPlan = &planStr
+	}
+	if h.NewPlan != "" {
+		planStr := string(h.NewPlan)
+		m.NewPlan = &planStr
+	}
+
+	// Serialize quota to JSON
+	if h.OldQuota != nil {
+		quotaJSON, err := json.Marshal(h.OldQuota)
+		if err != nil {
+			return err
+		}
+		quotaStr := string(quotaJSON)
+		m.OldQuota = &quotaStr
+	}
+	if h.NewQuota != nil {
+		quotaJSON, err := json.Marshal(h.NewQuota)
+		if err != nil {
+			return err
+		}
+		quotaStr := string(quotaJSON)
+		m.NewQuota = &quotaStr
+	}
+
+	return nil
+}
+
+// SubscriptionHistoryModelFromDomain creates a new persistence model from a domain SubscriptionHistory entity.
+func SubscriptionHistoryModelFromDomain(h *identity.SubscriptionHistory) (*SubscriptionHistoryModel, error) {
+	m := &SubscriptionHistoryModel{}
+	if err := m.FromDomain(h); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// TenantStatusHistoryModel is the persistence model for tenant status history.
+type TenantStatusHistoryModel struct {
+	ID                    uuid.UUID                       `gorm:"type:uuid;primaryKey"`
+	TenantID              uuid.UUID                       `gorm:"type:uuid;not null;index"`
+	ChangeType            identity.TenantStatusChangeType `gorm:"column:change_type;type:varchar(30);not null"`
+	OldStatus             identity.TenantStatus           `gorm:"column:old_status;type:varchar(20);not null"`
+	NewStatus             identity.TenantStatus           `gorm:"column:new_status;type:varchar(20);not null"`
+	Reason                string                          `gorm:"column:reason;type:text"`
+	ScheduledReactivateAt *time.Time                      `gorm:"column:scheduled_reactivate_at"`
+	ChangedByUserID       uuid.UUID                       `gorm:"column:changed_by_user_id;type:uuid;not null"`
+	IPAddress             string                          `gorm:"column:ip_address;type:varchar(45)"`
+	UserAgent             string                          `gorm:"column:user_agent;type:varchar(500)"`
+	CreatedAt             time.Time                       `gorm:"not null;index"`
+}
+
+// TableName returns the table name for GORM
+func (TenantStatusHistoryModel) TableName() string {
+	return "tenant_status_history"
+}
+
+// ToDomain converts the persistence model to a domain TenantStatusHistory entity.
+func (m *TenantStatusHistoryModel) ToDomain() *identity.TenantStatusHistory {
+	return &identity.TenantStatusHistory{
+		ID:                    m.ID,
+		TenantID:              m.TenantID,
+		ChangeType:            m.ChangeType,
+		OldStatus:             m.OldStatus,
+		NewStatus:             m.NewStatus,
+		Reason:                m.Reason,
+		ScheduledReactivateAt: m.ScheduledReactivateAt,
+		ChangedByUserID:       m.ChangedByUserID,
+		IPAddress:             m.IPAddress,
+		UserAgent:             m.UserAgent,
+		CreatedAt:             m.CreatedAt,
+	}
+}
+
+// FromDomain populates the persistence model from a domain TenantStatusHistory entity.
+func (m *TenantStatusHistoryModel) FromDomain(h *identity.TenantStatusHistory) {
+	m.ID = h.ID
+	m.TenantID = h.TenantID
+	m.ChangeType = h.ChangeType
+	m.OldStatus = h.OldStatus
+	m.NewStatus = h.NewStatus
+	m.Reason = h.Reason
+	m.ScheduledReactivateAt = h.ScheduledReactivateAt
+	m.ChangedByUserID = h.ChangedByUserID
+	m.IPAddress = h.IPAddress
+	m.UserAgent = h.UserAgent
+	m.CreatedAt = h.CreatedAt
+}
+
+// TenantStatusHistoryModelFromDomain creates a new persistence model from a domain TenantStatusHistory entity.
+func TenantStatusHistoryModelFromDomain(h *identity.TenantStatusHistory) *TenantStatusHistoryModel {
+	m := &TenantStatusHistoryModel{}
+	m.FromDomain(h)
+	return m
 }

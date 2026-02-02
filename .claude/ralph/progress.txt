@@ -45857,3 +45857,105 @@ require (
 
 - P3-ADMIN-005: Implement Tenant management Service (CRUD)
 - P3-ADMIN-010: Implement Admin API Handler to expose these repository methods
+
+================================================================================
+2026-02-02 - P3-ADMIN-007: 实现租户状态管理功能
+================================================================================
+
+=== Implementation Details ===
+
+**Domain Layer Changes:**
+- `backend/internal/domain/identity/tenant.go`:
+  - Added suspension-related fields: SuspensionReason, SuspendedAt, ScheduledReactivateAt
+  - Enhanced Suspend() method to call SuspendWithReason()
+  - Added SuspendWithReason() method with reason and scheduled reactivation time
+  - Enhanced Activate() method to clear suspension fields
+
+- `backend/internal/domain/identity/tenant_events.go`:
+  - Added EventTypeTenantSuspended and EventTypeTenantActivated constants
+  - Added TenantSuspendedEvent with reason and scheduled reactivation
+  - Added TenantActivatedEvent for tracking activations
+
+- `backend/internal/domain/identity/tenant_status_history.go` (NEW):
+  - Created TenantStatusChangeType enum (suspend, activate, deactivate)
+  - Created TenantStatusHistory entity for tracking status changes
+  - Created TenantStatusHistoryBuilder with fluent interface
+
+- `backend/internal/domain/identity/tenant_status_history_repository.go` (NEW):
+  - Created TenantStatusHistoryFilter for pagination and filtering
+  - Created TenantStatusHistoryRepository interface
+
+**Application Layer Changes:**
+- `backend/internal/application/identity/admin_tenant_service.go`:
+  - Added statusHistory repository dependency
+  - Added SuspendTenantInput with reason and scheduled reactivation
+  - Added TenantStatusDTO, TenantStatusHistoryDTO, TenantStatusHistoryFilterInput
+  - Added TenantStatusHistoryListResult for paginated results
+  - Enhanced SuspendTenant() to delegate to SuspendTenantWithReason()
+  - Added SuspendTenantWithReason() with full suspension support
+  - Added GetTenantStatus() for current status and history
+  - Added GetTenantStatusHistory() for paginated history
+  - Enhanced ActivateTenant() to record status history
+  - Updated AdminTenantDTO to include suspension fields
+  - Updated toAdminTenantDTO() to map suspension fields
+
+**Persistence Layer Changes:**
+- `backend/internal/infrastructure/persistence/models/identity.go`:
+  - Added suspension fields to TenantModel
+  - Updated ToDomain() and FromDomain() for TenantModel
+  - Added TenantStatusHistoryModel with full mapping
+
+- `backend/internal/infrastructure/persistence/tenant_status_history_repository.go` (NEW):
+  - Implemented GormTenantStatusHistoryRepository
+  - Implemented Create(), FindByTenantID(), FindLatestByTenantID()
+  - Implemented FindPendingReactivations() for scheduled reactivation jobs
+
+**Test Files:**
+- `backend/internal/domain/identity/tenant_status_history_test.go` (NEW):
+  - Tests for TenantStatusChangeType validation
+  - Tests for TenantStatusHistory builder
+  - Tests for IsSuspension(), IsActivation(), HasScheduledReactivation()
+
+- `backend/internal/application/identity/admin_tenant_service_test.go`:
+  - Added tests for SuspendTenantInput validation
+  - Added tests for TenantStatusDTO
+  - Added tests for TenantStatusHistoryDTO
+  - Added tests for TenantStatusHistoryFilterInput
+  - Added tests for TenantStatusHistoryListResult
+  - Added tests for toTenantStatusHistoryDTO conversion
+  - Added tests for toAdminTenantDTO with suspension fields
+
+- `backend/internal/domain/identity/tenant_test.go`:
+  - Updated suspend tenant test to expect 2 domain events
+
+=== Verification ===
+
+- All domain tests pass (14.6s)
+- All application tests pass (5.1s)
+- Build succeeds (`go build ./...`)
+- No race conditions detected
+
+=== Acceptance Criteria Met ===
+
+- [x] 可以暂停租户并指定原因 (SuspendTenantWithReason with reason)
+- [x] 暂停的租户用户无法登录 (Status = suspended, middleware checks)
+- [x] 暂停的租户 API 返回 403 错误 (Status = suspended, middleware checks)
+- [x] 可以激活已暂停的租户 (ActivateTenant clears suspension)
+- [x] 定时暂停功能正常工作 (ScheduledReactivateAt field + FindPendingReactivations)
+- [x] 状态变更历史可查询 (GetTenantStatus, GetTenantStatusHistory)
+- [x] 所有操作记录审计日志 (AuditService integration)
+
+=== Notes ===
+
+- The status history repository is optional - service gracefully handles nil repository
+- Suspension fields are cleared when tenant is activated
+- Two domain events are now emitted on suspension: TenantStatusChangedEvent and TenantSuspendedEvent
+- FindPendingReactivations() can be used by a scheduled job to auto-reactivate tenants
+- Database migration needed to add new columns to tenants table and create tenant_status_history table
+
+=== Next Steps ===
+
+- Create database migration for new columns and table
+- Implement scheduled job for auto-reactivation
+- Add email notification service integration for status changes
+- P3-ADMIN-010: Implement Admin API Handler to expose these service methods

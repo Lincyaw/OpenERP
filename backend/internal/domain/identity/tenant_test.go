@@ -263,7 +263,8 @@ func TestTenant_StatusTransitions(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, TenantStatusSuspended, tenant.Status)
 		assert.True(t, tenant.IsSuspended())
-		assert.Len(t, tenant.GetDomainEvents(), 1)
+		// Now emits 2 events: TenantStatusChangedEvent and TenantSuspendedEvent
+		assert.Len(t, tenant.GetDomainEvents(), 2)
 	})
 
 	t.Run("fails to suspend already suspended tenant", func(t *testing.T) {
@@ -580,5 +581,247 @@ func TestSystemTenantConstants(t *testing.T) {
 
 	t.Run("system tenant name is System Tenant", func(t *testing.T) {
 		assert.Equal(t, "System Tenant", SystemTenantName)
+	})
+}
+
+func TestTenant_SchedulePlanDowngrade(t *testing.T) {
+	t.Run("schedules downgrade successfully", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+		tenant.SetPlan(TenantPlanPro)
+		tenant.ClearDomainEvents()
+
+		effectiveAt := time.Now().AddDate(0, 1, 0) // 1 month from now
+		err := tenant.SchedulePlanDowngrade(TenantPlanBasic, effectiveAt)
+
+		require.NoError(t, err)
+		assert.NotNil(t, tenant.ScheduledPlan)
+		assert.Equal(t, TenantPlanBasic, *tenant.ScheduledPlan)
+		assert.NotNil(t, tenant.ScheduledPlanEffectiveAt)
+		assert.True(t, tenant.HasScheduledPlanChange())
+	})
+
+	t.Run("fails with invalid plan", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+		tenant.SetPlan(TenantPlanPro)
+
+		effectiveAt := time.Now().AddDate(0, 1, 0)
+		err := tenant.SchedulePlanDowngrade(TenantPlan("invalid"), effectiveAt)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "Invalid tenant plan")
+	})
+
+	t.Run("fails when not a downgrade", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+		tenant.SetPlan(TenantPlanBasic)
+
+		effectiveAt := time.Now().AddDate(0, 1, 0)
+		err := tenant.SchedulePlanDowngrade(TenantPlanPro, effectiveAt)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "must be a lower tier")
+	})
+
+	t.Run("fails with past effective date", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+		tenant.SetPlan(TenantPlanPro)
+
+		effectiveAt := time.Now().AddDate(0, 0, -1) // yesterday
+		err := tenant.SchedulePlanDowngrade(TenantPlanBasic, effectiveAt)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "must be in the future")
+	})
+}
+
+func TestTenant_CancelScheduledPlanChange(t *testing.T) {
+	t.Run("cancels scheduled change successfully", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+		tenant.SetPlan(TenantPlanPro)
+		effectiveAt := time.Now().AddDate(0, 1, 0)
+		tenant.SchedulePlanDowngrade(TenantPlanBasic, effectiveAt)
+
+		err := tenant.CancelScheduledPlanChange()
+
+		require.NoError(t, err)
+		assert.Nil(t, tenant.ScheduledPlan)
+		assert.Nil(t, tenant.ScheduledPlanEffectiveAt)
+		assert.False(t, tenant.HasScheduledPlanChange())
+	})
+
+	t.Run("fails when no scheduled change", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+
+		err := tenant.CancelScheduledPlanChange()
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "No scheduled plan change")
+	})
+}
+
+func TestTenant_ApplyScheduledPlanChange(t *testing.T) {
+	t.Run("applies due scheduled change", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+		tenant.SetPlan(TenantPlanPro)
+		// Set scheduled change to the past (simulating it's now due)
+		newPlan := TenantPlanBasic
+		pastTime := time.Now().Add(-1 * time.Hour)
+		tenant.ScheduledPlan = &newPlan
+		tenant.ScheduledPlanEffectiveAt = &pastTime
+		tenant.ClearDomainEvents()
+
+		applied, err := tenant.ApplyScheduledPlanChange()
+
+		require.NoError(t, err)
+		assert.True(t, applied)
+		assert.Equal(t, TenantPlanBasic, tenant.Plan)
+		assert.Nil(t, tenant.ScheduledPlan)
+		assert.Nil(t, tenant.ScheduledPlanEffectiveAt)
+	})
+
+	t.Run("does not apply future scheduled change", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+		tenant.SetPlan(TenantPlanPro)
+		effectiveAt := time.Now().AddDate(0, 1, 0)
+		tenant.SchedulePlanDowngrade(TenantPlanBasic, effectiveAt)
+
+		applied, err := tenant.ApplyScheduledPlanChange()
+
+		require.NoError(t, err)
+		assert.False(t, applied)
+		assert.Equal(t, TenantPlanPro, tenant.Plan)
+		assert.NotNil(t, tenant.ScheduledPlan)
+	})
+
+	t.Run("returns false when no scheduled change", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+
+		applied, err := tenant.ApplyScheduledPlanChange()
+
+		require.NoError(t, err)
+		assert.False(t, applied)
+	})
+}
+
+func TestTenant_HasScheduledPlanChange(t *testing.T) {
+	t.Run("returns true when scheduled", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+		tenant.SetPlan(TenantPlanPro)
+		effectiveAt := time.Now().AddDate(0, 1, 0)
+		tenant.SchedulePlanDowngrade(TenantPlanBasic, effectiveAt)
+
+		assert.True(t, tenant.HasScheduledPlanChange())
+	})
+
+	t.Run("returns false when not scheduled", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+
+		assert.False(t, tenant.HasScheduledPlanChange())
+	})
+
+	t.Run("returns false when only plan is set", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+		newPlan := TenantPlanBasic
+		tenant.ScheduledPlan = &newPlan
+
+		assert.False(t, tenant.HasScheduledPlanChange())
+	})
+}
+
+func TestTenant_GetScheduledPlanInfo(t *testing.T) {
+	t.Run("returns scheduled info when present", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+		tenant.SetPlan(TenantPlanPro)
+		effectiveAt := time.Now().AddDate(0, 1, 0)
+		tenant.SchedulePlanDowngrade(TenantPlanBasic, effectiveAt)
+
+		plan, effective := tenant.GetScheduledPlanInfo()
+
+		assert.NotNil(t, plan)
+		assert.Equal(t, TenantPlanBasic, *plan)
+		assert.NotNil(t, effective)
+	})
+
+	t.Run("returns nil when no scheduled change", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+
+		plan, effective := tenant.GetScheduledPlanInfo()
+
+		assert.Nil(t, plan)
+		assert.Nil(t, effective)
+	})
+}
+
+func TestTenant_SetCustomQuota(t *testing.T) {
+	t.Run("sets custom quota successfully", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+
+		err := tenant.SetCustomQuota(100, 50, 10000)
+
+		require.NoError(t, err)
+		assert.Equal(t, 100, tenant.Config.MaxUsers)
+		assert.Equal(t, 50, tenant.Config.MaxWarehouses)
+		assert.Equal(t, 10000, tenant.Config.MaxProducts)
+	})
+
+	t.Run("allows zero values", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+
+		err := tenant.SetCustomQuota(0, 0, 0)
+
+		require.NoError(t, err)
+		assert.Equal(t, 0, tenant.Config.MaxUsers)
+		assert.Equal(t, 0, tenant.Config.MaxWarehouses)
+		assert.Equal(t, 0, tenant.Config.MaxProducts)
+	})
+
+	t.Run("fails with negative max users", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+
+		err := tenant.SetCustomQuota(-1, 50, 10000)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "Max users cannot be negative")
+	})
+
+	t.Run("fails with negative max warehouses", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+
+		err := tenant.SetCustomQuota(100, -1, 10000)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "Max warehouses cannot be negative")
+	})
+
+	t.Run("fails with negative max products", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+
+		err := tenant.SetCustomQuota(100, 50, -1)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "Max products cannot be negative")
+	})
+}
+
+func TestTenant_GetCurrentQuota(t *testing.T) {
+	t.Run("returns current quota", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+		tenant.SetCustomQuota(100, 50, 10000)
+
+		quota := tenant.GetCurrentQuota()
+
+		assert.Equal(t, 100, quota.MaxUsers)
+		assert.Equal(t, 50, quota.MaxWarehouses)
+		assert.Equal(t, 10000, quota.MaxProducts)
+	})
+
+	t.Run("returns default quota for new tenant", func(t *testing.T) {
+		tenant, _ := NewTenant("TENANT001", "Test Company")
+
+		quota := tenant.GetCurrentQuota()
+
+		assert.Equal(t, 5, quota.MaxUsers)
+		assert.Equal(t, 3, quota.MaxWarehouses)
+		assert.Equal(t, 1000, quota.MaxProducts)
 	})
 }
