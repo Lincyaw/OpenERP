@@ -15,12 +15,13 @@
   "tenants": {
     "title": "Tenant Management",
     "name": "Name",
+    "email": "Email",
     "plan": "Plan",
     "status": "Status",
     "users": "Users",
     "createdAt": "Created",
     "actions": "Actions",
-    "search": "Search tenants...",
+    "searchPlaceholder": "Search tenants...",
     "create": "Create Tenant",
     "overview": "Overview",
     "subscription": "Subscription",
@@ -31,7 +32,45 @@
     "contactPhone": "Contact Phone",
     "usersPlaceholder": "User management coming soon...",
     "subscriptionPlaceholder": "Subscription history coming soon...",
-    "activityPlaceholder": "Activity log coming soon..."
+    "activityPlaceholder": "Activity log coming soon...",
+    "suspend": "Suspend",
+    "activate": "Activate",
+    "batchSuspend": "Suspend Selected",
+    "batchActivate": "Activate Selected",
+    "filter": {
+      "status": "Status",
+      "plan": "Plan",
+      "allStatus": "All Status",
+      "allPlans": "All Plans",
+      "active": "Active",
+      "suspended": "Suspended",
+      "inactive": "Inactive",
+      "trial": "Trial",
+      "free": "Free",
+      "basic": "Basic",
+      "pro": "Pro",
+      "enterprise": "Enterprise"
+    },
+    "confirm": {
+      "suspendTitle": "Confirm Suspend",
+      "suspendContent": "Are you sure you want to suspend tenant \"{{name}}\"? Users will not be able to access the system.",
+      "suspendOk": "Suspend",
+      "activateTitle": "Confirm Activate",
+      "activateContent": "Are you sure you want to activate tenant \"{{name}}\"?",
+      "activateOk": "Activate",
+      "batchSuspendTitle": "Confirm Batch Suspend",
+      "batchSuspendContent": "Are you sure you want to suspend {{count}} selected tenants?",
+      "batchActivateTitle": "Confirm Batch Activate",
+      "batchActivateContent": "Are you sure you want to activate {{count}} selected tenants?"
+    },
+    "messages": {
+      "suspendSuccess": "Tenant suspended successfully",
+      "suspendError": "Failed to suspend tenant",
+      "activateSuccess": "Tenant activated successfully",
+      "activateError": "Failed to activate tenant",
+      "batchPartialError": "{{failed}} of {{total}} operations failed",
+      "invalidTenant": "Invalid tenant ID"
+    }
   },
   "stats": {
     "title": "Platform Statistics",

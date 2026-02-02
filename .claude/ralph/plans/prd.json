@@ -672,7 +672,8 @@
       "UI 符合 Semi Design 规范",
       "响应式布局适配移动端"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-013",

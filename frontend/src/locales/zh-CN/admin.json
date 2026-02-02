@@ -15,12 +15,13 @@
   "tenants": {
     "title": "租户管理",
     "name": "名称",
+    "email": "邮箱",
     "plan": "套餐",
     "status": "状态",
     "users": "用户数",
     "createdAt": "创建时间",
     "actions": "操作",
-    "search": "搜索租户...",
+    "searchPlaceholder": "搜索租户...",
     "create": "创建租户",
     "overview": "概览",
     "subscription": "订阅",
@@ -31,7 +32,45 @@
     "contactPhone": "联系电话",
     "usersPlaceholder": "用户管理即将推出...",
     "subscriptionPlaceholder": "订阅历史即将推出...",
-    "activityPlaceholder": "活动日志即将推出..."
+    "activityPlaceholder": "活动日志即将推出...",
+    "suspend": "暂停",
+    "activate": "激活",
+    "batchSuspend": "批量暂停",
+    "batchActivate": "批量激活",
+    "filter": {
+      "status": "状态",
+      "plan": "套餐",
+      "allStatus": "全部状态",
+      "allPlans": "全部套餐",
+      "active": "活跃",
+      "suspended": "已暂停",
+      "inactive": "未激活",
+      "trial": "试用中",
+      "free": "免费版",
+      "basic": "基础版",
+      "pro": "专业版",
+      "enterprise": "企业版"
+    },
+    "confirm": {
+      "suspendTitle": "确认暂停",
+      "suspendContent": "确定要暂停租户 \"{{name}}\" 吗？用户将无法访问系统。",
+      "suspendOk": "暂停",
+      "activateTitle": "确认激活",
+      "activateContent": "确定要激活租户 \"{{name}}\" 吗？",
+      "activateOk": "激活",
+      "batchSuspendTitle": "确认批量暂停",
+      "batchSuspendContent": "确定要暂停选中的 {{count}} 个租户吗？",
+      "batchActivateTitle": "确认批量激活",
+      "batchActivateContent": "确定要激活选中的 {{count}} 个租户吗？"
+    },
+    "messages": {
+      "suspendSuccess": "租户暂停成功",
+      "suspendError": "暂停租户失败",
+      "activateSuccess": "租户激活成功",
+      "activateError": "激活租户失败",
+      "batchPartialError": "{{total}} 个操作中有 {{failed}} 个失败",
+      "invalidTenant": "无效的租户 ID"
+    }
   },
   "stats": {
     "title": "平台统计",
