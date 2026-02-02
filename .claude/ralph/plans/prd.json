@@ -887,7 +887,8 @@
       "测试验证审计日志",
       "测试可在 CI 环境运行"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-021",

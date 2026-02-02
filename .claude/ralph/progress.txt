@@ -46694,3 +46694,60 @@ go test -cover ./internal/application/identity/...
 === Next Steps ===
 - E2E tests for admin API endpoints (P3-ADMIN-020)
 - Frontend admin module testing
+
+2026-02-02 - Task P3-ADMIN-020: Admin API Integration Tests
+
+=== Implementation Details ===
+- Created comprehensive integration test suite for Admin API endpoints
+- File: backend/tests/integration/admin_api_test.go
+- Test infrastructure:
+  - AdminTestServer with real PostgreSQL (testcontainers)
+  - testAdminAuthMiddleware for simulating JWT authentication
+  - SuperAdminRequest/RegularUserRequest/NoAuthRequest helpers
+
+- Test categories:
+  1. TestAdminAPI_TenantCRUD - Full CRUD operations (create, read, update, delete)
+  2. TestAdminAPI_StatusManagement - Suspend/activate tenants
+  3. TestAdminAPI_SubscriptionManagement - Plan changes, quota updates
+  4. TestAdminAPI_AuditLogs - Audit log recording and retrieval
+  5. TestAdminAPI_PermissionControl - Non-superadmin rejection (403)
+  6. TestAdminAPI_ValidationErrors - Input validation (400)
+  7. TestAdminAPI_DuplicateCode - Conflict handling (409)
+  8. TestAdminAPI_SystemTenantProtection - System tenant immutability
+  9. TestAdminAPI_TestIsolation - Database isolation between tests
+  10. TestAdminAPI_TrialTenantCreation - Trial tenant creation
+  11. TestAdminAPI_DirectServiceAccess - Direct service layer testing
+
+=== Bug Fixes During Implementation ===
+1. Fixed migration 000043_create_usage_metering.up.sql:
+   - Removed invalid WHERE clause in UNIQUE constraints
+   - Converted to partial unique indexes
+   - Removed NOW() from partial index predicate (not IMMUTABLE)
+
+2. Fixed migration 000045_create_usage_history.up.sql:
+   - Removed CURRENT_DATE from partial index (not IMMUTABLE)
+
+3. Created migration 000050_add_tenant_billing_suspension_columns.up/down.sql:
+   - Added missing columns: stripe_customer_id, stripe_subscription_id
+   - Added missing columns: suspension_reason, suspended_at, scheduled_reactivate_at
+   - These columns existed in GORM model but not in database
+
+4. Added error code mappings in dto/errors.go:
+   - CODE_EXISTS, NAME_EXISTS -> ERR_ALREADY_EXISTS (409)
+   - CANNOT_DELETE_SYSTEM_TENANT, CANNOT_SUSPEND_SYSTEM_TENANT -> ERR_FORBIDDEN (403)
+   - Various tenant validation errors
+
+=== Verification ===
+- All 11 admin test suites pass
+- Existing ProductAPI tests still pass
+- Total test coverage: 69 test cases passing
+- Tests use testcontainers for real PostgreSQL isolation
+
+=== Notes ===
+- Known behavior: trial_days + non-free plan results in active status
+  (SetPlan clears trial status when plan != free)
+- Feature flag integration tests had pre-existing issues (not related to this task)
+
+=== Next Steps ===
+- Consider fixing trial tenant behavior (P3-ADMIN-021?)
+- Add more edge case tests if needed

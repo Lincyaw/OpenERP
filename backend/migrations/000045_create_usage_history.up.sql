@@ -36,9 +36,8 @@ CREATE INDEX idx_usage_history_tenant_id ON usage_history(tenant_id);
 CREATE INDEX idx_usage_history_snapshot_date ON usage_history(snapshot_date);
 CREATE INDEX idx_usage_history_tenant_date_range ON usage_history(tenant_id, snapshot_date DESC);
 
--- Create partial index for recent data (last 90 days) for faster queries
-CREATE INDEX idx_usage_history_recent ON usage_history(tenant_id, snapshot_date)
-    WHERE snapshot_date > CURRENT_DATE - INTERVAL '90 days';
+-- Note: Partial index removed as CURRENT_DATE is not IMMUTABLE
+-- Application layer should filter for recent data instead
 
 -- Add comments for documentation
 COMMENT ON TABLE usage_history IS 'Daily usage snapshots for historical tracking and trend analysis';

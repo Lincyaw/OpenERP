@@ -175,6 +175,18 @@ var LegacyErrorCodeMapping = map[string]string{
 	"VALIDATION_ERROR":       ErrCodeValidation,
 	"BAD_REQUEST":            ErrCodeBadRequest,
 	"INTERNAL_ERROR":         ErrCodeInternal,
+	// Admin tenant domain errors
+	"CODE_EXISTS":                  ErrCodeAlreadyExists,
+	"NAME_EXISTS":                  ErrCodeAlreadyExists,
+	"TENANT_NOT_FOUND":             ErrCodeNotFound,
+	"SYSTEM_TENANT_PROTECTED":      ErrCodeForbidden,
+	"CANNOT_DELETE_SYSTEM_TENANT":  ErrCodeForbidden,
+	"CANNOT_SUSPEND_SYSTEM_TENANT": ErrCodeForbidden,
+	"SAME_PLAN":                    ErrCodeBusinessRule,
+	"INVALID_PLAN":                 ErrCodeInvalidInput,
+	"INVALID_TENANT_CODE":          ErrCodeInvalidInput,
+	"INVALID_TENANT_NAME":          ErrCodeInvalidInput,
+	"INVALID_CONTACT_EMAIL":        ErrCodeInvalidInput,
 	// Auto print rule domain errors
 	"INVALID_DOCUMENT_TYPE":         ErrCodeBusinessRule,
 	"INVALID_TRIGGER_EVENT":         ErrCodeBusinessRule,

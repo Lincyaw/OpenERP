@@ -44,9 +44,8 @@ CREATE INDEX idx_usage_records_tenant_type_period ON usage_records(tenant_id, us
 CREATE INDEX idx_usage_records_source ON usage_records(source_type, source_id);
 CREATE INDEX idx_usage_records_user_id ON usage_records(user_id) WHERE user_id IS NOT NULL;
 
--- Create partial index for recent records (last 90 days) for faster queries
-CREATE INDEX idx_usage_records_recent ON usage_records(tenant_id, usage_type, recorded_at)
-    WHERE recorded_at > NOW() - INTERVAL '90 days';
+-- Create composite index for recent record queries (filtered in application layer)
+CREATE INDEX idx_usage_records_recent ON usage_records(tenant_id, usage_type, recorded_at DESC);
 
 -- Add update trigger for updated_at
 CREATE TRIGGER trg_usage_records_updated_at
@@ -116,12 +115,17 @@ CREATE TABLE usage_quotas (
         soft_limit IS NULL OR
         quota_limit = -1 OR
         soft_limit < quota_limit
-    ),
+    )
 
-    -- Ensure unique quota per plan+type (for plan defaults) or tenant+type (for overrides)
-    CONSTRAINT uq_usage_quotas_plan_type UNIQUE (plan_id, usage_type) WHERE tenant_id IS NULL,
-    CONSTRAINT uq_usage_quotas_tenant_type UNIQUE (tenant_id, usage_type) WHERE tenant_id IS NOT NULL
+    -- Note: Partial unique constraints are created as indexes below
+    -- because PostgreSQL does not support WHERE clauses in UNIQUE constraints within CREATE TABLE
 );
+
+-- Partial unique indexes for conditional uniqueness
+-- Plan-level defaults: unique per plan+type when tenant_id IS NULL
+CREATE UNIQUE INDEX uq_usage_quotas_plan_type ON usage_quotas(plan_id, usage_type) WHERE tenant_id IS NULL;
+-- Tenant-level overrides: unique per tenant+type when tenant_id IS NOT NULL
+CREATE UNIQUE INDEX uq_usage_quotas_tenant_type ON usage_quotas(tenant_id, usage_type) WHERE tenant_id IS NOT NULL;
 
 -- Create indexes for usage_quotas
 CREATE INDEX idx_usage_quotas_plan_id ON usage_quotas(plan_id);
