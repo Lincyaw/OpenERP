@@ -589,7 +589,8 @@
       "可以查询批量操作进度",
       "所有操作记录审计日志"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-010",

@@ -74,6 +74,10 @@ type AdminTenantRepository interface {
 	// This method bypasses tenant isolation
 	FindByID(ctx context.Context, id uuid.UUID) (*Tenant, error)
 
+	// FindByIDs finds multiple tenants by their IDs
+	// This method bypasses tenant isolation
+	FindByIDs(ctx context.Context, ids []uuid.UUID) ([]Tenant, error)
+
 	// Count counts tenants matching the filter
 	// This method bypasses tenant isolation
 	Count(ctx context.Context, filter AdminTenantFilter) (int64, error)

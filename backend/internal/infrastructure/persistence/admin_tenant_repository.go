@@ -85,6 +85,26 @@ func (r *GormAdminTenantRepository) FindByID(ctx context.Context, id uuid.UUID) 
 	return model.ToDomain(), nil
 }
 
+// FindByIDs finds multiple tenants by their IDs
+func (r *GormAdminTenantRepository) FindByIDs(ctx context.Context, ids []uuid.UUID) ([]identity.Tenant, error) {
+	if len(ids) == 0 {
+		return []identity.Tenant{}, nil
+	}
+
+	var tenantModels []models.TenantModel
+	if err := r.db.WithContext(ctx).Where("id IN ?", ids).Find(&tenantModels).Error; err != nil {
+		return nil, err
+	}
+
+	// Convert to domain entities
+	tenants := make([]identity.Tenant, len(tenantModels))
+	for i, model := range tenantModels {
+		tenants[i] = *model.ToDomain()
+	}
+
+	return tenants, nil
+}
+
 // Count counts tenants matching the filter
 func (r *GormAdminTenantRepository) Count(ctx context.Context, filter identity.AdminTenantFilter) (int64, error) {
 	var count int64

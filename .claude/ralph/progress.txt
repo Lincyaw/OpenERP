@@ -47324,3 +47324,66 @@ Created comprehensive documentation and verified test coverage for the auto-prin
 - Consider adding more unit tests for auto_print_rule_service.go if needed
 - May add E2E tests when Playwright infrastructure supports printing flow
 - Could add CI/CD step to automatically generate and deploy API docs
+
+2026-02-02 - P3-ADMIN-009: Implement batch operations for tenant management
+
+=== Implementation Details ===
+- Created domain layer batch operation types in `backend/internal/domain/identity/batch_operation.go`:
+  - BatchOperationType: suspend, activate, change_plan, delete
+  - BatchOperationStatus: pending, confirmed, processing, completed, failed, cancelled
+  - BatchOperationItemStatus: pending, success, failed, skipped
+  - BatchOperation aggregate with state machine (pending -> confirmed -> processing -> completed/failed)
+  - MaxBatchSize constant (100 tenants)
+  - Full lifecycle methods: Confirm, StartProcessing, MarkItemSuccess/Failed/Skipped, Complete, Cancel
+  - Progress tracking with GetProgress() percentage calculation
+
+- Created batch operation repository interface in `backend/internal/domain/identity/batch_operation_repository.go`
+
+- Added FindByIDs method to AdminTenantRepository interface and GORM implementation
+
+- Created application service layer in `backend/internal/application/identity/admin_tenant_batch_service.go`:
+  - Preview methods: PreviewBatchSuspend, PreviewBatchActivate, PreviewBatchChangePlan, PreviewBatchDelete
+  - Execute methods: BatchSuspend, BatchActivate, BatchChangePlan, BatchDelete
+  - Smart validation: skips already-suspended tenants, system tenants, already-active tenants, etc.
+  - UUID deduplication to prevent double processing
+  - Comprehensive error handling per-item (partial failures handled gracefully)
+
+- Created HTTP handler layer:
+  - `backend/internal/interfaces/http/handler/admin_batch_handler.go` - 8 endpoints with swag annotations
+  - `backend/internal/interfaces/http/handler/admin_batch_dto.go` - Request/Response DTOs
+  - Routes: POST /admin/batch/{suspend,activate,change-plan,delete}/preview and POST /admin/batch/{suspend,activate,change-plan,delete}
+
+- Registered batch routes in RegisterAdminRoutes (admin_handler.go)
+
+Key Files Modified:
+  - backend/internal/domain/identity/batch_operation.go (NEW)
+  - backend/internal/domain/identity/batch_operation_repository.go (NEW)
+  - backend/internal/domain/identity/admin_tenant_repository.go (MODIFIED - added FindByIDs)
+  - backend/internal/application/identity/admin_tenant_batch_service.go (NEW)
+  - backend/internal/application/identity/admin_tenant_batch_service_test.go (NEW - 30 test cases)
+  - backend/internal/interfaces/http/handler/admin_batch_handler.go (NEW)
+  - backend/internal/interfaces/http/handler/admin_batch_dto.go (NEW)
+  - backend/internal/interfaces/http/handler/admin_handler.go (MODIFIED - batch route registration)
+  - backend/internal/infrastructure/persistence/admin_tenant_repository.go (MODIFIED - FindByIDs impl)
+  - backend/internal/application/identity/admin_tenant_service_test.go (MODIFIED - added FindByIDs to mock)
+
+=== Design Decisions ===
+- Synchronous execution: Batch operations execute synchronously rather than async (task queue), which is appropriate for the current scale (max 100 tenants). Can be evolved to async later.
+- Preview/Execute pattern: Each operation has a preview endpoint that shows which tenants will be affected and which will be skipped, supporting the two-step confirmation flow.
+- Graceful partial failures: If some tenants fail, operation continues for remaining tenants. Final status reflects whether any succeeded.
+- File separation: Kept batch logic in separate files to maintain <800 line file sizes.
+- Smart skipping: Tenants that can't be processed (wrong state, system tenant, etc.) are skipped rather than causing the entire batch to fail.
+
+=== Verification ===
+- All 30 new batch operation tests pass
+- All existing tests continue to pass (application, handler, middleware, persistence)
+- Full Go build succeeds with zero errors
+- Pre-existing telemetry test failures unrelated to changes (needs running OTEL collector)
+
+=== Notes ===
+- The batch operations execute synchronously. For very large batches near the 100-tenant limit, future enhancement could add async execution with job queue.
+- Audit logging is handled by the individual operation methods (SuspendTenantWithReason, ActivateTenant, ChangePlan, DeleteTenant) that are called per-item.
+
+=== Next Steps ===
+- Consider adding async batch execution if scale demands it
+- Frontend batch operation UI (select tenants → preview → confirm → execute)

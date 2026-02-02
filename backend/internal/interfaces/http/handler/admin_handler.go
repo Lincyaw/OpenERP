@@ -685,6 +685,9 @@ func RegisterAdminRoutes(router *gin.RouterGroup, handler *AdminHandler) {
 	// Tenant statistics
 	tenants.GET("/:id/stats", handler.GetTenantStats)
 
+	// Batch operations
+	RegisterAdminBatchRoutes(admin, handler)
+
 	// Platform statistics
 	admin.GET("/stats", handler.GetPlatformStats)
 	admin.GET("/stats/growth", handler.GetTenantGrowth)

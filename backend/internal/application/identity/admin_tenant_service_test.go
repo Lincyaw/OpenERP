@@ -655,6 +655,14 @@ func (m *MockAdminTenantRepository) FindByID(ctx context.Context, id uuid.UUID) 
 	return args.Get(0).(*identity.Tenant), args.Error(1)
 }
 
+func (m *MockAdminTenantRepository) FindByIDs(ctx context.Context, ids []uuid.UUID) ([]identity.Tenant, error) {
+	args := m.Called(ctx, ids)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]identity.Tenant), args.Error(1)
+}
+
 func (m *MockAdminTenantRepository) Count(ctx context.Context, filter identity.AdminTenantFilter) (int64, error) {
 	args := m.Called(ctx, filter)
 	return args.Get(0).(int64), args.Error(1)
