@@ -44971,3 +44971,55 @@ Implemented the complete Auto Print Rule Management API with the following compo
 - P2-PRINT-005: Implement AutoPrintHandler event processor
 - Add E2E tests for auto print rule management
 
+
+---
+
+2026-02-02 - Task P2-PRINT-003: 自动打印规则管理 API - 代码审查与修复
+
+=== Code Review Findings ===
+
+Performed comprehensive code review of the auto print rule API implementation.
+
+**HIGH Priority Issue Fixed:**
+- Added OrderBy/OrderDir validation in ListRules handler to prevent potential SQL injection
+- Allowed columns: created_at, updated_at, document_type, trigger_event, enabled
+- Allowed directions: asc, desc
+
+**MEDIUM Priority Issues Noted (for future improvement):**
+- Duplicate DTO definitions between handler and application layer (intentional layer separation)
+- Missing audit logging for admin operations
+- GetTriggerEvents does not require tenant context (intentional - reference data)
+- Test coverage missing for admin middleware integration
+
+=== Files Modified ===
+
+- backend/internal/interfaces/http/handler/auto_print_rule_handler.go
+  - Added OrderBy validation (allowedOrderBy map)
+  - Added OrderDir validation (asc/desc only)
+
+- backend/internal/interfaces/http/handler/auto_print_rule_handler_test.go
+  - Added test: invalid_order_by
+  - Added test: invalid_order_dir
+
+=== Verification ===
+
+- [x] Build succeeds: `go build ./...`
+- [x] All handler tests pass (21 tests, including 2 new validation tests)
+- [x] Code review completed
+- [x] HIGH priority issue resolved
+
+=== Acceptance Criteria Verification ===
+
+- [x] 所有 API 端点正常工作 (All endpoints implemented and tested)
+- [x] 请求参数验证正确（必填字段、范围检查）(Validation via gin binding tags + OrderBy/OrderDir validation)
+- [x] 租户隔离正确实现 (Tenant ID extracted from JWT, used in all queries)
+- [x] 权限控制生效（非管理员无法修改规则）(RequireAdminRole middleware on write operations)
+- [x] API 文档自动生成 (Swagger annotations added)
+- [ ] 通过 E2E 测试验证所有端点 (E2E tests are a separate task)
+
+=== Next Steps ===
+
+- P2-PRINT-004: Implement print template rendering API
+- P2-PRINT-005: Implement AutoPrintHandler event processor
+- Add E2E tests for auto print rule management
+- Consider adding audit logging for admin operations

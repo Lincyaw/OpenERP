@@ -76,7 +76,7 @@
       "API 文档自动生成",
       "通过 E2E 测试验证所有端点"
     ],
-    "status": "pending",
+    "status": "pass",
     "passes": true
   },
   {

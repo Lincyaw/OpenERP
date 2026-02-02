@@ -217,6 +217,25 @@ func (h *AutoPrintRuleHandler) ListRules(c *gin.Context) {
 		req.PageSize = 100
 	}
 
+	// Validate OrderBy to prevent SQL injection
+	allowedOrderBy := map[string]bool{
+		"created_at":    true,
+		"updated_at":    true,
+		"document_type": true,
+		"trigger_event": true,
+		"enabled":       true,
+	}
+	if req.OrderBy != "" && !allowedOrderBy[req.OrderBy] {
+		h.BadRequest(c, "Invalid order_by field")
+		return
+	}
+
+	// Validate OrderDir
+	if req.OrderDir != "" && req.OrderDir != "asc" && req.OrderDir != "desc" {
+		h.BadRequest(c, "Invalid order_dir field, must be 'asc' or 'desc'")
+		return
+	}
+
 	result, err := h.service.ListRules(c.Request.Context(), tenantID, req)
 	if err != nil {
 		h.HandleDomainError(c, err)

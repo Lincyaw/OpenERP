@@ -361,6 +361,32 @@ func TestAutoPrintRuleHandler_ListRules(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 		mockRepo.AssertExpectations(t)
 	})
+
+	t.Run("invalid order_by", func(t *testing.T) {
+		mockRepo := new(MockAutoPrintRuleRepository)
+		service := printingapp.NewAutoPrintRuleService(mockRepo)
+		handler := NewAutoPrintRuleHandler(service)
+		router := setupAutoPrintRuleTestRouter(handler)
+
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/printing/auto-rules?order_by=invalid_column", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("invalid order_dir", func(t *testing.T) {
+		mockRepo := new(MockAutoPrintRuleRepository)
+		service := printingapp.NewAutoPrintRuleService(mockRepo)
+		handler := NewAutoPrintRuleHandler(service)
+		router := setupAutoPrintRuleTestRouter(handler)
+
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/printing/auto-rules?order_dir=invalid", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
 }
 
 func TestAutoPrintRuleHandler_UpdateRule(t *testing.T) {
