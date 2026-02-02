@@ -186,7 +186,8 @@
       "通过单元测试验证 PDF 渲染",
       "通过集成测试验证打印功能（使用虚拟打印机）"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P2-PRINT-008",

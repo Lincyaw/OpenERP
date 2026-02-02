@@ -12,6 +12,7 @@ import (
 
 	"github.com/example/erp/tools/print-service/internal/client"
 	"github.com/example/erp/tools/print-service/internal/config"
+	"github.com/example/erp/tools/print-service/internal/printer"
 	"go.uber.org/zap"
 )
 
@@ -28,29 +29,32 @@ const (
 
 // HealthStatus represents the health check response.
 type HealthStatus struct {
-	Status      ServiceStatus `json:"status"`
-	Version     string        `json:"version"`
-	Uptime      string        `json:"uptime"`
-	WebSocket   string        `json:"websocket"`
-	API         string        `json:"api"`
-	LastEvent   string        `json:"last_event,omitempty"`
-	EventsCount int64         `json:"events_count"`
+	Status       ServiceStatus `json:"status"`
+	Version      string        `json:"version"`
+	Uptime       string        `json:"uptime"`
+	WebSocket    string        `json:"websocket"`
+	API          string        `json:"api"`
+	Printer      string        `json:"printer"`
+	LastEvent    string        `json:"last_event,omitempty"`
+	EventsCount  int64         `json:"events_count"`
+	PrinterCount int           `json:"printer_count,omitempty"`
 }
 
 // PrintService is the main service that coordinates event listening and printing.
 type PrintService struct {
-	config      *config.Config
-	wsClient    *client.WSClient
-	apiClient   *client.APIClient
-	logger      *zap.Logger
-	ctx         context.Context
-	cancel      context.CancelFunc
-	status      atomic.Value // ServiceStatus
-	startTime   time.Time
-	eventsCount atomic.Int64
-	lastEvent   atomic.Value // time.Time
-	healthSrv   *http.Server
-	wg          sync.WaitGroup
+	config         *config.Config
+	wsClient       *client.WSClient
+	apiClient      *client.APIClient
+	printerManager *printer.Manager
+	logger         *zap.Logger
+	ctx            context.Context
+	cancel         context.CancelFunc
+	status         atomic.Value // ServiceStatus
+	startTime      time.Time
+	eventsCount    atomic.Int64
+	lastEvent      atomic.Value // time.Time
+	healthSrv      *http.Server
+	wg             sync.WaitGroup
 }
 
 // NewPrintService creates a new print service.
@@ -81,13 +85,29 @@ func NewPrintService(cfg *config.Config, logger *zap.Logger) *PrintService {
 		Logger:               logger,
 	})
 
+	// Create printer manager
+	var printerManager *printer.Manager
+	printerMgr, err := printer.NewManager(printer.ManagerConfig{
+		Protocol:       printer.Protocol(cfg.Printing.Protocol),
+		IPPServer:      cfg.Printing.IPPServer,
+		CUPSServer:     cfg.Printing.CUPSServer,
+		DefaultPrinter: cfg.Printing.DefaultPrinter,
+		Logger:         logger,
+	})
+	if err != nil {
+		logger.Warn("Failed to create printer manager", zap.Error(err))
+	} else {
+		printerManager = printerMgr
+	}
+
 	svc := &PrintService{
-		config:    cfg,
-		wsClient:  wsClient,
-		apiClient: apiClient,
-		logger:    logger,
-		ctx:       ctx,
-		cancel:    cancel,
+		config:         cfg,
+		wsClient:       wsClient,
+		apiClient:      apiClient,
+		printerManager: printerManager,
+		logger:         logger,
+		ctx:            ctx,
+		cancel:         cancel,
 	}
 
 	svc.status.Store(StatusStopped)
@@ -140,6 +160,13 @@ func (s *PrintService) Stop() {
 
 	// Stop WebSocket client
 	s.wsClient.Stop()
+
+	// Close printer manager
+	if s.printerManager != nil {
+		if err := s.printerManager.Close(); err != nil {
+			s.logger.Warn("Printer manager close error", zap.Error(err))
+		}
+	}
 
 	// Stop health server
 	if s.healthSrv != nil {
@@ -279,7 +306,6 @@ func (s *PrintService) downloadAndPrint(ctx context.Context, job *client.PrintJo
 }
 
 // print sends a PDF to the printer.
-// This is a placeholder implementation - actual printing logic depends on the protocol.
 func (s *PrintService) print(ctx context.Context, job *client.PrintJob, pdfData []byte) error {
 	printerName := job.PrinterName
 	if printerName == "" {
@@ -297,20 +323,36 @@ func (s *PrintService) print(ctx context.Context, job *client.PrintJob, pdfData 
 		zap.Int("copies", copies),
 		zap.String("protocol", s.config.Printing.Protocol))
 
-	// TODO: Implement actual printing based on protocol
-	// For now, just log the action
-	switch s.config.Printing.Protocol {
-	case "ipp":
-		s.logger.Info("Would send to IPP server",
-			zap.String("server", s.config.Printing.IPPServer))
-	case "cups":
-		s.logger.Info("Would send to CUPS server",
-			zap.String("server", s.config.Printing.CUPSServer))
-	case "raw":
-		s.logger.Info("Would send raw data to printer")
-	case "windows":
-		s.logger.Info("Would use Windows printing API")
+	// Check if printer manager is available
+	if s.printerManager == nil {
+		s.logger.Warn("Printer manager not available, skipping print")
+		return fmt.Errorf("printer manager not available")
 	}
+
+	if !s.printerManager.IsAvailable() {
+		s.logger.Warn("Printer backend not available, skipping print")
+		return fmt.Errorf("printer backend not available")
+	}
+
+	// Build print options
+	opts := printer.DefaultPrintOptions()
+	opts.Copies = copies
+	opts.JobName = fmt.Sprintf("ERP-%s-%s", job.DocumentType, job.ID)
+
+	// Send to printer
+	printJobID, err := s.printerManager.Print(ctx, printerName, pdfData, opts)
+	if err != nil {
+		s.logger.Error("Failed to send to printer",
+			zap.String("job_id", job.ID),
+			zap.String("printer", printerName),
+			zap.Error(err))
+		return err
+	}
+
+	s.logger.Info("Print job submitted successfully",
+		zap.String("job_id", job.ID),
+		zap.Int("print_job_id", printJobID),
+		zap.String("printer", printerName))
 
 	return nil
 }
@@ -361,6 +403,17 @@ func (s *PrintService) healthHandler(w http.ResponseWriter, r *http.Request) {
 		apiStatus = "unhealthy"
 	}
 
+	// Check printer status
+	printerStatus := "unavailable"
+	printerCount := 0
+	if s.printerManager != nil && s.printerManager.IsAvailable() {
+		printerStatus = "available"
+		// Try to get printer count
+		if printers, err := s.printerManager.ListPrinters(ctx); err == nil {
+			printerCount = len(printers)
+		}
+	}
+
 	// Get last event time
 	var lastEventStr string
 	if lastEvent := s.lastEvent.Load(); lastEvent != nil {
@@ -368,13 +421,15 @@ func (s *PrintService) healthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	health := HealthStatus{
-		Status:      status,
-		Version:     "1.0.0",
-		Uptime:      time.Since(s.startTime).String(),
-		WebSocket:   wsStatus,
-		API:         apiStatus,
-		LastEvent:   lastEventStr,
-		EventsCount: s.eventsCount.Load(),
+		Status:       status,
+		Version:      "1.0.0",
+		Uptime:       time.Since(s.startTime).String(),
+		WebSocket:    wsStatus,
+		API:          apiStatus,
+		Printer:      printerStatus,
+		LastEvent:    lastEventStr,
+		EventsCount:  s.eventsCount.Load(),
+		PrinterCount: printerCount,
 	}
 
 	// Determine HTTP status code
@@ -396,4 +451,9 @@ func (s *PrintService) GetAPIClient() *client.APIClient {
 // GetWSClient returns the WebSocket client for external use.
 func (s *PrintService) GetWSClient() *client.WSClient {
 	return s.wsClient
+}
+
+// GetPrinterManager returns the printer manager for external use.
+func (s *PrintService) GetPrinterManager() *printer.Manager {
+	return s.printerManager
 }
