@@ -835,7 +835,8 @@
       "请求缓存减少重复请求",
       "TypeScript 类型正确"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-019",

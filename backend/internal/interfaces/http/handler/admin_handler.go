@@ -58,11 +58,11 @@ func (h *AdminHandler) getAdminAuditContext(c *gin.Context) appIdentity.AuditCon
 // @Param       plan          query    string  false  "Filter by plan" Enums(free, basic, pro, enterprise)
 // @Param       order_by      query    string  false  "Sort by field" Enums(name, code, status, plan, created_at)
 // @Param       order_dir     query    string  false  "Sort direction" Enums(asc, desc)
-// @Success     200           {object} dto.SuccessResponse[AdminTenantListResponse]
-// @Failure     400           {object} dto.ErrorResponse
-// @Failure     401           {object} dto.ErrorResponse
-// @Failure     403           {object} dto.ErrorResponse
-// @Failure     500           {object} dto.ErrorResponse
+// @Success     200           {object} APIResponse[AdminTenantListResponse]
+// @Failure     400           {object} ErrorResponse
+// @Failure     401           {object} ErrorResponse
+// @Failure     403           {object} ErrorResponse
+// @Failure     500           {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/tenants [get]
 func (h *AdminHandler) ListTenants(c *gin.Context) {
@@ -118,13 +118,13 @@ func (h *AdminHandler) ListTenants(c *gin.Context) {
 // @Accept      json
 // @Produce     json
 // @Param       request body     AdminCreateTenantRequest true "Tenant creation request"
-// @Success     201     {object} dto.SuccessResponse[AdminTenantResponse]
-// @Failure     400     {object} dto.ErrorResponse
-// @Failure     401     {object} dto.ErrorResponse
-// @Failure     403     {object} dto.ErrorResponse
-// @Failure     409     {object} dto.ErrorResponse
-// @Failure     422     {object} dto.ErrorResponse
-// @Failure     500     {object} dto.ErrorResponse
+// @Success     201     {object} APIResponse[AdminTenantResponse]
+// @Failure     400     {object} ErrorResponse
+// @Failure     401     {object} ErrorResponse
+// @Failure     403     {object} ErrorResponse
+// @Failure     409     {object} ErrorResponse
+// @Failure     422     {object} ErrorResponse
+// @Failure     500     {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/tenants [post]
 func (h *AdminHandler) CreateTenant(c *gin.Context) {
@@ -168,12 +168,12 @@ func (h *AdminHandler) CreateTenant(c *gin.Context) {
 // @Tags        admin-tenants
 // @Produce     json
 // @Param       id   path     string true "Tenant ID" format(uuid)
-// @Success     200  {object} dto.SuccessResponse[AdminTenantResponse]
-// @Failure     400  {object} dto.ErrorResponse
-// @Failure     401  {object} dto.ErrorResponse
-// @Failure     403  {object} dto.ErrorResponse
-// @Failure     404  {object} dto.ErrorResponse
-// @Failure     500  {object} dto.ErrorResponse
+// @Success     200  {object} APIResponse[AdminTenantResponse]
+// @Failure     400  {object} ErrorResponse
+// @Failure     401  {object} ErrorResponse
+// @Failure     403  {object} ErrorResponse
+// @Failure     404  {object} ErrorResponse
+// @Failure     500  {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/tenants/{id} [get]
 func (h *AdminHandler) GetTenant(c *gin.Context) {
@@ -204,13 +204,13 @@ func (h *AdminHandler) GetTenant(c *gin.Context) {
 // @Produce     json
 // @Param       id      path     string                   true "Tenant ID" format(uuid)
 // @Param       request body     AdminUpdateTenantRequest true "Tenant update request"
-// @Success     200     {object} dto.SuccessResponse[AdminTenantResponse]
-// @Failure     400     {object} dto.ErrorResponse
-// @Failure     401     {object} dto.ErrorResponse
-// @Failure     403     {object} dto.ErrorResponse
-// @Failure     404     {object} dto.ErrorResponse
-// @Failure     422     {object} dto.ErrorResponse
-// @Failure     500     {object} dto.ErrorResponse
+// @Success     200     {object} APIResponse[AdminTenantResponse]
+// @Failure     400     {object} ErrorResponse
+// @Failure     401     {object} ErrorResponse
+// @Failure     403     {object} ErrorResponse
+// @Failure     404     {object} ErrorResponse
+// @Failure     422     {object} ErrorResponse
+// @Failure     500     {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/tenants/{id} [put]
 func (h *AdminHandler) UpdateTenant(c *gin.Context) {
@@ -260,13 +260,13 @@ func (h *AdminHandler) UpdateTenant(c *gin.Context) {
 // @Tags        admin-tenants
 // @Produce     json
 // @Param       id   path     string true "Tenant ID" format(uuid)
-// @Success     200  {object} dto.SuccessResponse[dto.MessageResponse]
-// @Failure     400  {object} dto.ErrorResponse
-// @Failure     401  {object} dto.ErrorResponse
-// @Failure     403  {object} dto.ErrorResponse
-// @Failure     404  {object} dto.ErrorResponse
-// @Failure     422  {object} dto.ErrorResponse
-// @Failure     500  {object} dto.ErrorResponse
+// @Success     200  {object} APIResponse[MessageResponse]
+// @Failure     400  {object} ErrorResponse
+// @Failure     401  {object} ErrorResponse
+// @Failure     403  {object} ErrorResponse
+// @Failure     404  {object} ErrorResponse
+// @Failure     422  {object} ErrorResponse
+// @Failure     500  {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/tenants/{id} [delete]
 func (h *AdminHandler) DeleteTenant(c *gin.Context) {
@@ -303,13 +303,13 @@ func (h *AdminHandler) DeleteTenant(c *gin.Context) {
 // @Produce     json
 // @Param       id      path     string                true "Tenant ID" format(uuid)
 // @Param       request body     SuspendTenantRequest  false "Suspension details"
-// @Success     200     {object} dto.SuccessResponse[AdminTenantResponse]
-// @Failure     400     {object} dto.ErrorResponse
-// @Failure     401     {object} dto.ErrorResponse
-// @Failure     403     {object} dto.ErrorResponse
-// @Failure     404     {object} dto.ErrorResponse
-// @Failure     422     {object} dto.ErrorResponse
-// @Failure     500     {object} dto.ErrorResponse
+// @Success     200     {object} APIResponse[AdminTenantResponse]
+// @Failure     400     {object} ErrorResponse
+// @Failure     401     {object} ErrorResponse
+// @Failure     403     {object} ErrorResponse
+// @Failure     404     {object} ErrorResponse
+// @Failure     422     {object} ErrorResponse
+// @Failure     500     {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/tenants/{id}/suspend [post]
 func (h *AdminHandler) SuspendTenant(c *gin.Context) {
@@ -352,13 +352,13 @@ func (h *AdminHandler) SuspendTenant(c *gin.Context) {
 // @Tags        admin-tenants
 // @Produce     json
 // @Param       id   path     string true "Tenant ID" format(uuid)
-// @Success     200  {object} dto.SuccessResponse[AdminTenantResponse]
-// @Failure     400  {object} dto.ErrorResponse
-// @Failure     401  {object} dto.ErrorResponse
-// @Failure     403  {object} dto.ErrorResponse
-// @Failure     404  {object} dto.ErrorResponse
-// @Failure     422  {object} dto.ErrorResponse
-// @Failure     500  {object} dto.ErrorResponse
+// @Success     200  {object} APIResponse[AdminTenantResponse]
+// @Failure     400  {object} ErrorResponse
+// @Failure     401  {object} ErrorResponse
+// @Failure     403  {object} ErrorResponse
+// @Failure     404  {object} ErrorResponse
+// @Failure     422  {object} ErrorResponse
+// @Failure     500  {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/tenants/{id}/activate [post]
 func (h *AdminHandler) ActivateTenant(c *gin.Context) {
@@ -394,12 +394,12 @@ func (h *AdminHandler) ActivateTenant(c *gin.Context) {
 // @Tags        admin-tenants
 // @Produce     json
 // @Param       id   path     string true "Tenant ID" format(uuid)
-// @Success     200  {object} dto.SuccessResponse[TenantUsageStatsResponse]
-// @Failure     400  {object} dto.ErrorResponse
-// @Failure     401  {object} dto.ErrorResponse
-// @Failure     403  {object} dto.ErrorResponse
-// @Failure     404  {object} dto.ErrorResponse
-// @Failure     500  {object} dto.ErrorResponse
+// @Success     200  {object} APIResponse[TenantUsageStatsResponse]
+// @Failure     400  {object} ErrorResponse
+// @Failure     401  {object} ErrorResponse
+// @Failure     403  {object} ErrorResponse
+// @Failure     404  {object} ErrorResponse
+// @Failure     500  {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/tenants/{id}/stats [get]
 func (h *AdminHandler) GetTenantStats(c *gin.Context) {
@@ -446,10 +446,10 @@ func (h *AdminHandler) GetTenantStats(c *gin.Context) {
 // @Description Get aggregated statistics across all tenants
 // @Tags        admin-stats
 // @Produce     json
-// @Success     200  {object} dto.SuccessResponse[PlatformStatsResponse]
-// @Failure     401  {object} dto.ErrorResponse
-// @Failure     403  {object} dto.ErrorResponse
-// @Failure     500  {object} dto.ErrorResponse
+// @Success     200  {object} APIResponse[PlatformStatsResponse]
+// @Failure     401  {object} ErrorResponse
+// @Failure     403  {object} ErrorResponse
+// @Failure     500  {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/stats [get]
 func (h *AdminHandler) GetPlatformStats(c *gin.Context) {
@@ -486,11 +486,11 @@ func (h *AdminHandler) GetPlatformStats(c *gin.Context) {
 // @Produce     json
 // @Param       period query    string false "Period type" Enums(daily, weekly, monthly) default(daily)
 // @Param       days   query    int    false "Number of days to look back" default(30) maximum(365)
-// @Success     200    {object} dto.SuccessResponse[TenantGrowthTrendResponse]
-// @Failure     400    {object} dto.ErrorResponse
-// @Failure     401    {object} dto.ErrorResponse
-// @Failure     403    {object} dto.ErrorResponse
-// @Failure     500    {object} dto.ErrorResponse
+// @Success     200    {object} APIResponse[TenantGrowthTrendResponse]
+// @Failure     400    {object} ErrorResponse
+// @Failure     401    {object} ErrorResponse
+// @Failure     403    {object} ErrorResponse
+// @Failure     500    {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/stats/growth [get]
 func (h *AdminHandler) GetTenantGrowth(c *gin.Context) {
@@ -562,11 +562,11 @@ func (h *AdminHandler) GetTenantGrowth(c *gin.Context) {
 // @Param       end_time      query    string  false  "Filter by end time" format(date-time)
 // @Param       sort_by       query    string  false  "Sort by field" Enums(created_at, action, target_type)
 // @Param       sort_order    query    string  false  "Sort order" Enums(asc, desc)
-// @Success     200           {object} dto.SuccessResponse[AdminAuditLogListResponse]
-// @Failure     400           {object} dto.ErrorResponse
-// @Failure     401           {object} dto.ErrorResponse
-// @Failure     403           {object} dto.ErrorResponse
-// @Failure     500           {object} dto.ErrorResponse
+// @Success     200           {object} APIResponse[AdminAuditLogListResponse]
+// @Failure     400           {object} ErrorResponse
+// @Failure     401           {object} ErrorResponse
+// @Failure     403           {object} ErrorResponse
+// @Failure     500           {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/audit-logs [get]
 func (h *AdminHandler) ListAuditLogs(c *gin.Context) {
@@ -706,13 +706,13 @@ func RegisterAdminRoutes(router *gin.RouterGroup, handler *AdminHandler) {
 // @Produce     json
 // @Param       id      path     string            true  "Tenant ID" format(uuid)
 // @Param       request body     ChangePlanRequest true  "Plan change request"
-// @Success     200     {object} dto.SuccessResponse[ChangePlanResponse]
-// @Failure     400     {object} dto.ErrorResponse
-// @Failure     401     {object} dto.ErrorResponse
-// @Failure     403     {object} dto.ErrorResponse
-// @Failure     404     {object} dto.ErrorResponse
-// @Failure     422     {object} dto.ErrorResponse
-// @Failure     500     {object} dto.ErrorResponse
+// @Success     200     {object} APIResponse[ChangePlanResponse]
+// @Failure     400     {object} ErrorResponse
+// @Failure     401     {object} ErrorResponse
+// @Failure     403     {object} ErrorResponse
+// @Failure     404     {object} ErrorResponse
+// @Failure     422     {object} ErrorResponse
+// @Failure     500     {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/tenants/{id}/plan [put]
 func (h *AdminHandler) ChangePlan(c *gin.Context) {
@@ -769,13 +769,13 @@ func (h *AdminHandler) ChangePlan(c *gin.Context) {
 // @Produce     json
 // @Param       id      path     string             true  "Tenant ID" format(uuid)
 // @Param       request body     UpdateQuotaRequest true  "Quota update request"
-// @Success     200     {object} dto.SuccessResponse[AdminTenantResponse]
-// @Failure     400     {object} dto.ErrorResponse
-// @Failure     401     {object} dto.ErrorResponse
-// @Failure     403     {object} dto.ErrorResponse
-// @Failure     404     {object} dto.ErrorResponse
-// @Failure     422     {object} dto.ErrorResponse
-// @Failure     500     {object} dto.ErrorResponse
+// @Success     200     {object} APIResponse[AdminTenantResponse]
+// @Failure     400     {object} ErrorResponse
+// @Failure     401     {object} ErrorResponse
+// @Failure     403     {object} ErrorResponse
+// @Failure     404     {object} ErrorResponse
+// @Failure     422     {object} ErrorResponse
+// @Failure     500     {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/tenants/{id}/quota [put]
 func (h *AdminHandler) UpdateQuota(c *gin.Context) {
@@ -826,12 +826,12 @@ func (h *AdminHandler) UpdateQuota(c *gin.Context) {
 // @Param       page        query    int     false  "Page number" default(1)
 // @Param       page_size   query    int     false  "Items per page" default(20) maximum(100)
 // @Param       change_type query    string  false  "Filter by change type" Enums(plan_upgrade, plan_downgrade, quota_update)
-// @Success     200         {object} dto.SuccessResponse[SubscriptionHistoryListResponse]
-// @Failure     400         {object} dto.ErrorResponse
-// @Failure     401         {object} dto.ErrorResponse
-// @Failure     403         {object} dto.ErrorResponse
-// @Failure     404         {object} dto.ErrorResponse
-// @Failure     500         {object} dto.ErrorResponse
+// @Success     200         {object} APIResponse[SubscriptionHistoryListResponse]
+// @Failure     400         {object} ErrorResponse
+// @Failure     401         {object} ErrorResponse
+// @Failure     403         {object} ErrorResponse
+// @Failure     404         {object} ErrorResponse
+// @Failure     500         {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/tenants/{id}/subscription-history [get]
 func (h *AdminHandler) GetSubscriptionHistory(c *gin.Context) {
@@ -889,13 +889,13 @@ func (h *AdminHandler) GetSubscriptionHistory(c *gin.Context) {
 // @Tags        admin-tenants
 // @Produce     json
 // @Param       id   path     string  true  "Tenant ID" format(uuid)
-// @Success     200  {object} dto.SuccessResponse[AdminTenantResponse]
-// @Failure     400  {object} dto.ErrorResponse
-// @Failure     401  {object} dto.ErrorResponse
-// @Failure     403  {object} dto.ErrorResponse
-// @Failure     404  {object} dto.ErrorResponse
-// @Failure     422  {object} dto.ErrorResponse
-// @Failure     500  {object} dto.ErrorResponse
+// @Success     200  {object} APIResponse[AdminTenantResponse]
+// @Failure     400  {object} ErrorResponse
+// @Failure     401  {object} ErrorResponse
+// @Failure     403  {object} ErrorResponse
+// @Failure     404  {object} ErrorResponse
+// @Failure     422  {object} ErrorResponse
+// @Failure     500  {object} ErrorResponse
 // @Security    BearerAuth
 // @Router      /admin/tenants/{id}/scheduled-plan [delete]
 func (h *AdminHandler) CancelScheduledPlanChange(c *gin.Context) {

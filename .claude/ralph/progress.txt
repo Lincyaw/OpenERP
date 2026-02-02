@@ -46529,3 +46529,68 @@ Key files modified:
 - Implement actual usage API for accurate quota display
 - Add unit tests for modal components
 - Consider E2E tests for modal workflows
+
+2026-02-02 - Task P3-ADMIN-018: Implement Frontend API Client and State Management
+
+=== Implementation Details ===
+- Created `frontend/src/api/admin/admin.ts` with manual API functions for admin-specific endpoints:
+  - `getPlatformStats()` - Fetch platform-wide statistics
+  - `getTenantGrowthTrend()` - Fetch tenant growth trend data
+  - `getTenantUsageStats()` - Fetch tenant usage statistics
+  - `getAdminAuditLogs()` - Fetch admin audit logs with pagination/filtering
+  - Corresponding React Query hooks: `usePlatformStats`, `useTenantGrowthTrend`, `useTenantUsageStats`, `useAdminAuditLogs`
+
+- Created `frontend/src/store/adminStore.ts` - Zustand store for admin UI state:
+  - State: selectedTenantId, selectedTenantName, operationLoading, lastError
+  - Actions: selectTenant, clearSelection, setOperationLoading, setError, clearError, reset
+  - Selector hooks: useSelectedTenantId, useSelectedTenantName, useOperationLoading, useAdminError
+
+- Enhanced mutation hooks with optimistic updates and error rollback:
+  - `useCreateAdminTenant` - Create tenant
+  - `useUpdateAdminTenant` - Update tenant with optimistic update
+  - `useDeleteAdminTenant` - Delete tenant with optimistic removal
+  - `useSuspendAdminTenant` - Suspend tenant with optimistic status change
+  - `useActivateAdminTenant` - Activate tenant with optimistic status change
+  - `useChangePlanAdminTenant` - Change plan with optimistic update
+  - `useUpdateQuotaAdminTenant` - Update quota with optimistic config change
+
+- Created combined hook `useAdminOperations()` for comprehensive admin operations access
+
+- Fixed swagger annotations in backend admin handlers:
+  - Changed `dto.SuccessResponse` to `APIResponse` (handler package type)
+  - Changed `dto.ErrorResponse` to `ErrorResponse` (handler package type)
+  - Changed `dto.MessageResponse` to `MessageResponse` (handler package type)
+
+- Updated `frontend/src/store/index.ts` to export all admin store types and hooks
+
+=== Files Modified/Created ===
+- frontend/src/api/admin/admin.ts (NEW)
+- frontend/src/api/admin/index.ts (NEW)
+- frontend/src/store/adminStore.ts (NEW)
+- frontend/src/store/index.ts (MODIFIED)
+- backend/internal/interfaces/http/handler/admin_handler.go (MODIFIED)
+- backend/internal/interfaces/http/handler/admin_tenant_handler.go (MODIFIED)
+
+=== Verification ===
+- TypeScript type check: PASSED (npm run type-check)
+- Frontend build: PASSED (npm run build)
+- Backend build: PASSED (go build ./...)
+
+=== Design Decisions ===
+1. Used React Query for server state management (follows existing codebase pattern)
+2. Zustand store only manages UI state (selectedTenant, loading states, errors)
+3. Enhanced hooks wrap auto-generated orval hooks with optimistic updates
+4. Request caching handled by React Query's built-in cache with staleTime configuration
+5. Optimistic updates use React Query's setQueryData with rollback on error
+
+=== Notes ===
+- Swagger generation for admin endpoints still has issues due to pre-existing dto.ErrorResponse 
+  references in 40+ handler files. The swagger annotations in admin handlers were fixed,
+  but full swagger regeneration blocked by other files.
+- The existing tenant API hooks from orval generation provide most needed functionality
+- Platform stats and audit log endpoints require backend work to be fully functional
+
+=== Next Steps ===
+- When admin endpoints are needed in frontend pages, integrate the new hooks
+- Consider fixing all dto.ErrorResponse references across handlers for clean swagger generation
+- Stats and AuditLogs pages can be updated to use the new hooks when ready

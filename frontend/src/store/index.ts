@@ -54,3 +54,30 @@ export {
 
 // Store utilities
 export { createSelectors, createStoreWithSelectors } from './createStore'
+
+// Admin store
+export type { AdminState, AdminActions } from './adminStore'
+export {
+  useAdminStore,
+  useSelectedTenantId,
+  useSelectedTenantName,
+  useOperationLoading,
+  useAdminError,
+  // Enhanced hooks with optimistic updates
+  useAdminTenants,
+  useAdminTenant,
+  useAdminTenantStats,
+  useAdminPlatformStats,
+  useAdminGrowthTrend,
+  useAdminTenantUsage,
+  useAdminAuditLogs,
+  useCreateAdminTenant,
+  useUpdateAdminTenant,
+  useDeleteAdminTenant,
+  useSuspendAdminTenant,
+  useActivateAdminTenant,
+  useChangePlanAdminTenant,
+  useUpdateQuotaAdminTenant,
+  // Combined operations hook
+  useAdminOperations,
+} from './adminStore'
