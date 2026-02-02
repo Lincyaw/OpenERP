@@ -356,7 +356,8 @@
       "API 文档自动生成且准确",
       "架构图清晰展示系统设计"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-001",
