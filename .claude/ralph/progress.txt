@@ -47451,3 +47451,77 @@ Features implemented:
 - Consider adding unit tests for the StatsPage component with mocked API data
 - Could add data export functionality (CSV/PDF) for statistics
 - May want to add real-time auto-refresh with configurable interval
+
+2026-02-02 - P3-ADMIN-017: Implement Audit Logs Page
+
+=== Implementation Details ===
+Replaced placeholder AuditLogs.tsx with a full-featured audit log management page.
+
+Key file modified: frontend/src/pages/super-admin/AuditLogs.tsx
+
+Features implemented:
+1. **Audit log list** with Semi Design Table:
+   - Columns: Timestamp, Action (color-coded tag), Operator (copyable UUID), Target Type, Target ID
+   - 50 items per page with server-side pagination
+   - Expandable rows showing detailed old/new value comparison
+
+2. **Filtering**:
+   - By action type (18 audit actions: TENANT_CREATE, TENANT_SUSPEND, etc.)
+   - By target type (7 types: tenant, user, role, permission, subscription, quota, system_config)
+   - By date/time range (RangePicker with datetime precision)
+
+3. **Search**:
+   - Search by Target ID (maps to API's target_id parameter)
+
+4. **Detail expansion** (old_value / new_value comparison):
+   - Side-by-side card layout showing old vs new values
+   - Changed values highlighted in red (old) and green (new)
+   - Metadata section showing IP address and User Agent
+   - Uses Semi Design Descriptions component
+
+5. **CSV Export**:
+   - Exports all columns including JSON-serialized old/new values
+   - Proper CSV escaping with BOM for Excel compatibility
+   - Try-catch with user-friendly error Toast
+
+6. **Auto-refresh** (optional):
+   - Checkbox to enable/disable auto-refresh every 30 seconds
+   - Uses ref-based interval to avoid stale closures when filters change
+   - Visual indicator when auto-refresh is active
+
+7. **Error handling**:
+   - Loading state with Spin component
+   - Error state with retry button
+   - Empty state with context-aware message (filters active vs no data)
+
+=== Technical Decisions ===
+- Used existing `useAdminAuditLogs` hook from `@/api/admin` (React Query)
+- Used `queryParamsRef` pattern to avoid interval recreation on filter changes
+- AUTO_REFRESH_INTERVAL_MS named constant (30000ms)
+- Followed established patterns from Stats.tsx and TenantList.tsx
+- Used `as unknown as` pattern for API response extraction (consistent with codebase)
+- Added aria-label to expand/collapse buttons for accessibility
+- Container layout component for consistent page structure
+
+=== Verification ===
+- TypeScript type check (tsc --noEmit): PASSED
+- ESLint/Prettier: PASSED
+- Code review: Addressed all CRITICAL and HIGH issues
+
+=== Acceptance Criteria Met ===
+- [x] 审计日志列表正确显示所有日志 (table with all columns)
+- [x] 分页功能正常工作 (50/page, server-side pagination)
+- [x] 过滤和搜索功能正常工作 (action, target type, date range, target ID search)
+- [x] 日志详情正确显示变更对比 (expandable rows with diff)
+- [x] 导出功能生成正确的 CSV 文件 (CSV with BOM, proper escaping)
+- [x] UI 符合 Semi Design 规范 (all Semi UI components)
+
+=== Notes ===
+- Route already registered at /super-admin/audit-logs
+- No backend changes needed - API endpoint already exists from P3-ADMIN-010
+- Auto-refresh is an optional feature enabled via checkbox
+
+=== Next Steps ===
+- Add unit tests for AuditLogsPage component
+- Consider adding admin_user_id search (currently only target_id)
+- Could add bulk actions (e.g., export selected logs)
