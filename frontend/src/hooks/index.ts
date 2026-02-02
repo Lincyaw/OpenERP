@@ -52,6 +52,17 @@ export {
 
 // Print hooks
 export { usePrint, ZOOM_LEVELS, type UsePrintOptions, type UsePrintReturn } from './usePrint'
+export {
+  usePrintServiceStatus,
+  DEFAULT_POLLING_INTERVAL,
+  DEFAULT_BASE_URL,
+  type PrintServiceStatus,
+  type PrinterInfo,
+  type PrintServiceHealthResponse,
+  type PrintersResponse,
+  type UsePrintServiceStatusOptions,
+  type UsePrintServiceStatusReturn,
+} from './usePrintServiceStatus'
 
 // Feature flag hooks
 export {

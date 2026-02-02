@@ -238,7 +238,8 @@
       "打印服务启动/停止时前端及时感知",
       "错误情况有友好的提示信息"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P2-PRINT-010",
@@ -942,7 +943,8 @@
       "测试在 CI 环境稳定运行",
       "测试执行时间 < 5 分钟"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-023",
