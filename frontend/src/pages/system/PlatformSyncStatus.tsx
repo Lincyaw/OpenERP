@@ -29,6 +29,7 @@ import {
 } from '@douyinfe/semi-icons'
 import type { ColumnProps } from '@douyinfe/semi-ui-19/lib/es/table'
 import { Container } from '@/components/common/layout'
+import { useFormatters } from '@/hooks/useFormatters'
 import './PlatformSyncStatus.css'
 
 const { Title, Text } = Typography
@@ -182,6 +183,7 @@ function generateMockPlatformSummaries(): PlatformSyncSummary[] {
  */
 export default function PlatformSyncStatusPage() {
   const { t } = useTranslation('system')
+  const { formatDateTime } = useFormatters()
 
   // State
   const [loading, setLoading] = useState(false)
@@ -266,9 +268,9 @@ export default function PlatformSyncStatusPage() {
       if (diff < 60000) return t('syncStatus.justNow')
       if (diff < 3600000) return t('syncStatus.minutesAgo', { count: Math.floor(diff / 60000) })
       if (diff < 86400000) return t('syncStatus.hoursAgo', { count: Math.floor(diff / 3600000) })
-      return date.toLocaleString()
+      return formatDateTime(dateStr)
     },
-    [t]
+    [t, formatDateTime]
   )
 
   /**
@@ -400,7 +402,7 @@ export default function PlatformSyncStatusPage() {
       title: t('syncStatus.columns.startedAt'),
       dataIndex: 'startedAt',
       width: 160,
-      render: (date: string) => new Date(date).toLocaleString(),
+      render: (date: string) => formatDateTime(date),
     },
     {
       title: t('syncStatus.columns.duration'),
@@ -484,7 +486,7 @@ export default function PlatformSyncStatusPage() {
                   {
                     key: t('syncStatus.fields.nextScheduledSync'),
                     value: summary.nextScheduledSync
-                      ? new Date(summary.nextScheduledSync).toLocaleString()
+                      ? formatDateTime(summary.nextScheduledSync)
                       : t('syncStatus.notScheduled'),
                   },
                   {
@@ -537,7 +539,15 @@ export default function PlatformSyncStatusPage() {
         </Card>
       )
     },
-    [syncing, t, getStatusTag, formatRelativeTime, handleManualSync, getPlatformName]
+    [
+      syncing,
+      t,
+      getStatusTag,
+      formatRelativeTime,
+      formatDateTime,
+      handleManualSync,
+      getPlatformName,
+    ]
   )
 
   /**
@@ -579,13 +589,11 @@ export default function PlatformSyncStatusPage() {
             },
             {
               key: t('syncStatus.columns.startedAt'),
-              value: new Date(detailRecord.startedAt).toLocaleString(),
+              value: formatDateTime(detailRecord.startedAt),
             },
             {
               key: t('syncStatus.detailModal.completedAt'),
-              value: detailRecord.completedAt
-                ? new Date(detailRecord.completedAt).toLocaleString()
-                : '-',
+              value: detailRecord.completedAt ? formatDateTime(detailRecord.completedAt) : '-',
             },
             {
               key: t('syncStatus.columns.duration'),
@@ -651,6 +659,7 @@ export default function PlatformSyncStatusPage() {
     getSyncTypeLabel,
     getStatusTag,
     formatDuration,
+    formatDateTime,
   ])
 
   return (

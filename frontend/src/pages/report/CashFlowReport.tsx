@@ -29,6 +29,7 @@ import { getReportCashFlowStatement, getReportCashFlowItems } from '@/api/report
 import type { HandlerCashFlowStatementResponse, HandlerCashFlowItemResponse } from '@/api/models'
 import './CashFlowReport.css'
 import { safeToFixed, toNumber } from '@/utils'
+import { useFormatters } from '@/hooks/useFormatters'
 
 // Type aliases for cleaner code
 type CashFlowStatement = HandlerCashFlowStatementResponse
@@ -65,15 +66,6 @@ function formatCurrency(amount?: number): string {
  */
 function formatDateParam(date: Date): string {
   return date.toISOString().split('T')[0]
-}
-
-/**
- * Format date for display
- */
-function formatDateDisplay(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN')
 }
 
 /**
@@ -148,6 +140,8 @@ function getCashFlowTypeColor(type: string): TagColor {
  * - Export support (CSV)
  */
 export default function CashFlowReportPage() {
+  const { formatDate } = useFormatters()
+
   // Date range state
   const [dateRange, setDateRange] = useState<[Date, Date]>(getDefaultDateRange)
   const [comparisonType, setComparisonType] = useState<string>('none')
@@ -403,7 +397,7 @@ export default function CashFlowReportPage() {
       dataIndex: 'date',
       key: 'date',
       width: 120,
-      render: (date: string) => formatDateDisplay(date),
+      render: (date: string) => formatDate(date, 'medium'),
     },
     {
       title: '类型',

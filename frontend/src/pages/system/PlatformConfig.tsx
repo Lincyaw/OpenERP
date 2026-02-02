@@ -28,6 +28,7 @@ import {
   IconInfoCircle,
 } from '@douyinfe/semi-icons'
 import { Container } from '@/components/common/layout'
+import { useFormatters } from '@/hooks/useFormatters'
 import './PlatformConfig.css'
 
 const { Title, Text } = Typography
@@ -159,6 +160,7 @@ const defaultConfig: PlatformConfig = {
  */
 export default function PlatformConfigPage() {
   const { t } = useTranslation('system')
+  const { formatDateTime } = useFormatters()
 
   // Platform configurations (one per platform)
   const [configs, setConfigs] = useState<Record<PlatformCode, PlatformConfig>>(() =>
@@ -614,7 +616,7 @@ export default function PlatformConfigPage() {
                 data={[
                   {
                     key: t('platformConfig.status.lastTested'),
-                    value: new Date(status.lastTestedAt).toLocaleString(),
+                    value: formatDateTime(status.lastTestedAt),
                   },
                   {
                     key: t('platformConfig.status.result'),
@@ -627,7 +629,7 @@ export default function PlatformConfigPage() {
                     ? [
                         {
                           key: t('platformConfig.status.lastSync'),
-                          value: new Date(config.lastSyncAt).toLocaleString(),
+                          value: formatDateTime(config.lastSyncAt),
                         },
                       ]
                     : []),
@@ -671,6 +673,7 @@ export default function PlatformConfigPage() {
       toggleSecretVisibility,
       getStatus,
       renderStatusTag,
+      formatDateTime,
       t,
     ]
   )

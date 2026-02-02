@@ -14,26 +14,12 @@ import { IconChevronDown, IconChevronUp } from '@douyinfe/semi-icons'
 import { getFeatureFlagAuditLogs } from '@/api/feature-flags/feature-flags'
 import type { DtoAuditLogResponse } from '@/api/models'
 import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
+import { useFormatters } from '@/hooks/useFormatters'
 
 const { Text } = Typography
 
 // Type alias for cleaner code
 type AuditLog = DtoAuditLogResponse
-
-/**
- * Format date for display
- */
-function formatDate(dateStr: string, locale: string): string {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString(locale, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  })
-}
 
 /**
  * Get color for action type
@@ -95,7 +81,8 @@ interface AuditLogTimelineProps {
  * - Support pagination (load more)
  */
 export function AuditLogTimeline({ flagKey }: AuditLogTimelineProps) {
-  const { t, i18n } = useTranslation('admin')
+  const { t } = useTranslation('admin')
+  const { formatDateTime } = useFormatters()
 
   // State
   const [logs, setLogs] = useState<AuditLog[]>([])
@@ -191,7 +178,7 @@ export function AuditLogTimeline({ flagKey }: AuditLogTimelineProps) {
         {logs.map((log) => (
           <Timeline.Item
             key={log.id}
-            time={formatDate(log.created_at || '', i18n.language)}
+            time={formatDateTime(log.created_at || '')}
             color={getTimelineColor(log.action || '')}
           >
             <AuditLogItem log={log} />

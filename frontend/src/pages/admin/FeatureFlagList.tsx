@@ -40,6 +40,7 @@ import type {
   CreateFeatureFlagFlagBody,
 } from '@/api/models'
 import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
+import { useFormatters } from '@/hooks/useFormatters'
 import './FeatureFlagList.css'
 
 const { Title, Text } = Typography
@@ -51,21 +52,6 @@ type FeatureFlag = DtoFlagResponse
 
 // Feature Flag row type with index signature for DataTable compatibility
 type FlagRow = FeatureFlag & Record<string, unknown>
-
-/**
- * Format date for display
- */
-function formatDate(dateStr: string | undefined, locale: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString(locale, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 /**
  * Get color for flag type badge
@@ -117,8 +103,9 @@ function getStatusColor(status: FlagStatus): TagColor {
  * - Archive flags
  */
 export default function FeatureFlagListPage() {
-  const { t, i18n } = useTranslation('admin')
+  const { t } = useTranslation('admin')
   const navigate = useNavigate()
+  const { formatDateTime } = useFormatters()
 
   // Status options for filter
   const STATUS_OPTIONS = useMemo(
@@ -474,10 +461,10 @@ export default function FeatureFlagListPage() {
         dataIndex: 'updated_at',
         width: 160,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined, i18n.language),
+        render: (date: unknown) => (date ? formatDateTime(date as string) : '-'),
       },
     ],
-    [t, i18n.language, handleViewDetail, handleToggleStatus]
+    [t, formatDateTime, handleViewDetail, handleToggleStatus]
   )
 
   // Table row actions

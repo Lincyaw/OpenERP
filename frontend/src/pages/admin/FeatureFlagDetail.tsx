@@ -32,6 +32,7 @@ import type {
 import type { TagColor } from '@douyinfe/semi-ui-19/lib/es/tag'
 import { OverridesTab } from './components/OverridesTab'
 import { AuditLogTimeline } from './components/AuditLogTimeline'
+import { useFormatters } from '@/hooks/useFormatters'
 import './FeatureFlagDetail.css'
 
 const { Title, Text } = Typography
@@ -75,21 +76,6 @@ function getStatusColor(status: FlagStatus | string | undefined): TagColor {
     default:
       return 'grey'
   }
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateStr: string | undefined, locale: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString(locale, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 /**
@@ -303,7 +289,8 @@ interface ConfigurationTabProps {
 }
 
 function ConfigurationTab({ flag }: ConfigurationTabProps) {
-  const { t, i18n } = useTranslation('admin')
+  const { t } = useTranslation('admin')
+  const { formatDateTime } = useFormatters()
 
   return (
     <div className="configuration-tab">
@@ -351,10 +338,10 @@ function ConfigurationTab({ flag }: ConfigurationTabProps) {
             {flag.version}
           </Descriptions.Item>
           <Descriptions.Item itemKey={t('featureFlags.detail.createdAt', 'Created At')}>
-            {formatDate(flag.created_at, i18n.language)}
+            {flag.created_at ? formatDateTime(flag.created_at) : '-'}
           </Descriptions.Item>
           <Descriptions.Item itemKey={t('featureFlags.columns.updatedAt', 'Updated At')}>
-            {formatDate(flag.updated_at, i18n.language)}
+            {flag.updated_at ? formatDateTime(flag.updated_at) : '-'}
           </Descriptions.Item>
         </Descriptions>
       </section>

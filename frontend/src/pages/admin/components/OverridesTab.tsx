@@ -26,6 +26,7 @@ import type {
   HandlerCreateOverrideHTTPRequestTargetType,
 } from '@/api/models'
 import { OverrideForm } from './OverrideForm'
+import { useFormatters } from '@/hooks/useFormatters'
 
 const { Text } = Typography
 
@@ -33,21 +34,6 @@ const { Text } = Typography
 type Override = DtoOverrideResponse
 type FlagType = HandlerCreateFlagHTTPRequestType
 type OverrideTargetType = HandlerCreateOverrideHTTPRequestTargetType
-
-/**
- * Format date for display
- */
-function formatDate(dateStr: string | undefined, locale: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString(locale, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 /**
  * Check if override is expired
@@ -86,7 +72,8 @@ interface OverridesTabProps {
  * - Display expiration status
  */
 export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
-  const { t, i18n } = useTranslation('admin')
+  const { t } = useTranslation('admin')
+  const { formatDateTime } = useFormatters()
 
   // State
   const [overrides, setOverrides] = useState<Override[]>([])
@@ -232,7 +219,7 @@ export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
           const expired = isExpired(expiresAt)
           return (
             <span>
-              {formatDate(expiresAt, i18n.language)}
+              {formatDateTime(expiresAt)}
               {expired && (
                 <Tag color="red" size="small" style={{ marginLeft: 4 }}>
                   {t('featureFlags.overrides.expired', 'Expired')}
@@ -254,7 +241,7 @@ export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
         dataIndex: 'created_at',
         key: 'created_at',
         width: 160,
-        render: (date: string) => formatDate(date, i18n.language),
+        render: (date: string) => formatDateTime(date),
       },
       {
         title: t('featureFlags.overrides.actions', 'Actions'),
@@ -284,7 +271,7 @@ export function OverridesTab({ flagKey, flagType }: OverridesTabProps) {
         ),
       },
     ],
-    [t, i18n.language, flagType, handleDelete]
+    [t, flagType, formatDateTime, handleDelete]
   )
 
   return (

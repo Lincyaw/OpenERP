@@ -50,6 +50,7 @@ import type {
   AssignRolesUserBody,
   ListRolesParams,
 } from '@/api/models'
+import { useFormatters } from '@/hooks/useFormatters'
 
 // Type aliases for backward compatibility
 type User = HandlerUserResponse
@@ -64,21 +65,6 @@ const { Title, Text } = Typography
 
 // User type with index signature for DataTable compatibility
 type UserRow = User & Record<string, unknown>
-
-/**
- * Format date for display
- */
-function formatDate(dateStr?: string, locale?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString(locale || 'zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 /**
  * Generate a random password
@@ -105,7 +91,8 @@ function generatePassword(): string {
  * - Password reset
  */
 export default function UsersPage() {
-  const { t, i18n } = useTranslation('system')
+  const { t } = useTranslation('system')
+  const { formatDateTime } = useFormatters()
 
   // Status tag color mapping
   const STATUS_TAG_COLORS: Record<UserStatus, 'white' | 'green' | 'red' | 'grey'> = {
@@ -626,17 +613,17 @@ export default function UsersPage() {
         dataIndex: 'last_login_at',
         width: 160,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined, i18n.language),
+        render: (date: unknown) => (date ? formatDateTime(date as string) : '-'),
       },
       {
         title: t('users.columns.createdAt'),
         dataIndex: 'created_at',
         width: 160,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined, i18n.language),
+        render: (date: unknown) => (date ? formatDateTime(date as string) : '-'),
       },
     ],
-    [getRoleName, t, i18n.language, STATUS_TAG_COLORS]
+    [getRoleName, t, formatDateTime, STATUS_TAG_COLORS]
   )
 
   // Table row actions

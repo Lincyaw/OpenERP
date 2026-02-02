@@ -40,6 +40,7 @@ import {
   type PaymentMethod,
   type GetBillingHistoryParams,
 } from '@/api/billing'
+import { useFormatters } from '@/hooks/useFormatters'
 
 import './BillingHistoryPage.css'
 
@@ -75,6 +76,7 @@ const PAYMENT_METHOD_ICONS: Record<string, string> = {
 export default function BillingHistoryPage() {
   const { t } = useTranslation('system')
   const user = useUser()
+  const { formatDate } = useFormatters()
 
   // Pagination and filter state
   const [page, setPage] = useState(1)
@@ -203,8 +205,7 @@ export default function BillingHistoryPage() {
         width: 180,
         render: (_: unknown, record: Invoice) => (
           <Text type="tertiary">
-            {new Date(record.period_start).toLocaleDateString()} -{' '}
-            {new Date(record.period_end).toLocaleDateString()}
+            {formatDate(record.period_start, 'medium')} - {formatDate(record.period_end, 'medium')}
           </Text>
         ),
       },
@@ -222,14 +223,14 @@ export default function BillingHistoryPage() {
         dataIndex: 'due_date',
         key: 'due_date',
         width: 120,
-        render: (date: string) => new Date(date).toLocaleDateString(),
+        render: (date: string) => formatDate(date, 'medium'),
       },
       {
         title: t('billing.columns.paidAt'),
         dataIndex: 'paid_at',
         key: 'paid_at',
         width: 120,
-        render: (date: string | undefined) => (date ? new Date(date).toLocaleDateString() : '-'),
+        render: (date: string | undefined) => (date ? formatDate(date, 'medium') : '-'),
       },
       {
         title: t('billing.columns.actions'),
@@ -249,7 +250,7 @@ export default function BillingHistoryPage() {
         ),
       },
     ],
-    [t, handleDownloadInvoice]
+    [t, formatDate, handleDownloadInvoice]
   )
 
   // Status filter options
@@ -388,7 +389,7 @@ export default function BillingHistoryPage() {
               data={[
                 {
                   key: t('billing.nextBillingDate'),
-                  value: new Date(summaryData.upcoming.next_billing_date).toLocaleDateString(),
+                  value: formatDate(summaryData.upcoming.next_billing_date, 'medium'),
                 },
                 {
                   key: t('billing.amount'),

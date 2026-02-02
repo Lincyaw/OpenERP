@@ -24,6 +24,7 @@ import {
   getPlanDisplayName,
   type TenantPlan,
 } from '@/store/featureStore'
+import { useFormatters } from '@/hooks/useFormatters'
 
 import './SubscriptionPage.css'
 
@@ -64,6 +65,7 @@ export default function SubscriptionPage() {
   const currentPlan = useTenantPlan()
   const getEnabledFeatures = useFeatureStore((state) => state.getEnabledFeatures)
   const getDisabledFeatures = useFeatureStore((state) => state.getDisabledFeatures)
+  const { formatDate } = useFormatters()
 
   // Fetch tenant data
   const {
@@ -435,7 +437,7 @@ export default function SubscriptionPage() {
                 {
                   key: t('subscriptionPage.expiresAt'),
                   value: tenant?.expires_at
-                    ? new Date(tenant.expires_at).toLocaleDateString()
+                    ? formatDate(tenant.expires_at, 'medium')
                     : t('subscriptionPage.noExpiration'),
                 },
               ]}

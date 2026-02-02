@@ -44,6 +44,7 @@ import type {
   UpdateRoleBody,
   SetPermissionsRoleBody,
 } from '@/api/models'
+import { useFormatters } from '@/hooks/useFormatters'
 
 // Type aliases for backward compatibility
 type Role = HandlerRoleResponse
@@ -56,21 +57,6 @@ const { Title, Text } = Typography
 
 // Role type with index signature for DataTable compatibility
 type RoleRow = Role & Record<string, unknown>
-
-/**
- * Format date for display
- */
-function formatDate(dateStr: string | undefined, locale: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString(locale, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 /**
  * Group permissions by resource for tree display
@@ -105,6 +91,7 @@ function groupPermissionsByResource(permissions: string[]): Map<string, string[]
  */
 export default function RolesPage() {
   const { t, i18n } = useTranslation('system')
+  const { formatDateTime } = useFormatters()
 
   // Status options for filter (with i18n)
   const STATUS_OPTIONS = useMemo(
@@ -620,10 +607,10 @@ export default function RolesPage() {
         dataIndex: 'updated_at',
         width: 160,
         sortable: true,
-        render: (date: unknown) => formatDate(date as string | undefined, i18n.language),
+        render: (date: unknown) => (date ? formatDateTime(date as string) : '-'),
       },
     ],
-    [t, i18n.language]
+    [t, formatDateTime]
   )
 
   // Table row actions
@@ -899,11 +886,11 @@ export default function RolesPage() {
                 { key: t('roles.detail.userCount'), value: String(detailRole.user_count || 0) },
                 {
                   key: t('roles.detail.createdAt'),
-                  value: formatDate(detailRole.created_at, i18n.language),
+                  value: detailRole.created_at ? formatDateTime(detailRole.created_at) : '-',
                 },
                 {
                   key: t('roles.detail.updatedAt'),
-                  value: formatDate(detailRole.updated_at, i18n.language),
+                  value: detailRole.updated_at ? formatDateTime(detailRole.updated_at) : '-',
                 },
               ]}
             />
