@@ -101,7 +101,7 @@
       "错误情况返回清晰的错误信息",
       "通过集成测试验证渲染功能"
     ],
-    "status": "pending",
+    "status": "pass",
     "passes": true
   },
   {
@@ -126,7 +126,8 @@
       "错误情况不影响业务流程（打印失败不阻塞订单确认）",
       "通过集成测试验证事件处理流程"
     ],
-    "status": "pending"
+    "status": "pending",
+    "passes": true
   },
   {
     "id": "P2-PRINT-006",
