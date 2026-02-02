@@ -913,7 +913,8 @@
       "测试覆盖错误状态",
       "测试可重复执行"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-022",

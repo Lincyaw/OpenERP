@@ -46751,3 +46751,86 @@ go test -cover ./internal/application/identity/...
 === Next Steps ===
 - Consider fixing trial tenant behavior (P3-ADMIN-021?)
 - Add more edge case tests if needed
+
+2026-02-02 - Task P3-ADMIN-021: Frontend Admin Module Unit Tests
+
+=== Implementation Details ===
+Created comprehensive unit tests for admin frontend components:
+
+1. **SuperAdminGuard.test.tsx** (6 tests)
+   - Tests guard logic for loading, unauthenticated, non-super-admin, and super-admin states
+   - Tests redirect behavior decisions
+   - Tests props interface
+
+2. **TenantForm.test.tsx** (25 tests)
+   - Schema validation tests for createTenantSchema:
+     - Name validation (required, max 200 chars)
+     - Code validation (min 2 chars, starts with lowercase, regex pattern)
+     - Email format validation
+     - Plan enum validation
+     - Trial days range (1-365, integer only)
+   - Schema validation tests for editTenantSchema:
+     - Excludes code, plan, trial_days (read-only or separate modal)
+     - Address max length validation
+   - Component rendering tests:
+     - Create mode with all fields (plan, trial days, code)
+     - Edit mode without code/plan/trial_days fields
+     - Loading state with spinner
+     - Ref exposure (submit/reset methods)
+
+3. **ChangePlanModal.test.tsx** (10 tests)
+   - PLAN_HIERARCHY tests (order, level count)
+   - PLAN_DETAILS tests (quotas increasing by tier, labels)
+   - getChangeType logic tests (upgrade, downgrade, same, unknown plans)
+
+4. **UpdateQuotaModal.test.tsx** (21 tests)
+   - PLAN_QUOTAS tests (all plans, increasing quotas, minimum values)
+   - calcPercent tests (calculation, capping at 100%, edge cases)
+   - getWarnings tests (within limits, exceeding users/products/warehouses)
+   - hasChanges tests (undefined config, matching/differing values, defaults)
+
+5. **adminStore.test.ts** (23 tests)
+   - Initial state verification
+   - selectTenant/clearSelection tests
+   - setOperationLoading tests (all 7 operation types)
+   - Error management (setError, clearError, overwrite)
+   - Reset functionality
+   - Selector hooks (useSelectedTenantId, useSelectedTenantName, useOperationLoading, useAdminError)
+   - Hook reactivity (state change updates)
+
+=== Key Files Created ===
+- `frontend/src/components/admin/SuperAdminGuard.test.tsx`
+- `frontend/src/components/admin/TenantForm.test.tsx`
+- `frontend/src/components/admin/ChangePlanModal.test.tsx`
+- `frontend/src/components/admin/UpdateQuotaModal.test.tsx`
+- `frontend/src/store/adminStore.test.ts`
+
+=== Verification ===
+- Total tests: 85 passing
+- Test files: 5 passing
+- TypeScript: No type errors
+- Tests use Vitest + React Testing Library
+- Tests mock i18next for translations
+- Tests cover both success and error paths
+
+=== Coverage Notes ===
+Tests focus on:
+- Schema validation (Zod schemas)
+- Business logic (plan hierarchy, quota calculations, warnings)
+- Store state management (Zustand)
+- Component rendering and mode differences
+- User interaction flows
+
+The global coverage threshold (80%) applies to entire codebase.
+Admin-specific code coverage improved through testing critical logic paths.
+
+=== Acceptance Criteria Met ===
+- [x] All unit tests pass (85 tests)
+- [x] Tests use Vitest + React Testing Library
+- [x] Mock API calls (no actual API calls in tests)
+- [x] Test user interaction flows (form submission, state changes)
+- [x] Tests are repeatable (no flaky tests, deterministic)
+
+=== Next Steps ===
+- E2E tests for admin flows (if needed in separate task)
+- Integration tests with actual API (covered in P3-ADMIN-020)
