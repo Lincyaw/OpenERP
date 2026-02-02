@@ -409,6 +409,66 @@
       }
     }
   },
+  "autoPrintRules": {
+    "title": "Auto Print Rules",
+    "subtitle": "Configure automatic printing rules that trigger when business events occur",
+    "createRule": "Create Rule",
+    "editRule": "Edit Rule",
+    "confirmDelete": "Are you sure you want to delete this rule?",
+    "defaultPrinter": "Default Printer",
+    "printServiceWarning": "Print service is not connected. Cannot create or test print rules. Please ensure the local print service is running.",
+    "printerUnavailable": "Print service is not connected, printer list unavailable. You can save the rule and print when the service connects.",
+    "printService": {
+      "connected": "Print Service Connected",
+      "disconnected": "Print Service Disconnected",
+      "checking": "Checking connection...",
+      "loadingPrinters": "Loading printers...",
+      "printersFound": "printer(s) found"
+    },
+    "columns": {
+      "documentType": "Document Type",
+      "triggerEvent": "Trigger Event",
+      "template": "Template",
+      "copies": "Copies",
+      "printer": "Printer",
+      "enabled": "Enabled",
+      "actions": "Actions"
+    },
+    "form": {
+      "documentType": "Document Type",
+      "documentTypePlaceholder": "Select document type",
+      "triggerEvent": "Trigger Event",
+      "triggerEventPlaceholder": "Select trigger event",
+      "template": "Print Template",
+      "templatePlaceholder": "Select print template",
+      "copies": "Number of Copies",
+      "printer": "Printer",
+      "printerPlaceholder": "Select printer (leave empty for default)",
+      "autoPrint": "Auto Print"
+    },
+    "validation": {
+      "documentTypeRequired": "Please select a document type",
+      "triggerEventRequired": "Please select a trigger event",
+      "templateRequired": "Please select a print template",
+      "copiesRequired": "Please enter the number of copies",
+      "copiesRange": "Number of copies must be between 1 and 100"
+    },
+    "messages": {
+      "createSuccess": "Rule created successfully",
+      "createError": "Failed to create rule",
+      "updateSuccess": "Rule updated successfully",
+      "updateError": "Failed to update rule",
+      "deleteSuccess": "Rule deleted successfully",
+      "deleteError": "Failed to delete rule",
+      "enableSuccess": "Rule enabled",
+      "disableSuccess": "Rule disabled",
+      "toggleError": "Failed to update rule status"
+    },
+    "empty": {
+      "title": "No Auto Print Rules",
+      "description": "Click the 'Create Rule' button to create your first auto print rule"
+    }
+  },
   "platformConfig": {
     "title": "E-commerce Platform Configuration",
     "subtitle": "Configure authorization and sync parameters for Taobao, Douyin, JD and other platforms",

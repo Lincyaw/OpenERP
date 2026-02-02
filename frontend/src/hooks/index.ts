@@ -54,13 +54,10 @@ export {
 export { usePrint, ZOOM_LEVELS, type UsePrintOptions, type UsePrintReturn } from './usePrint'
 export {
   usePrintServiceStatus,
-  DEFAULT_POLLING_INTERVAL,
-  DEFAULT_BASE_URL,
   type PrintServiceStatus,
   type PrinterInfo,
   type PrintServiceHealthResponse,
   type PrintersResponse,
-  type UsePrintServiceStatusOptions,
   type UsePrintServiceStatusReturn,
 } from './usePrintServiceStatus'
 
@@ -75,25 +72,6 @@ export {
   useFeatureFlagError,
   type FeatureFlagValue,
 } from './useFeatureFlag'
-
-// SaaS feature permission hooks
-export {
-  useFeature,
-  useFeatures,
-  useDisabledFeatures,
-  useEnabledFeatures,
-  usePlan,
-  useFeatureReady,
-  getPlanDisplayName,
-  getNextPlan,
-  isPlanHigherOrEqual,
-  getAllFeatureKeys,
-  type UseFeatureResult,
-  type UseFeaturesResult,
-  type FeatureKey,
-  type TenantPlan,
-  type FeatureDefinition,
-} from './useFeature'
 
 // Responsive hooks
 export {

@@ -267,7 +267,8 @@
       "打印服务未运行时显示提示信息",
       "UI 符合 Semi Design 规范"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P2-PRINT-011",

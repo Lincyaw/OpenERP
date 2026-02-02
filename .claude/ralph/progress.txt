@@ -47014,3 +47014,58 @@ Created `usePrintServiceStatus` hook for monitoring local print service connecti
 - P2-PRINT-010: Integrate hook into print dialog UI components
 - Consider adding WebSocket support for real-time status updates
 - Add retry logic with exponential backoff for failed connections
+
+2026-02-02 - Task ID: P2-PRINT-010 - Auto Print Rules Configuration Page
+
+=== Implementation Details ===
+- Created new AutoPrintRules.tsx page at frontend/src/pages/settings/
+- Implemented features:
+  - Display all auto print rules in a responsive table
+  - Create new rules with document type, trigger event, template, and printer selection
+  - Edit existing rules (document type and trigger event locked after creation)
+  - Delete rules with confirmation dialog
+  - Enable/disable rules via switch toggle
+  - Print service status indicator showing connection status
+  - Printer list fetched from local print service
+- Created AutoPrintRules.css with responsive styles and dark mode support
+- Added route to routes.tsx: /settings/auto-print-rules
+- Added Chinese translations (zh-CN/system.json) for autoPrintRules section
+- Added English translations (en-US/system.json) for autoPrintRules section
+
+=== Key Files Modified ===
+- frontend/src/pages/settings/AutoPrintRules.tsx (new)
+- frontend/src/pages/settings/AutoPrintRules.css (new)
+- frontend/src/pages/settings/AutoPrintRules.test.tsx (new)
+- frontend/src/router/routes.tsx
+- frontend/src/locales/zh-CN/system.json
+- frontend/src/locales/en-US/system.json
+
+=== Technical Decisions ===
+- Used Semi UI components (Table, Modal, Form, Switch, Tag) for consistency
+- Form validation implemented inline for immediate user feedback
+- Document type and trigger event are disabled when editing to prevent rule conflicts
+- Default printer option added as first option in printer selector
+- Print service status indicator uses usePrintServiceStatus hook
+- All state management uses React hooks (useState, useCallback, useMemo)
+
+=== Verification ===
+- TypeScript type check: PASSED
+- ESLint: PASSED (no errors)
+- Unit tests: 19 tests PASSED
+  - Validation logic tests
+  - Form state management tests
+  - Document type options transformation tests
+  - Printer options tests
+  - Toggle logic tests
+  - Print service status logic tests
+
+=== Notes ===
+- The page is now accessible at /settings/auto-print-rules
+- Print service must be connected to create rules and select printers
+- When print service is disconnected, a warning banner is shown
+- Integration with backend auto-print-rules API is ready
+
+=== Next Steps ===
+- Add navigation link to system settings menu
+- Consider adding batch operations for rules
+- May need E2E tests for full workflow verification
