@@ -123,23 +123,9 @@ func (h *AutoPrintHandler) Handle(ctx context.Context, event shared.DomainEvent)
 		zap.String("tenant_id", tenantID.String()),
 	)
 
-	// Check idempotency - prevent duplicate print jobs for the same event
-	idempotencyKey := h.buildIdempotencyKey(docType, docInfo.DocumentID, triggerEvent)
-	isNew, err := h.checkIdempotency(ctx, idempotencyKey)
-	if err != nil {
-		// Log warning but continue - better to risk duplicate than miss a print
-		h.logger.Warn("idempotency check failed, continuing anyway",
-			zap.String("key", idempotencyKey),
-			zap.Error(err),
-		)
-	} else if !isNew {
-		h.logger.Debug("duplicate auto-print trigger detected, skipping",
-			zap.String("key", idempotencyKey),
-		)
-		return nil
-	}
-
 	// Look up auto-print rule for this document type and trigger event
+	// We check the rule BEFORE idempotency to avoid polluting Redis with keys
+	// for events that have no matching rules
 	rule, err := h.ruleRepo.FindEnabledByDocTypeAndEvent(ctx, tenantID, docType, triggerEvent)
 	if err != nil {
 		if err == shared.ErrNotFound {
@@ -159,6 +145,7 @@ func (h *AutoPrintHandler) Handle(ctx context.Context, event shared.DomainEvent)
 	}
 
 	if rule == nil {
+		// Repository returned (nil, nil) which is unexpected but handled gracefully
 		h.logger.Debug("no enabled auto-print rule found",
 			zap.String("doc_type", string(docType)),
 			zap.String("trigger_event", string(triggerEvent)),
@@ -172,6 +159,23 @@ func (h *AutoPrintHandler) Handle(ctx context.Context, event shared.DomainEvent)
 			zap.String("rule_id", rule.ID.String()),
 			zap.String("doc_type", string(docType)),
 			zap.String("trigger_event", string(triggerEvent)),
+		)
+		return nil
+	}
+
+	// Check idempotency - prevent duplicate print jobs for the same event
+	// This is done AFTER rule lookup to avoid Redis key pollution for events without rules
+	idempotencyKey := h.buildIdempotencyKey(docType, docInfo.DocumentID, triggerEvent)
+	isNew, err := h.checkIdempotency(ctx, idempotencyKey)
+	if err != nil {
+		// Log warning but continue - better to risk duplicate than miss a print
+		h.logger.Warn("idempotency check failed, continuing anyway",
+			zap.String("key", idempotencyKey),
+			zap.Error(err),
+		)
+	} else if !isNew {
+		h.logger.Debug("duplicate auto-print trigger detected, skipping",
+			zap.String("key", idempotencyKey),
 		)
 		return nil
 	}

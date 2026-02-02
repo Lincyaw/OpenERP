@@ -587,6 +587,7 @@ func TestAutoPrintHandler_Handle_DuplicateEvent(t *testing.T) {
 
 	mockRepo := new(MockAutoPrintRuleRepository)
 	// Create handler directly to bypass constructor validation for testing
+	// Note: PrintService is nil, but we use AutoPrint=false so createPrintJob is never called
 	handler := &AutoPrintHandler{
 		ruleRepo:     mockRepo,
 		printService: &PrintService{},
@@ -603,24 +604,33 @@ func TestAutoPrintHandler_Handle_DuplicateEvent(t *testing.T) {
 		OrderNumber:     "SO-001",
 	}
 
-	// Create rule with AutoPrint = false to avoid calling createPrintJob
-	// This allows us to test idempotency without needing a real PrintService
+	// Create rule with AutoPrint = false
+	// With the new flow (idempotency check after rule lookup), when AutoPrint=false,
+	// the idempotency key is NOT set because we return early before the check.
+	// This test verifies that behavior - both calls query the repo because
+	// no idempotency key is set when AutoPrint=false.
 	rule := createTestAutoPrintRule(tenantID, printing.DocTypeSalesOrder, printing.TriggerEventConfirmed, false)
 
-	// First call - should query for rule
+	// Both calls will query for rule since AutoPrint=false means no idempotency key is set
 	mockRepo.On("FindEnabledByDocTypeAndEvent", ctx, tenantID, printing.DocTypeSalesOrder, printing.TriggerEventConfirmed).
-		Return(rule, nil).Once()
+		Return(rule, nil)
 
-	// First call - rule found but AutoPrint=false, so no print job created
+	// First call - rule found but AutoPrint=false, returns early (no idempotency key set)
 	err = handler.Handle(ctx, event)
 	assert.NoError(t, err)
 
-	// Second call - should be blocked by idempotency check (won't even query repo)
+	// Second call - same behavior, no idempotency blocking because key was never set
 	err = handler.Handle(ctx, event)
 	assert.NoError(t, err)
 
-	// Verify FindEnabledByDocTypeAndEvent was only called once (second call blocked by idempotency)
-	mockRepo.AssertNumberOfCalls(t, "FindEnabledByDocTypeAndEvent", 1)
+	// Both calls query the repo because AutoPrint=false means idempotency check is skipped
+	mockRepo.AssertNumberOfCalls(t, "FindEnabledByDocTypeAndEvent", 2)
+
+	// Verify no idempotency key was set in Redis
+	key := handler.buildIdempotencyKey(printing.DocTypeSalesOrder, orderID, printing.TriggerEventConfirmed)
+	exists, err := redisClient.Exists(ctx, key).Result()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), exists, "idempotency key should not be set when AutoPrint=false")
 }
 
 func TestAutoPrintHandler_Handle_RepositoryError(t *testing.T) {
@@ -681,6 +691,73 @@ func TestAutoPrintHandler_RegisterWithEventBus(t *testing.T) {
 	handler.RegisterWithEventBus(mockBus)
 
 	mockBus.AssertExpectations(t)
+}
+
+func TestAutoPrintHandler_Handle_IdempotencyWithAutoPrintEnabled(t *testing.T) {
+	// This test verifies that idempotency works correctly when AutoPrint=true
+	// by checking that the idempotency key is set in Redis after the first call
+
+	// Start miniredis
+	mr, err := miniredis.Run()
+	require.NoError(t, err)
+	defer mr.Close()
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: mr.Addr(),
+	})
+	defer redisClient.Close()
+
+	mockRepo := new(MockAutoPrintRuleRepository)
+	// Create handler with nil PrintService - we'll verify behavior before createPrintJob is called
+	handler := &AutoPrintHandler{
+		ruleRepo:     mockRepo,
+		printService: nil, // Will cause panic if createPrintJob is called
+		redisClient:  redisClient,
+		logger:       zap.NewNop(),
+	}
+	ctx := context.Background()
+
+	tenantID := uuid.New()
+	orderID := uuid.New()
+	event := &trade.SalesOrderConfirmedEvent{
+		BaseDomainEvent: shared.NewBaseDomainEvent(trade.EventTypeSalesOrderConfirmed, trade.AggregateTypeSalesOrder, orderID, tenantID),
+		OrderID:         orderID,
+		OrderNumber:     "SO-001",
+	}
+
+	// Create rule with AutoPrint = true
+	rule := createTestAutoPrintRule(tenantID, printing.DocTypeSalesOrder, printing.TriggerEventConfirmed, true)
+
+	mockRepo.On("FindEnabledByDocTypeAndEvent", ctx, tenantID, printing.DocTypeSalesOrder, printing.TriggerEventConfirmed).
+		Return(rule, nil)
+
+	// First call will panic when trying to create print job (because printService is nil)
+	// This is expected - we're testing that the idempotency key gets set
+	assert.Panics(t, func() {
+		_ = handler.Handle(ctx, event)
+	}, "first call should panic when trying to create print job with nil PrintService")
+
+	// Verify idempotency key was set in Redis before the panic
+	key := handler.buildIdempotencyKey(printing.DocTypeSalesOrder, orderID, printing.TriggerEventConfirmed)
+	exists, err := redisClient.Exists(ctx, key).Result()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), exists, "idempotency key should be set even though createPrintJob panicked")
+
+	// Now create a proper handler with a working PrintService mock
+	// The second call should be blocked by idempotency
+	handler2 := &AutoPrintHandler{
+		ruleRepo:     mockRepo,
+		printService: &PrintService{}, // Still not fully initialized, but won't be called
+		redisClient:  redisClient,
+		logger:       zap.NewNop(),
+	}
+
+	// Second call - should be blocked by idempotency check (won't call createPrintJob)
+	err = handler2.Handle(ctx, event)
+	assert.NoError(t, err)
+
+	// Verify repo was called twice (once per handler)
+	mockRepo.AssertNumberOfCalls(t, "FindEnabledByDocTypeAndEvent", 2)
 }
 
 // MockEventBus is a mock implementation of EventSubscriber
