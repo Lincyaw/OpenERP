@@ -789,7 +789,8 @@
       "图表响应式适配不同屏幕",
       "UI 符合 Semi Design 规范"
     ],
-    "status": "pending"
+    "status": "pass",
+    "passes": true
   },
   {
     "id": "P3-ADMIN-017",

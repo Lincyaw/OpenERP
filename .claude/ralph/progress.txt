@@ -47387,3 +47387,67 @@ Key Files Modified:
 === Next Steps ===
 - Consider adding async batch execution if scale demands it
 - Frontend batch operation UI (select tenants → preview → confirm → execute)
+
+2026-02-02 - P3-ADMIN-016: Implement platform statistics page
+
+=== Implementation Details ===
+- Replaced placeholder Stats.tsx page with full-featured PlatformStatsPage
+- Key file modified: frontend/src/pages/super-admin/Stats.tsx
+
+Features implemented:
+1. Key indicator cards: Total Tenants, Active Tenants, Trial Tenants, Suspended Tenants
+   - Each card has loading spinner state while data fetches
+   - Uses StatCard sub-component with icon, color, and value formatting
+2. Tenant Growth Trend Chart (ECharts line chart)
+   - Dual Y-axis: total tenants (left) and new tenants (right)
+   - Smooth lines with area fill gradient
+   - Responds to time range selector (7d/30d/90d/all)
+3. Plan Distribution Pie Chart
+   - Donut chart showing tenants per plan (free, basic, pro, enterprise)
+   - Color-coded with plan-specific colors
+   - Interactive with hover emphasis
+4. Status Distribution Pie Chart
+   - Donut chart showing tenants by status (active, trial, suspended, inactive)
+   - Filters out zero-value segments
+5. Recently Registered Tenants table (top 10)
+   - Sortable by created_at desc
+   - Clickable names navigate to tenant detail page
+   - Shows name, code, plan, status, created date
+6. Recently Suspended Tenants table (top 10)
+   - Same columns as registered tenants
+   - Filters by status=suspended
+7. Time Range Selector
+   - Options: 7 Days, 30 Days, 90 Days, All
+   - Controls growth chart period and days params
+   - Uses Semi Design Select with calendar icon prefix
+
+=== Technical Decisions ===
+- Used echarts-for-react with tree-shakeable ECharts core (LineChart + PieChart modules registered)
+- Followed existing patterns from UsageChart.tsx for ECharts integration
+- Used existing useAdminPlatformStats, useAdminGrowthTrend, useAdminTenants hooks from adminStore
+- Data extraction uses safe type assertions with optional chaining and nullish coalescing
+- Responsive layout: xs=24, sm=12, lg=6 for stat cards; xs=24, lg=12 for pie charts and tables
+- Semi Design components used: Card, Row, Col, Select, Table, Tag, Spin, Empty, Typography
+
+=== Verification ===
+- TypeScript type check (tsc --noEmit): PASSED with zero errors
+- ESLint/Prettier: PASSED after auto-fix of formatting issues
+- All existing tests unaffected (no test changes needed for this UI page)
+
+=== Acceptance Criteria Met ===
+- [x] 关键指标卡片正确显示数据 (4 stat cards with loading states)
+- [x] 图表正确渲染且可交互 (ECharts with tooltips, legends, emphasis)
+- [x] 时间范围切换正常工作 (7d/30d/90d/all selector)
+- [x] 数据加载有 loading 状态 (Spin component per section)
+- [x] 图表响应式适配不同屏幕 (responsive Col breakpoints)
+- [x] UI 符合 Semi Design 规范 (all Semi UI components used)
+
+=== Notes ===
+- The page already had a route registered at /super-admin/stats in routes.tsx
+- No backend changes needed - all API endpoints already exist from P3-ADMIN-010
+- The page reuses existing hooks from adminStore.ts (useAdminPlatformStats, useAdminGrowthTrend, useAdminTenants)
+
+=== Next Steps ===
+- Consider adding unit tests for the StatsPage component with mocked API data
+- Could add data export functionality (CSV/PDF) for statistics
+- May want to add real-time auto-refresh with configurable interval
