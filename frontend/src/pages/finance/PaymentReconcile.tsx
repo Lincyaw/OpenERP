@@ -18,6 +18,7 @@ import {
 import { IconArrowLeft, IconRefresh } from '@douyinfe/semi-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Container } from '@/components/common/layout'
+import { useFormatters } from '@/hooks/useFormatters'
 import {
   getFinancePaymentPaymentVoucherByID,
   reconcilePaymentVoucherFinancePayment,
@@ -44,14 +45,6 @@ function formatCurrency(amount?: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount)
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateString?: string): string {
-  if (!dateString) return '-'
-  return new Date(dateString).toLocaleDateString('zh-CN')
 }
 
 // Tag color type for Semi UI
@@ -126,6 +119,17 @@ export default function PaymentReconcilePage() {
   const { t } = useTranslation('finance')
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const { formatDate: formatDateBase } = useFormatters()
+
+  // Wrapper to handle undefined values
+  const formatDate = useCallback(
+    (dateStr?: string): string => {
+      if (!dateStr) return '-'
+      const result = formatDateBase(dateStr)
+      return result || '-'
+    },
+    [formatDateBase]
+  )
 
   // State
   const [voucher, setVoucher] = useState<HandlerPaymentVoucherResponse | null>(null)
@@ -878,7 +882,7 @@ export default function PaymentReconcilePage() {
                 title: t('paymentReconcile.existingAllocations.allocatedAt'),
                 dataIndex: 'allocated_at',
                 key: 'allocated_at',
-                render: (value: string) => (value ? new Date(value).toLocaleString() : '-'),
+                render: (value: string) => (value ? formatDate(value) : '-'),
               },
               {
                 title: t('paymentReconcile.existingAllocations.remark'),

@@ -24,6 +24,7 @@ import {
 } from '@/components/common'
 import { Container } from '@/components/common/layout'
 import { useResponsive } from '@/hooks/useResponsive'
+import { useFormatters } from '@/hooks/useFormatters'
 import {
   listFinanceReceivableReceivables,
   getFinanceReceivableReceivableSummary,
@@ -72,19 +73,6 @@ function formatCurrency(amount?: number): string {
 }
 
 /**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-}
-
-/**
  * Check if a receivable is overdue
  */
 function isOverdue(receivable: HandlerAccountReceivableResponse): boolean {
@@ -107,6 +95,17 @@ export default function ReceivablesPage() {
   const { t } = useTranslation('finance')
   const navigate = useNavigate()
   const { isMobile } = useResponsive()
+  const { formatDate: formatDateBase } = useFormatters()
+
+  // Wrapper to handle undefined values
+  const formatDate = useCallback(
+    (dateStr?: string): string => {
+      if (!dateStr) return '-'
+      const result = formatDateBase(dateStr)
+      return result || '-'
+    },
+    [formatDateBase]
+  )
 
   // Status options for filter
   const STATUS_OPTIONS = useMemo(

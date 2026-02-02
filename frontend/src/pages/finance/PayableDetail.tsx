@@ -61,19 +61,6 @@ function formatCurrency(amount?: number): string {
 }
 
 /**
- * Format date for display
- */
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-}
-
-/**
  * Check if a payable is overdue
  */
 function isOverdue(payable: HandlerAccountPayableResponse): boolean {
@@ -95,9 +82,18 @@ export default function PayableDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { t } = useTranslation('finance')
-  const { formatDateTime: formatDateTimeBase } = useFormatters()
+  const { formatDate: formatDateBase, formatDateTime: formatDateTimeBase } = useFormatters()
 
-  // Wrapper to handle undefined values
+  // Wrappers to handle undefined values
+  const formatDate = useCallback(
+    (dateStr?: string): string => {
+      if (!dateStr) return '-'
+      const result = formatDateBase(dateStr)
+      return result || '-'
+    },
+    [formatDateBase]
+  )
+
   const formatDateTime = useCallback(
     (dateStr?: string): string => {
       if (!dateStr) return '-'
