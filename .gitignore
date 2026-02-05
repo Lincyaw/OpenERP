@@ -43,3 +43,4 @@ secrets/
 *.crt
 
 .env.prod
+dist

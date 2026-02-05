@@ -779,7 +779,6 @@ export default function SalesRankingPage() {
                     }}
                     loading={loading}
                     empty={<Empty description="暂无商品销售数据" />}
-                    scroll={{ x: 800 }}
                   />
                 </div>
               </Row>
@@ -828,7 +827,6 @@ export default function SalesRankingPage() {
                     }}
                     loading={loading}
                     empty={<Empty description="暂无客户销售数据" />}
-                    scroll={{ x: 700 }}
                   />
                 </div>
               </Row>

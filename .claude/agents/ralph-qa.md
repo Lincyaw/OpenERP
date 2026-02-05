@@ -31,9 +31,6 @@ Extract task details from prd.json using the PRD Manager tool:
 ```bash
 # Use PRD Manager tool (recommended)
 .claude/ralph/scripts/prd_manager.py search <task-id>
-
-# Or use jq directly
-jq '.[] | select(.id=="<task-id>")' .claude/ralph/plans/prd.json
 ```
 
 Note the requirements - they contain:

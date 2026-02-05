@@ -2,6 +2,7 @@
 set -e
 
 # Ralph Multi-Role Workflow - Enhanced with role routing
+# Uses Python scripts for task management
 
 if [ -z "$1" ]; then
   echo "Usage: $0 <max iterations>"
@@ -11,8 +12,14 @@ fi
 
 MAX_ITER=$1
 
-LOG_DIR=".claude/ralph/logs"
-DOING_DIR=".claude/ralph/doing"
+# Script directories
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTS_DIR="$SCRIPT_DIR/scripts"
+PRD_MANAGER="$SCRIPTS_DIR/prd_manager.py"
+PRD_STATUS="$SCRIPTS_DIR/prd_status.py"
+
+LOG_DIR="$SCRIPT_DIR/logs"
+DOING_DIR="$SCRIPT_DIR/doing"
 mkdir -p "$LOG_DIR"
 mkdir -p "$DOING_DIR"
 
@@ -105,8 +112,9 @@ detect_role() {
 
   log_stderr "[Router] Analyzing task: $task_id"
 
-  # Get task details from prd.json
-  local task_json=$(jq -r --arg id "$task_id" '.[] | select(.id == $id)' .claude/ralph/plans/prd.json)
+  # Get task details using Python script
+  local task_json
+  task_json=$(python3 "$PRD_MANAGER" get "$task_id" 2>/dev/null)
 
   if [ -z "$task_json" ]; then
     log_stderr "[Router] ⚠️  Task not found in prd.json, using default: dev"
@@ -114,10 +122,10 @@ detect_role() {
     return
   fi
 
-  # Extract task story and requirements
-  local story=$(echo "$task_json" | jq -r '.story // ""')
-  local requirements=$(echo "$task_json" | jq -r '.requirements // [] | join("; ")')
-  local priority=$(echo "$task_json" | jq -r '.priority // "unknown"')
+  # Extract task story, requirements, and priority using Python
+  local story=$(echo "$task_json" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('story',''))")
+  local requirements=$(echo "$task_json" | python3 -c "import sys,json; d=json.load(sys.stdin); print('; '.join(d.get('requirements',[])))")
+  local priority=$(echo "$task_json" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('priority','unknown'))")
 
   log_stderr "[Router] 📋 Story: $story"
   log_stderr "[Router] 📌 Priority: $priority"
@@ -160,27 +168,31 @@ Your answer (just the role, no explanation):"
 
 # Get next highest priority incomplete task from prd.json (excluding locked tasks)
 get_next_task_id() {
-  # Get all incomplete tasks sorted by priority
-  local tasks=$(jq -r '
-    .[]
-    | select(.passes == false)
-    | {priority: .priority, id: .id, sort_key: (if .priority == "critical" then 1 elif .priority == "high" then 2 elif .priority == "medium" then 3 else 4 end)}
-    | [.sort_key, .id]
-    | @tsv
-  ' .claude/ralph/plans/prd.json | sort -n)
-
-  # Find first unlocked task
-  while IFS=$'\t' read -r sort_key task_id; do
-    if [ -n "$task_id" ] && ! is_task_locked "$task_id"; then
-      echo "$task_id"
-      return 0
-    else
-      log_stderr "[Scheduler] ⏭️  Skipping locked task: $task_id"
+  # Get list of locked task IDs
+  local locked_ids=""
+  for lock_file in "$DOING_DIR"/*.lock; do
+    if [ -f "$lock_file" ]; then
+      local task_id=$(basename "$lock_file" .lock)
+      if is_task_locked "$task_id"; then
+        if [ -n "$locked_ids" ]; then
+          locked_ids="$locked_ids,$task_id"
+        else
+          locked_ids="$task_id"
+        fi
+        log_stderr "[Scheduler] ⏭️  Skipping locked task: $task_id"
+      fi
     fi
-  done <<< "$tasks"
+  done
 
-  # No unlocked tasks found
-  echo ""
+  # Use Python script to get next task, excluding locked ones
+  local task_id
+  if [ -n "$locked_ids" ]; then
+    task_id=$(python3 "$PRD_MANAGER" next --exclude "$locked_ids" 2>/dev/null) || true
+  else
+    task_id=$(python3 "$PRD_MANAGER" next 2>/dev/null) || true
+  fi
+
+  echo "$task_id"
 }
 
 log "========================================"
@@ -234,14 +246,14 @@ for ((i=1; i<=MAX_ITER; i++)); do
   PROMPT="Work on task: $TASK_ID
 
 Context:
-- Read task details from .claude/ralph/plans/prd.json using jq
+- Read task details: python3 .claude/ralph/scripts/prd_manager.py get $TASK_ID
 - Read spec.md (.claude/ralph/docs/spec.md) for design requirements (use grep for specific sections)
 - Read progress.txt (tail -100 .claude/ralph/progress.txt) for recent work context
 - Follow CLAUDE.md project rules for commits, linting, testing
 
 Your mission:
 1. Complete the assigned task according to your role
-2. Update prd.json: Set passes: true when task is complete
+2. Update task status when complete: python3 .claude/ralph/scripts/prd_status.py pass $TASK_ID
 3. Append detailed progress entry to progress.txt
 4. Create git commit (if code changes were made)
 

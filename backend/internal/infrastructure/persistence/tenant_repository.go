@@ -366,3 +366,24 @@ func (r *GormTenantRepository) FindByStripeSubscriptionID(ctx context.Context, s
 	}
 	return model.ToDomain(), nil
 }
+
+// FindWithPendingDowngrades finds tenants with scheduled plan changes that are due
+func (r *GormTenantRepository) FindWithPendingDowngrades(ctx context.Context, beforeTime time.Time) ([]identity.Tenant, error) {
+	var tenantModels []models.TenantModel
+
+	if err := r.db.WithContext(ctx).
+		Where("scheduled_plan IS NOT NULL").
+		Where("scheduled_plan_effective_at IS NOT NULL").
+		Where("scheduled_plan_effective_at <= ?", beforeTime).
+		Find(&tenantModels).Error; err != nil {
+		return nil, err
+	}
+
+	// Convert to domain entities
+	tenants := make([]identity.Tenant, len(tenantModels))
+	for i, model := range tenantModels {
+		tenants[i] = *model.ToDomain()
+	}
+
+	return tenants, nil
+}

@@ -233,8 +233,6 @@ grep -B 5 -A 20 "Recovery" .claude/ralph/docs/spec.md
 .claude/ralph/scripts/prd_manager.py list --limit 20
 ```
 
-# Find incomplete tasks in PRD
-grep -B 5 '"passes": false' .claude/ralph/plans/prd.json
 ```
 
 ## PRD Task Format
@@ -248,7 +246,7 @@ grep -B 5 '"passes": false' .claude/ralph/plans/prd.json
     "Requirement 1",
     "Requirement 2"
   ],
-  "passes": false
+  "status": "pass"
 }
 ```
 

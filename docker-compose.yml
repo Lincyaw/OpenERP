@@ -327,7 +327,6 @@ services:
       - "${OTEL_GRPC_PORT:-14317}:14317"   # OTLP gRPC receiver
       - "${OTEL_HTTP_PORT:-14318}:14318"   # OTLP HTTP receiver
       - "13133:13133"                     # Health check
-      - "8888:8888"                        # Prometheus metrics (collector self-monitoring)
       - "55679:55679"                      # zpages (debugging)
     networks:
       - erp-network

@@ -2,7 +2,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -14,7 +13,6 @@ import (
 	"github.com/example/erp/tools/loadgen/internal/circuit"
 	"github.com/example/erp/tools/loadgen/internal/config"
 	"github.com/example/erp/tools/loadgen/internal/parser"
-	"github.com/example/erp/tools/loadgen/internal/runner"
 	"github.com/example/erp/tools/loadgen/internal/scenario"
 )
 
@@ -684,14 +682,23 @@ func printExecutionPlan(cfg *config.Config) {
 }
 
 func runLoadTest(cfg *config.Config) error {
-	ctx := context.Background()
-
-	r, err := runner.New(cfg)
-	if err != nil {
-		return fmt.Errorf("creating runner: %w", err)
-	}
-
-	return r.Run(ctx)
+	// For now, print a placeholder message
+	// The actual load test runner will be implemented in LOADGEN-003
+	fmt.Println("=== Load Test ===")
+	fmt.Printf("Configuration: %s\n", cfg.Name)
+	fmt.Printf("Target: %s\n", cfg.Target.BaseURL)
+	fmt.Printf("Duration: %v\n", cfg.Duration)
+	fmt.Printf("Endpoints: %d\n", len(cfg.Endpoints))
+	fmt.Println()
+	fmt.Println("Load test runner not yet implemented.")
+	fmt.Println("This CLI framework supports the following features:")
+	fmt.Println("  - Configuration loading and validation")
+	fmt.Println("  - Command-line overrides (-duration, -concurrency, -qps)")
+	fmt.Println("  - Endpoint listing (-list)")
+	fmt.Println("  - Dry run mode (-dry-run)")
+	fmt.Println()
+	fmt.Println("The actual load test execution will be implemented in subsequent tasks.")
+	return nil
 }
 
 // handleOpenAPIMode handles OpenAPI parsing mode

@@ -4,6 +4,8 @@ PRD Manager - Utility tool for managing prd.json
 Usage:
     ./prd_manager.py list [--limit N]
     ./prd_manager.py search <id>
+    ./prd_manager.py get <id>              # Get task as JSON (for scripting)
+    ./prd_manager.py next [--exclude id1,id2]  # Get next pending task ID
     echo '[
   {"id":"bug-fix-001","story":"Fix login issue","priority":"high"},
   {"id":"improvement-001","story":"Add search feature","priority":"medium"}
@@ -24,22 +26,26 @@ PRD_PATH = Path(__file__).parent.parent / "plans" / "prd.json"
 
 
 class PRDManager:
-    def __init__(self, prd_path: Path = PRD_PATH):
+    def __init__(self, prd_path: Path = PRD_PATH, quiet: bool = False):
         self.prd_path = prd_path
         self.tasks: List[Dict[str, Any]] = []
-        self.load()
+        self.load(quiet=quiet)
 
-    def load(self):
+    def load(self, quiet: bool = False):
         """Load PRD data from JSON file"""
         try:
             with open(self.prd_path, "r", encoding="utf-8") as f:
                 self.tasks = json.load(f)
-            print(f"✓ Loaded {len(self.tasks)} tasks from {self.prd_path}")
+            if not quiet:
+                print(
+                    f"✓ Loaded {len(self.tasks)} tasks from {self.prd_path}",
+                    file=sys.stderr,
+                )
         except FileNotFoundError:
-            print(f"✗ File not found: {self.prd_path}")
+            print(f"✗ File not found: {self.prd_path}", file=sys.stderr)
             sys.exit(1)
         except json.JSONDecodeError as e:
-            print(f"✗ Invalid JSON: {e}")
+            print(f"✗ Invalid JSON: {e}", file=sys.stderr)
             sys.exit(1)
 
     def save(self):
@@ -205,6 +211,38 @@ class PRDManager:
         self.save()
         print(f"✓ Task updated: {task_id}")
 
+    def get_task_json(self, task_id: str) -> Optional[str]:
+        """Get task as JSON string (for scripting)"""
+        task = self.search_task(task_id)
+        if not task:
+            return None
+        return json.dumps(task, ensure_ascii=False)
+
+    def get_next_task(self, exclude_ids: Optional[List[str]] = None) -> Optional[str]:
+        """Get next pending task ID by priority (for scripting)
+
+        Priority order: critical > high > medium > low
+        Returns task ID or None if no pending tasks
+        """
+        priority_order = {"critical": 1, "high": 2, "medium": 3, "low": 4}
+        exclude_set = set(exclude_ids) if exclude_ids else set()
+
+        pending_tasks = [
+            task
+            for task in self.tasks
+            if task.get("status") == "pending" and task.get("id") not in exclude_set
+        ]
+
+        if not pending_tasks:
+            return None
+
+        # Sort by priority
+        pending_tasks.sort(
+            key=lambda t: priority_order.get(t.get("priority", "medium"), 3)
+        )
+
+        return pending_tasks[0].get("id")
+
     def show_stats(self):
         """Show statistics about tasks"""
         total = len(self.tasks)
@@ -276,7 +314,9 @@ def main():
         sys.exit(1)
 
     command = sys.argv[1]
-    manager = PRDManager()
+    # Use quiet mode for scripting commands (get, next)
+    quiet_commands = ["get", "next"]
+    manager = PRDManager(quiet=(command in quiet_commands))
 
     if command == "list":
         limit = None
@@ -338,6 +378,29 @@ def main():
 
     elif command == "stats":
         manager.show_stats()
+
+    elif command == "get":
+        if len(sys.argv) < 3:
+            print("Usage: prd_manager.py get <id>", file=sys.stderr)
+            sys.exit(1)
+        task_id = sys.argv[2]
+        result = manager.get_task_json(task_id)
+        if result:
+            print(result)  # Output JSON to stdout
+        else:
+            print(f"Task not found: {task_id}", file=sys.stderr)
+            sys.exit(1)
+
+    elif command == "next":
+        exclude_ids = []
+        if len(sys.argv) > 2 and sys.argv[2] == "--exclude":
+            if len(sys.argv) > 3:
+                exclude_ids = sys.argv[3].split(",")
+        task_id = manager.get_next_task(exclude_ids)
+        if task_id:
+            print(task_id)  # Output task ID to stdout
+        else:
+            sys.exit(1)  # No pending tasks
 
     else:
         print(f"Unknown command: {command}")

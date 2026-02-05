@@ -1025,5 +1025,256 @@
     ],
     "status": "pass",
     "passes": true
+  },
+  {
+    "id": "P4-POLISH-001",
+    "story": "将套餐升级改为联系客服模式",
+    "priority": "high",
+    "requirements": [
+      "修改 frontend/src/pages/user/UpgradePlan.tsx",
+      "移除 Stripe 集成相关代码和 TODO 注释",
+      "移除模拟的支付流程（setTimeout 等）",
+      "将升级按钮改为「联系客服」按钮",
+      "点击后显示客服联系方式（电话、邮箱、在线客服链接）",
+      "添加说明文案：「请联系客服升级套餐，客服将为您配置有效期和权限」",
+      "保留套餐对比表格和功能说明",
+      "移除 @ts-nocheck 注释，修复类型安全问题"
+    ],
+    "acceptance_criteria": [
+      "升级页面不再有支付流程",
+      "联系客服按钮功能正常",
+      "客服联系方式清晰展示",
+      "说明文案准确传达业务模式",
+      "TypeScript 类型检查通过",
+      "UI 符合 Semi Design 规范"
+    ],
+    "status": "pending",
+    "passes": false
+  },
+  {
+    "id": "P4-POLISH-002",
+    "story": "移除账单历史页面或改为联系客服",
+    "priority": "high",
+    "requirements": [
+      "修改 frontend/src/pages/settings/BillingHistoryPage.tsx",
+      "移除 API 相关的 TODO 注释和 stub hooks",
+      "移除 @ts-nocheck 注释",
+      "方案 A：完全移除该页面和路由",
+      "方案 B：改为显示「账单管理请联系客服」的占位页面",
+      "如果选择方案 B，显示客服联系方式",
+      "更新路由配置（frontend/src/router/index.tsx）",
+      "更新导航菜单配置"
+    ],
+    "acceptance_criteria": [
+      "不再有未实现 API 的 TODO 注释",
+      "TypeScript 类型检查通过",
+      "路由配置正确",
+      "导航菜单正确显示或隐藏该选项",
+      "用户体验流畅，无死链接"
+    ],
+    "status": "pending",
+    "passes": false
+  },
+  {
+    "id": "P4-POLISH-003",
+    "story": "移除支付网关配置页面",
+    "priority": "medium",
+    "requirements": [
+      "删除或隐藏 frontend/src/pages/system/PaymentSettings.tsx",
+      "移除微信支付和支付宝相关的配置表单",
+      "移除所有 TODO 注释和模拟 API 调用",
+      "从路由配置中移除 /system/payment-settings",
+      "从导航菜单中移除该选项（如果存在）",
+      "确认该页面已在 hideInMenu 中标记"
+    ],
+    "acceptance_criteria": [
+      "支付网关配置页面不可访问",
+      "路由配置中已移除",
+      "导航菜单中不显示",
+      "无残留的 TODO 注释",
+      "代码库整洁"
+    ],
+    "status": "pending",
+    "passes": false
+  },
+  {
+    "id": "P4-POLISH-004",
+    "story": "移除电商平台集成页面",
+    "priority": "medium",
+    "requirements": [
+      "删除或归档以下文件：",
+      "- frontend/src/pages/system/PlatformConfig.tsx",
+      "- frontend/src/pages/system/PlatformSyncStatus.tsx",
+      "- frontend/src/pages/integration/ProductMappings.tsx",
+      "从路由配置中移除相关路由：",
+      "- /system/platform-config",
+      "- /system/platform-sync",
+      "- /integration/product-mappings",
+      "确认这些路由已在 hideInMenu 中标记",
+      "移除所有 Mock 数据和 TODO 注释"
+    ],
+    "acceptance_criteria": [
+      "电商平台集成页面不可访问",
+      "路由配置中已移除",
+      "导航菜单中不显示",
+      "无残留的 Mock 数据和 TODO 注释",
+      "代码库整洁"
+    ],
+    "status": "pending",
+    "passes": false
+  },
+  {
+    "id": "P4-POLISH-005",
+    "story": "实现租户使用统计真实数据查询",
+    "priority": "high",
+    "requirements": [
+      "修改 backend/internal/application/identity/admin_tenant_service.go",
+      "在 GetTenantWithStats 方法中实现真实的统计查询",
+      "查询用户数：从 users 表统计该租户的用户数量",
+      "查询仓库数：从 warehouses 表统计该租户的仓库数量",
+      "查询商品数：从 products 表统计该租户的商品数量",
+      "查询订单数：从 sales_orders 和 purchase_orders 表统计订单总数",
+      "移除 TODO 注释",
+      "添加单元测试验证统计准确性",
+      "考虑添加缓存机制（Redis，TTL=5分钟）"
+    ],
+    "acceptance_criteria": [
+      "租户统计返回真实数据，不再是 0",
+      "统计数据准确（误差 < 1%）",
+      "查询性能 < 200ms",
+      "单元测试覆盖统计逻辑",
+      "超级管理员可以看到准确的租户使用情况"
+    ],
+    "status": "pending",
+    "passes": false
+  },
+  {
+    "id": "P4-POLISH-006",
+    "story": "修复 TypeScript 类型安全问题",
+    "priority": "medium",
+    "requirements": [
+      "修复 frontend/src/pages/settings/BillingHistoryPage.tsx 的类型问题",
+      "修复 frontend/src/pages/user/UpgradePlan.tsx 的类型问题",
+      "修复 frontend/src/components/subscription/UsageChart.tsx 的类型问题",
+      "修复 frontend/src/components/subscription/UsageGauge.tsx 的类型问题",
+      "修复 frontend/src/components/subscription/QuotaAlert.tsx 的类型问题",
+      "移除所有 @ts-nocheck 注释",
+      "添加正确的类型定义和 null/undefined 检查",
+      "运行 npm run type-check 确保无类型错误",
+      "添加必要的类型断言或可选链操作符"
+    ],
+    "acceptance_criteria": [
+      "所有文件移除 @ts-nocheck 注释",
+      "TypeScript 编译无错误",
+      "类型定义准确完整",
+      "代码可读性和可维护性提升",
+      "npm run type-check 通过"
+    ],
+    "status": "pending",
+    "passes": false
+  },
+  {
+    "id": "P4-POLISH-007",
+    "story": "国际化 Empty 组件硬编码中文",
+    "priority": "low",
+    "requirements": [
+      "修改以下文件中的 Empty 组件：",
+      "- frontend/src/pages/report/CashFlowReport.tsx",
+      "- frontend/src/pages/report/SalesReport.tsx",
+      "- frontend/src/pages/report/ProfitLoss.tsx",
+      "- frontend/src/pages/report/InventoryTurnover.tsx",
+      "- frontend/src/pages/report/SalesRanking.tsx",
+      "- frontend/src/pages/approval/SalesReturnApproval.tsx",
+      "将硬编码的中文替换为 i18n key",
+      "在 frontend/src/locales/ 中添加对应的翻译",
+      "确保中英文翻译准确",
+      "验证切换语言时 Empty 状态正确显示"
+    ],
+    "acceptance_criteria": [
+      "所有 Empty 组件使用 i18n",
+      "中英文翻译准确",
+      "切换语言功能正常",
+      "无硬编码的中文字符串",
+      "UI 一致性良好"
+    ],
+    "status": "pending",
+    "passes": false
+  },
+  {
+    "id": "P4-POLISH-008",
+    "story": "移除生产代码中的 console.log",
+    "priority": "low",
+    "requirements": [
+      "审查以下文件中的 console 语句：",
+      "- frontend/src/hooks/featureFlagSSE.ts",
+      "- frontend/src/components/FeatureFlagProvider.tsx",
+      "- frontend/src/utils/error-handler.ts",
+      "将 console.log/warn 替换为适当的日志工具",
+      "保留必要的 console.error（错误报告）",
+      "考虑使用环境变量控制日志级别",
+      "添加 ESLint 规则禁止 console.log（仅警告）",
+      "在开发环境保留调试日志，生产环境移除"
+    ],
+    "acceptance_criteria": [
+      "生产代码无不必要的 console.log",
+      "错误日志使用统一的日志工具",
+      "开发环境可以看到调试信息",
+      "生产环境日志干净",
+      "ESLint 规则配置正确"
+    ],
+    "status": "pending",
+    "passes": false
+  },
+  {
+    "id": "P4-POLISH-009",
+    "story": "完善交易模块种子数据",
+    "priority": "low",
+    "requirements": [
+      "修改 backend/scripts/seed-data.sql",
+      "添加 sales_orders 表的种子数据（至少 10 条）",
+      "添加 sales_order_items 表的种子数据",
+      "添加 purchase_orders 表的种子数据（至少 10 条）",
+      "添加 purchase_order_items 表的种子数据",
+      "添加 sales_returns 表的种子数据（至少 5 条）",
+      "添加 sales_return_items 表的种子数据",
+      "添加 purchase_returns 表的种子数据（至少 5 条）",
+      "添加 purchase_return_items 表的种子数据",
+      "确保数据一致性：订单项引用存在的商品和客户",
+      "修复 stock_locks 和 account_receivables/payables 的引用",
+      "运行 make db-reset 验证种子数据加载成功"
+    ],
+    "acceptance_criteria": [
+      "交易模块所有表都有种子数据",
+      "数据关系正确，无外键错误",
+      "种子数据加载成功",
+      "Demo 环境可以展示完整的业务流程",
+      "数据量适中，不影响性能"
+    ],
+    "status": "pending",
+    "passes": false
+  },
+  {
+    "id": "P4-POLISH-010",
+    "story": "实现 Category HasProducts 检查",
+    "priority": "low",
+    "requirements": [
+      "修改 backend/internal/infrastructure/persistence/category_repository.go",
+      "实现 HasProducts 方法的真实查询",
+      "查询 products 表，检查是否存在 category_id 匹配的商品",
+      "考虑性能优化：使用 EXISTS 子查询",
+      "移除 TODO 注释",
+      "添加单元测试验证功能",
+      "在 CategoryService 的删除逻辑中使用该检查",
+      "如果分类有商品，返回友好的错误提示"
+    ],
+    "acceptance_criteria": [
+      "HasProducts 方法返回准确结果",
+      "有商品的分类无法删除",
+      "错误提示清晰友好",
+      "查询性能 < 50ms",
+      "单元测试覆盖该功能"
+    ],
+    "status": "pending",
+    "passes": false
   }
 ]
