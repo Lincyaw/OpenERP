@@ -1971,6 +1971,57 @@
                 },
                 "type": "object"
             },
+            "handler.APIResponse-handler_AdminAuditLogListResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.AdminAuditLogListResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.APIResponse-handler_AdminTenantListResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.AdminTenantListResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.APIResponse-handler_AdminTenantResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.AdminTenantResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
             "handler.APIResponse-handler_AdminUsageResponse": {
                 "properties": {
                     "data": {
@@ -2073,6 +2124,40 @@
                 },
                 "type": "object"
             },
+            "handler.APIResponse-handler_BatchOperationResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.BatchOperationResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.APIResponse-handler_BatchPreviewResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.BatchPreviewResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
             "handler.APIResponse-handler_CashFlowStatementResponse": {
                 "properties": {
                     "data": {
@@ -2111,6 +2196,23 @@
                 "properties": {
                     "data": {
                         "$ref": "#/components/schemas/handler.CategoryResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.APIResponse-handler_ChangePlanResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.ChangePlanResponse"
                     },
                     "error": {
                         "$ref": "#/components/schemas/dto.ErrorInfo"
@@ -2498,6 +2600,23 @@
                 },
                 "type": "object"
             },
+            "handler.APIResponse-handler_MessageResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.MessageResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
             "handler.APIResponse-handler_OrderStatusSummaryResponse": {
                 "properties": {
                     "data": {
@@ -2672,6 +2791,23 @@
                 "properties": {
                     "data": {
                         "$ref": "#/components/schemas/handler.PlanListResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.APIResponse-handler_PlatformStatsResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.PlatformStatsResponse"
                     },
                     "error": {
                         "$ref": "#/components/schemas/dto.ErrorInfo"
@@ -3246,6 +3382,23 @@
                 },
                 "type": "object"
             },
+            "handler.APIResponse-handler_SubscriptionHistoryListResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.SubscriptionHistoryListResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
             "handler.APIResponse-handler_SupplierCountByStatusResponse": {
                 "properties": {
                     "data": {
@@ -3348,6 +3501,23 @@
                 },
                 "type": "object"
             },
+            "handler.APIResponse-handler_TenantGrowthTrendResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.TenantGrowthTrendResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
             "handler.APIResponse-handler_TenantListResponse": {
                 "properties": {
                     "data": {
@@ -3386,6 +3556,23 @@
                 "properties": {
                     "data": {
                         "$ref": "#/components/schemas/handler.TenantStatsResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/dto.Meta"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.APIResponse-handler_TenantUsageStatsResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/handler.TenantUsageStatsResponse"
                     },
                     "error": {
                         "$ref": "#/components/schemas/dto.ErrorInfo"
@@ -4036,6 +4223,364 @@
                 ],
                 "type": "object"
             },
+            "handler.AdminAuditLogListResponse": {
+                "description": "Paginated list of admin audit logs with metadata",
+                "properties": {
+                    "logs": {
+                        "items": {
+                            "$ref": "#/components/schemas/handler.AdminAuditLogResponse"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "page": {
+                        "example": 1,
+                        "type": "integer"
+                    },
+                    "page_size": {
+                        "example": 50,
+                        "type": "integer"
+                    },
+                    "total": {
+                        "example": 1250,
+                        "type": "integer"
+                    },
+                    "total_pages": {
+                        "example": 25,
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.AdminAuditLogResponse": {
+                "description": "Single audit log entry recording admin action with before/after values",
+                "properties": {
+                    "action": {
+                        "example": "tenant_create",
+                        "type": "string"
+                    },
+                    "admin_user_id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440001",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "example": "2024-02-01T10:30:00Z",
+                        "type": "string"
+                    },
+                    "id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440099",
+                        "type": "string"
+                    },
+                    "ip_address": {
+                        "example": "192.168.1.100",
+                        "type": "string"
+                    },
+                    "new_value": {
+                        "additionalProperties": {},
+                        "type": "object"
+                    },
+                    "old_value": {
+                        "additionalProperties": {},
+                        "type": "object"
+                    },
+                    "target_id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440000",
+                        "type": "string"
+                    },
+                    "target_type": {
+                        "example": "tenant",
+                        "type": "string"
+                    },
+                    "user_agent": {
+                        "example": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.AdminCreateTenantRequest": {
+                "description": "Request body for creating a new tenant in the platform",
+                "properties": {
+                    "address": {
+                        "example": "123 Business Ave, Suite 100, New York, NY 10001",
+                        "maxLength": 500,
+                        "type": "string"
+                    },
+                    "code": {
+                        "example": "ACME001",
+                        "maxLength": 50,
+                        "minLength": 2,
+                        "type": "string"
+                    },
+                    "contact_email": {
+                        "example": "john.smith@acme.com",
+                        "maxLength": 200,
+                        "type": "string"
+                    },
+                    "contact_name": {
+                        "example": "John Smith",
+                        "maxLength": 100,
+                        "type": "string"
+                    },
+                    "contact_phone": {
+                        "example": "+1-555-123-4567",
+                        "maxLength": 20,
+                        "type": "string"
+                    },
+                    "name": {
+                        "example": "Acme Corporation",
+                        "maxLength": 200,
+                        "minLength": 2,
+                        "type": "string"
+                    },
+                    "notes": {
+                        "example": "Enterprise customer, signed 2-year contract",
+                        "maxLength": 1000,
+                        "type": "string"
+                    },
+                    "plan": {
+                        "enum": [
+                            "free",
+                            "basic",
+                            "pro",
+                            "enterprise"
+                        ],
+                        "example": "pro",
+                        "type": "string"
+                    },
+                    "short_name": {
+                        "example": "Acme",
+                        "maxLength": 50,
+                        "type": "string"
+                    },
+                    "trial_days": {
+                        "example": 14,
+                        "maximum": 90,
+                        "minimum": 0,
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "code",
+                    "name"
+                ],
+                "type": "object"
+            },
+            "handler.AdminTenantConfigResponse": {
+                "description": "Tenant configuration including quotas and regional settings",
+                "properties": {
+                    "cost_strategy": {
+                        "example": "weighted_average",
+                        "type": "string"
+                    },
+                    "currency": {
+                        "example": "USD",
+                        "type": "string"
+                    },
+                    "locale": {
+                        "example": "en-US",
+                        "type": "string"
+                    },
+                    "max_products": {
+                        "example": 5000,
+                        "type": "integer"
+                    },
+                    "max_users": {
+                        "example": 50,
+                        "type": "integer"
+                    },
+                    "max_warehouses": {
+                        "example": 10,
+                        "type": "integer"
+                    },
+                    "timezone": {
+                        "example": "America/New_York",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.AdminTenantListResponse": {
+                "description": "Paginated list of tenants with metadata",
+                "properties": {
+                    "page": {
+                        "example": 1,
+                        "type": "integer"
+                    },
+                    "page_size": {
+                        "example": 20,
+                        "type": "integer"
+                    },
+                    "tenants": {
+                        "items": {
+                            "$ref": "#/components/schemas/handler.AdminTenantResponse"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "total": {
+                        "example": 156,
+                        "type": "integer"
+                    },
+                    "total_pages": {
+                        "example": 8,
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.AdminTenantResponse": {
+                "description": "Complete tenant information for admin view",
+                "properties": {
+                    "address": {
+                        "example": "123 Business Ave, Suite 100, New York, NY 10001",
+                        "type": "string"
+                    },
+                    "code": {
+                        "example": "ACME001",
+                        "type": "string"
+                    },
+                    "config": {
+                        "$ref": "#/components/schemas/handler.AdminTenantConfigResponse"
+                    },
+                    "contact_email": {
+                        "example": "john.smith@acme.com",
+                        "type": "string"
+                    },
+                    "contact_name": {
+                        "example": "John Smith",
+                        "type": "string"
+                    },
+                    "contact_phone": {
+                        "example": "+1-555-123-4567",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "example": "2024-01-15T10:30:00Z",
+                        "type": "string"
+                    },
+                    "domain": {
+                        "example": "acme.erp.example.com",
+                        "type": "string"
+                    },
+                    "expires_at": {
+                        "example": "2025-02-01T00:00:00Z",
+                        "type": "string"
+                    },
+                    "id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440000",
+                        "type": "string"
+                    },
+                    "logo_url": {
+                        "example": "https://cdn.example.com/logos/acme.png",
+                        "type": "string"
+                    },
+                    "name": {
+                        "example": "Acme Corporation",
+                        "type": "string"
+                    },
+                    "notes": {
+                        "example": "Enterprise customer, signed 2-year contract",
+                        "type": "string"
+                    },
+                    "plan": {
+                        "example": "pro",
+                        "type": "string"
+                    },
+                    "scheduled_plan": {
+                        "example": "enterprise",
+                        "type": "string"
+                    },
+                    "scheduled_plan_effective_at": {
+                        "example": "2024-03-01T00:00:00Z",
+                        "type": "string"
+                    },
+                    "short_name": {
+                        "example": "Acme",
+                        "type": "string"
+                    },
+                    "statistics": {
+                        "$ref": "#/components/schemas/handler.AdminTenantStatsResponse"
+                    },
+                    "status": {
+                        "example": "active",
+                        "type": "string"
+                    },
+                    "trial_ends_at": {
+                        "example": "2024-02-15T00:00:00Z",
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "example": "2024-02-01T14:20:00Z",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.AdminTenantStatsResponse": {
+                "description": "Current usage statistics for a tenant",
+                "properties": {
+                    "order_count": {
+                        "example": 3200,
+                        "type": "integer"
+                    },
+                    "product_count": {
+                        "example": 1500,
+                        "type": "integer"
+                    },
+                    "user_count": {
+                        "example": 25,
+                        "type": "integer"
+                    },
+                    "warehouse_count": {
+                        "example": 3,
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.AdminUpdateTenantRequest": {
+                "description": "Request body for updating tenant information. All fields are optional.",
+                "properties": {
+                    "address": {
+                        "example": "456 Enterprise Blvd, Floor 20, New York, NY 10002",
+                        "maxLength": 500,
+                        "type": "string"
+                    },
+                    "contact_email": {
+                        "example": "jane.doe@acme.com",
+                        "maxLength": 200,
+                        "type": "string"
+                    },
+                    "contact_name": {
+                        "example": "Jane Doe",
+                        "maxLength": 100,
+                        "type": "string"
+                    },
+                    "contact_phone": {
+                        "example": "+1-555-987-6543",
+                        "maxLength": 20,
+                        "type": "string"
+                    },
+                    "name": {
+                        "example": "Acme Corporation Inc.",
+                        "maxLength": 200,
+                        "minLength": 2,
+                        "type": "string"
+                    },
+                    "notes": {
+                        "example": "Upgraded to enterprise plan in Q2 2024",
+                        "maxLength": 1000,
+                        "type": "string"
+                    },
+                    "short_name": {
+                        "example": "Acme Inc",
+                        "maxLength": 50,
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "handler.AdminUsageResponse": {
                 "description": "Detailed usage data for admin viewing a specific tenant",
                 "properties": {
@@ -4439,6 +4984,88 @@
                 },
                 "type": "object"
             },
+            "handler.BatchActivateRequest": {
+                "description": "Request body for activating multiple tenants at once",
+                "properties": {
+                    "tenant_ids": {
+                        "example": [
+                            "550e8400-e29b-41d4-a716-446655440001",
+                            "550e8400-e29b-41d4-a716-446655440002"
+                        ],
+                        "items": {
+                            "type": "string"
+                        },
+                        "maxItems": 100,
+                        "minItems": 1,
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "required": [
+                    "tenant_ids"
+                ],
+                "type": "object"
+            },
+            "handler.BatchChangePlanRequest": {
+                "description": "Request body for changing subscription plan for multiple tenants",
+                "properties": {
+                    "new_plan": {
+                        "enum": [
+                            "free",
+                            "basic",
+                            "pro",
+                            "enterprise"
+                        ],
+                        "example": "pro",
+                        "type": "string"
+                    },
+                    "reason": {
+                        "example": "Promotional upgrade for Q1 campaign",
+                        "maxLength": 500,
+                        "type": "string"
+                    },
+                    "tenant_ids": {
+                        "example": [
+                            "550e8400-e29b-41d4-a716-446655440001",
+                            "550e8400-e29b-41d4-a716-446655440002"
+                        ],
+                        "items": {
+                            "type": "string"
+                        },
+                        "maxItems": 100,
+                        "minItems": 1,
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "required": [
+                    "new_plan",
+                    "tenant_ids"
+                ],
+                "type": "object"
+            },
+            "handler.BatchDeleteRequest": {
+                "description": "Request body for soft-deleting multiple tenants at once",
+                "properties": {
+                    "tenant_ids": {
+                        "example": [
+                            "550e8400-e29b-41d4-a716-446655440001",
+                            "550e8400-e29b-41d4-a716-446655440002"
+                        ],
+                        "items": {
+                            "type": "string"
+                        },
+                        "maxItems": 100,
+                        "minItems": 1,
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "required": [
+                    "tenant_ids"
+                ],
+                "type": "object"
+            },
             "handler.BatchEvaluateHTTPRequest": {
                 "description": "Request body for batch evaluating feature flags",
                 "properties": {
@@ -4461,6 +5088,213 @@
                 },
                 "required": [
                     "keys"
+                ],
+                "type": "object"
+            },
+            "handler.BatchOperationItemResponse": {
+                "description": "Individual tenant result in batch operation",
+                "properties": {
+                    "error_message": {
+                        "example": "",
+                        "type": "string"
+                    },
+                    "id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440088",
+                        "type": "string"
+                    },
+                    "processed_at": {
+                        "example": "2024-02-01T10:30:02Z",
+                        "type": "string"
+                    },
+                    "status": {
+                        "example": "success",
+                        "type": "string"
+                    },
+                    "tenant_code": {
+                        "example": "ACME001",
+                        "type": "string"
+                    },
+                    "tenant_id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440001",
+                        "type": "string"
+                    },
+                    "tenant_name": {
+                        "example": "Acme Corporation",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.BatchOperationResponse": {
+                "description": "Result of batch operation execution with detailed status",
+                "properties": {
+                    "completed_at": {
+                        "example": "2024-02-01T10:30:05Z",
+                        "type": "string"
+                    },
+                    "confirmed_at": {
+                        "example": "2024-02-01T10:30:00Z",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "example": "2024-02-01T10:29:55Z",
+                        "type": "string"
+                    },
+                    "created_by_user_id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440001",
+                        "type": "string"
+                    },
+                    "failed_count": {
+                        "example": 0,
+                        "type": "integer"
+                    },
+                    "id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440099",
+                        "type": "string"
+                    },
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/handler.BatchOperationItemResponse"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "operation_type": {
+                        "example": "suspend",
+                        "type": "string"
+                    },
+                    "processed_count": {
+                        "example": 10,
+                        "type": "integer"
+                    },
+                    "progress": {
+                        "example": 100,
+                        "type": "number"
+                    },
+                    "skipped_count": {
+                        "example": 2,
+                        "type": "integer"
+                    },
+                    "status": {
+                        "example": "completed",
+                        "type": "string"
+                    },
+                    "success_count": {
+                        "example": 8,
+                        "type": "integer"
+                    },
+                    "total_count": {
+                        "example": 10,
+                        "type": "integer"
+                    },
+                    "updated_at": {
+                        "example": "2024-02-01T10:30:05Z",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.BatchPreviewResponse": {
+                "description": "Preview of batch operation showing which tenants will be affected",
+                "properties": {
+                    "affected_tenants": {
+                        "items": {
+                            "$ref": "#/components/schemas/handler.BatchPreviewTenantResponse"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "can_process_count": {
+                        "example": 8,
+                        "type": "integer"
+                    },
+                    "operation_type": {
+                        "example": "suspend",
+                        "type": "string"
+                    },
+                    "total_count": {
+                        "example": 10,
+                        "type": "integer"
+                    },
+                    "warnings": {
+                        "example": [
+                            "2 tenants are already suspended and will be skipped"
+                        ],
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "will_skip_count": {
+                        "example": 2,
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.BatchPreviewTenantResponse": {
+                "description": "Individual tenant details in batch operation preview",
+                "properties": {
+                    "can_process": {
+                        "example": true,
+                        "type": "boolean"
+                    },
+                    "code": {
+                        "example": "ACME001",
+                        "type": "string"
+                    },
+                    "current_plan": {
+                        "example": "pro",
+                        "type": "string"
+                    },
+                    "current_status": {
+                        "example": "active",
+                        "type": "string"
+                    },
+                    "id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440001",
+                        "type": "string"
+                    },
+                    "name": {
+                        "example": "Acme Corporation",
+                        "type": "string"
+                    },
+                    "skip_reason": {
+                        "example": "Tenant is already suspended",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.BatchSuspendRequest": {
+                "description": "Request body for suspending multiple tenants at once",
+                "properties": {
+                    "reason": {
+                        "example": "Bulk suspension due to payment default",
+                        "maxLength": 500,
+                        "type": "string"
+                    },
+                    "scheduled_reactivate_at": {
+                        "example": "2024-03-01T00:00:00Z",
+                        "type": "string"
+                    },
+                    "tenant_ids": {
+                        "example": [
+                            "550e8400-e29b-41d4-a716-446655440001",
+                            "550e8400-e29b-41d4-a716-446655440002"
+                        ],
+                        "items": {
+                            "type": "string"
+                        },
+                        "maxItems": 100,
+                        "minItems": 1,
+                        "type": "array",
+                        "uniqueItems": false
+                    }
+                },
+                "required": [
+                    "tenant_ids"
                 ],
                 "type": "object"
             },
@@ -4832,6 +5666,54 @@
                     "new_password",
                     "old_password"
                 ],
+                "type": "object"
+            },
+            "handler.ChangePlanRequest": {
+                "description": "Request body for changing tenant subscription plan",
+                "properties": {
+                    "plan": {
+                        "enum": [
+                            "free",
+                            "basic",
+                            "pro",
+                            "enterprise"
+                        ],
+                        "example": "enterprise",
+                        "type": "string"
+                    },
+                    "reason": {
+                        "example": "Customer upgraded after successful pilot program",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "plan"
+                ],
+                "type": "object"
+            },
+            "handler.ChangePlanResponse": {
+                "description": "Response for plan change operation with effective date information",
+                "properties": {
+                    "change_type": {
+                        "example": "immediate",
+                        "type": "string"
+                    },
+                    "effective_at": {
+                        "example": "2024-02-01T00:00:00Z",
+                        "type": "string"
+                    },
+                    "new_plan": {
+                        "example": "enterprise",
+                        "type": "string"
+                    },
+                    "previous_plan": {
+                        "example": "pro",
+                        "type": "string"
+                    },
+                    "tenant": {
+                        "$ref": "#/components/schemas/handler.AdminTenantResponse"
+                    }
+                },
                 "type": "object"
             },
             "handler.CheckAvailabilityRequest": {
@@ -6910,6 +7792,19 @@
                 },
                 "type": "object"
             },
+            "handler.ErrorResponse": {
+                "description": "Standard error response",
+                "properties": {
+                    "error": {
+                        "$ref": "#/components/schemas/dto.ErrorInfo"
+                    },
+                    "success": {
+                        "example": false,
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
             "handler.EvaluateFlagHTTPRequest": {
                 "description": "Request body for evaluating a feature flag",
                 "properties": {
@@ -7794,6 +8689,16 @@
                 ],
                 "type": "object"
             },
+            "handler.MessageResponse": {
+                "description": "Simple response containing a success message",
+                "properties": {
+                    "message": {
+                        "example": "Tenant deleted successfully",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "handler.MonthlyProfitTrendResponse": {
                 "description": "Monthly profit trend data point",
                 "properties": {
@@ -8374,6 +9279,64 @@
                     "name": {
                         "example": "Basic Plan",
                         "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.PlatformStatsResponse": {
+                "description": "Aggregated statistics across all tenants in the platform",
+                "properties": {
+                    "active_tenants": {
+                        "example": 120,
+                        "type": "integer"
+                    },
+                    "inactive_tenants": {
+                        "example": 3,
+                        "type": "integer"
+                    },
+                    "last_updated": {
+                        "example": "2024-02-01T12:00:00Z",
+                        "type": "string"
+                    },
+                    "suspended_tenants": {
+                        "example": 8,
+                        "type": "integer"
+                    },
+                    "tenants_by_plan": {
+                        "additionalProperties": {
+                            "type": "integer"
+                        },
+                        "example": {
+                            "basic": 60,
+                            "enterprise": 11,
+                            "free": 45,
+                            "pro": 40
+                        },
+                        "type": "object"
+                    },
+                    "total_orders": {
+                        "example": 450000,
+                        "type": "integer"
+                    },
+                    "total_products": {
+                        "example": 125000,
+                        "type": "integer"
+                    },
+                    "total_storage_usage": {
+                        "example": 107374182400,
+                        "type": "integer"
+                    },
+                    "total_tenants": {
+                        "example": 156,
+                        "type": "integer"
+                    },
+                    "total_users": {
+                        "example": 2500,
+                        "type": "integer"
+                    },
+                    "trial_tenants": {
+                        "example": 25,
+                        "type": "integer"
                     }
                 },
                 "type": "object"
@@ -9567,6 +10530,24 @@
                     },
                     "used": {
                         "example": 5,
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.QuotaResponse": {
+                "description": "Tenant quota limits",
+                "properties": {
+                    "max_products": {
+                        "example": 5000,
+                        "type": "integer"
+                    },
+                    "max_users": {
+                        "example": 50,
+                        "type": "integer"
+                    },
+                    "max_warehouses": {
+                        "example": 10,
                         "type": "integer"
                     }
                 },
@@ -11494,6 +12475,87 @@
                 "description": "Map of feature keys to their enabled status",
                 "type": "object"
             },
+            "handler.SubscriptionHistoryListResponse": {
+                "description": "Paginated list of subscription history entries",
+                "properties": {
+                    "history": {
+                        "items": {
+                            "$ref": "#/components/schemas/handler.SubscriptionHistoryResponse"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "page": {
+                        "example": 1,
+                        "type": "integer"
+                    },
+                    "page_size": {
+                        "example": 20,
+                        "type": "integer"
+                    },
+                    "total": {
+                        "example": 25,
+                        "type": "integer"
+                    },
+                    "total_pages": {
+                        "example": 2,
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.SubscriptionHistoryResponse": {
+                "description": "Single subscription change history entry",
+                "properties": {
+                    "change_type": {
+                        "example": "plan_upgrade",
+                        "type": "string"
+                    },
+                    "changed_by_user_id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440001",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "example": "2024-02-01T10:30:00Z",
+                        "type": "string"
+                    },
+                    "effective_at": {
+                        "example": "2024-02-01T00:00:00Z",
+                        "type": "string"
+                    },
+                    "id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440088",
+                        "type": "string"
+                    },
+                    "new_plan": {
+                        "example": "enterprise",
+                        "type": "string"
+                    },
+                    "new_quota": {
+                        "$ref": "#/components/schemas/handler.QuotaResponse"
+                    },
+                    "old_plan": {
+                        "example": "pro",
+                        "type": "string"
+                    },
+                    "old_quota": {
+                        "$ref": "#/components/schemas/handler.QuotaResponse"
+                    },
+                    "reason": {
+                        "example": "Customer upgraded after successful pilot",
+                        "type": "string"
+                    },
+                    "scheduled_at": {
+                        "example": "2024-03-01T00:00:00Z",
+                        "type": "string"
+                    },
+                    "tenant_id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440000",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "handler.SubscriptionPlanFeatureResponse": {
                 "description": "Feature definition for a subscription plan",
                 "properties": {
@@ -11922,6 +12984,21 @@
                 },
                 "type": "object"
             },
+            "handler.SuspendTenantRequest": {
+                "description": "Request body for suspending a tenant with optional reason and reactivation schedule",
+                "properties": {
+                    "reason": {
+                        "example": "Payment overdue for 30+ days",
+                        "maxLength": 500,
+                        "type": "string"
+                    },
+                    "scheduled_reactivate_at": {
+                        "example": "2024-03-15T00:00:00Z",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "handler.SystemInfoResponse": {
                 "properties": {
                     "go_version": {
@@ -12053,6 +13130,53 @@
                 },
                 "type": "object"
             },
+            "handler.TenantGrowthPointResponse": {
+                "description": "Single data point representing tenant metrics for a specific date",
+                "properties": {
+                    "churned_count": {
+                        "example": 1,
+                        "type": "integer"
+                    },
+                    "date": {
+                        "example": "2024-01-15",
+                        "type": "string"
+                    },
+                    "new_tenants": {
+                        "example": 5,
+                        "type": "integer"
+                    },
+                    "total_tenants": {
+                        "example": 150,
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.TenantGrowthTrendResponse": {
+                "description": "Time-series data showing tenant growth over a period",
+                "properties": {
+                    "data_points": {
+                        "items": {
+                            "$ref": "#/components/schemas/handler.TenantGrowthPointResponse"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "end_date": {
+                        "example": "2024-01-31",
+                        "type": "string"
+                    },
+                    "period": {
+                        "example": "daily",
+                        "type": "string"
+                    },
+                    "start_date": {
+                        "example": "2024-01-01",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "handler.TenantListResponse": {
                 "properties": {
                     "page": {
@@ -12159,6 +13283,72 @@
                         "type": "integer"
                     },
                     "trial": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "handler.TenantUsageStatsResponse": {
+                "description": "Detailed usage statistics for a specific tenant including quotas",
+                "properties": {
+                    "api_call_count": {
+                        "example": 125000,
+                        "type": "integer"
+                    },
+                    "last_updated": {
+                        "example": "2024-02-01T12:00:00Z",
+                        "type": "string"
+                    },
+                    "max_products": {
+                        "example": 5000,
+                        "type": "integer"
+                    },
+                    "max_users": {
+                        "example": 50,
+                        "type": "integer"
+                    },
+                    "max_warehouses": {
+                        "example": 10,
+                        "type": "integer"
+                    },
+                    "order_count": {
+                        "example": 3200,
+                        "type": "integer"
+                    },
+                    "plan": {
+                        "example": "pro",
+                        "type": "string"
+                    },
+                    "product_count": {
+                        "example": 1500,
+                        "type": "integer"
+                    },
+                    "status": {
+                        "example": "active",
+                        "type": "string"
+                    },
+                    "storage_usage": {
+                        "example": 5368709120,
+                        "type": "integer"
+                    },
+                    "tenant_code": {
+                        "example": "ACME001",
+                        "type": "string"
+                    },
+                    "tenant_id": {
+                        "example": "550e8400-e29b-41d4-a716-446655440000",
+                        "type": "string"
+                    },
+                    "tenant_name": {
+                        "example": "Acme Corporation",
+                        "type": "string"
+                    },
+                    "user_count": {
+                        "example": 25,
+                        "type": "integer"
+                    },
+                    "warehouse_count": {
+                        "example": 3,
                         "type": "integer"
                     }
                 },
@@ -13004,6 +14194,31 @@
                 },
                 "type": "object"
             },
+            "handler.UpdateQuotaRequest": {
+                "description": "Request body for updating tenant quota limits",
+                "properties": {
+                    "max_products": {
+                        "example": 10000,
+                        "minimum": 1,
+                        "type": "integer"
+                    },
+                    "max_users": {
+                        "example": 100,
+                        "minimum": 1,
+                        "type": "integer"
+                    },
+                    "max_warehouses": {
+                        "example": 20,
+                        "minimum": 1,
+                        "type": "integer"
+                    },
+                    "reason": {
+                        "example": "Enterprise customer requires additional capacity",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "handler.UpdateReturnItemRequest": {
                 "description": "Request body for updating a return item",
                 "properties": {
@@ -13832,6 +15047,973 @@
         "url": "https://swagger.io/resources/open-api/"
     },
     "paths": {
+        "/admin/audit-logs": {
+            "get": {
+                "description": "Get a paginated list of admin audit logs with filtering options.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Logged actions**:\n- tenant_create, tenant_update, tenant_delete\n- tenant_suspend, tenant_activate\n- subscription_change, quota_update\n\n**Target types**:\n- tenant: Tenant entity changes\n- subscription: Plan changes\n- quota: Quota limit changes\n\n**Each log entry contains**:\n- Admin user who performed the action\n- Action type and target\n- Old and new values (for tracking changes)\n- IP address and user agent\n- Timestamp",
+                "operationId": "adminListAuditLogs",
+                "parameters": [
+                    {
+                        "description": "Page number (1-based)",
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "default": 1,
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Items per page (max 100)",
+                        "in": "query",
+                        "name": "page_size",
+                        "schema": {
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Filter by admin user ID",
+                        "in": "query",
+                        "name": "admin_user_id",
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Filter by action type",
+                        "in": "query",
+                        "name": "action",
+                        "schema": {
+                            "enum": [
+                                "tenant_create",
+                                "tenant_update",
+                                "tenant_delete",
+                                "tenant_suspend",
+                                "tenant_activate",
+                                "subscription_change",
+                                "quota_update"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Filter by target entity type",
+                        "in": "query",
+                        "name": "target_type",
+                        "schema": {
+                            "enum": [
+                                "tenant",
+                                "subscription",
+                                "quota"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Filter by target entity ID",
+                        "in": "query",
+                        "name": "target_id",
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Filter by start time (RFC3339)",
+                        "in": "query",
+                        "name": "start_time",
+                        "schema": {
+                            "format": "date-time",
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Filter by end time (RFC3339)",
+                        "in": "query",
+                        "name": "end_time",
+                        "schema": {
+                            "format": "date-time",
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Sort by field",
+                        "in": "query",
+                        "name": "sort_by",
+                        "schema": {
+                            "default": "created_at",
+                            "enum": [
+                                "created_at",
+                                "action",
+                                "target_type"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Sort order",
+                        "in": "query",
+                        "name": "sort_order",
+                        "schema": {
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Filter by IP address",
+                        "in": "query",
+                        "name": "ip_address",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_AdminAuditLogListResponse"
+                                }
+                            }
+                        },
+                        "description": "Paginated audit logs"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid parameters"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "List audit logs",
+                "tags": [
+                    "admin-audit"
+                ]
+            }
+        },
+        "/admin/batch/activate": {
+            "post": {
+                "description": "Activate multiple tenants at once. All operations are recorded in audit logs.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Behavior**:\n- Sets all valid tenants to \"active\" status\n- Clears any scheduled reactivation dates\n- Creates individual audit log entries for each tenant\n\n**Limits**: Maximum 100 tenants per batch operation",
+                "operationId": "adminBatchActivate",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.BatchActivateRequest",
+                                        "summary": "request",
+                                        "description": "Batch activate request (max 100 tenants)"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Batch activate request (max 100 tenants)",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_BatchOperationResponse"
+                                }
+                            }
+                        },
+                        "description": "Batch operation result"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BUSINESS_RULE: Business rule violation"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Execute batch activate operation",
+                "tags": [
+                    "admin-batch"
+                ]
+            }
+        },
+        "/admin/batch/activate/preview": {
+            "post": {
+                "description": "Preview the batch activate operation before execution. Returns which tenants can be activated and which will be skipped.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Skip reasons**:\n- Tenant is already active\n- Tenant not found",
+                "operationId": "adminPreviewBatchActivate",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.BatchActivateRequest",
+                                        "summary": "request",
+                                        "description": "Batch activate preview request (max 100 tenants)"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Batch activate preview request (max 100 tenants)",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_BatchPreviewResponse"
+                                }
+                            }
+                        },
+                        "description": "Preview of batch operation"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BUSINESS_RULE: Business rule violation"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Preview batch activate operation",
+                "tags": [
+                    "admin-batch"
+                ]
+            }
+        },
+        "/admin/batch/change-plan": {
+            "post": {
+                "description": "Change subscription plan for multiple tenants at once. Upgrades are immediate, downgrades are scheduled. All operations are recorded in audit logs.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Upgrade behavior**:\n- Takes effect immediately for all tenants\n- New quotas apply instantly\n\n**Downgrade behavior**:\n- Scheduled for end of current billing cycle\n- Each tenant's effective date may differ\n\n**Limits**: Maximum 100 tenants per batch operation",
+                "operationId": "adminBatchChangePlan",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.BatchChangePlanRequest",
+                                        "summary": "request",
+                                        "description": "Batch plan change request (max 100 tenants)"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Batch plan change request (max 100 tenants)",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_BatchOperationResponse"
+                                }
+                            }
+                        },
+                        "description": "Batch operation result"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BUSINESS_RULE: Invalid plan"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Execute batch plan change operation",
+                "tags": [
+                    "admin-batch"
+                ]
+            }
+        },
+        "/admin/batch/change-plan/preview": {
+            "post": {
+                "description": "Preview the batch plan change operation before execution. Returns which tenants can have their plan changed and which will be skipped.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Skip reasons**:\n- Tenant already on the target plan\n- Tenant not found\n\n**Note**: Upgrades are immediate, downgrades are scheduled",
+                "operationId": "adminPreviewBatchChangePlan",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.BatchChangePlanRequest",
+                                        "summary": "request",
+                                        "description": "Batch plan change preview request (max 100 tenants)"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Batch plan change preview request (max 100 tenants)",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_BatchPreviewResponse"
+                                }
+                            }
+                        },
+                        "description": "Preview of batch operation"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BUSINESS_RULE: Invalid plan"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Preview batch plan change operation",
+                "tags": [
+                    "admin-batch"
+                ]
+            }
+        },
+        "/admin/batch/delete": {
+            "post": {
+                "description": "Soft delete multiple tenants at once (marks as inactive, data preserved). All operations are recorded in audit logs.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Behavior**:\n- Sets all valid tenants to \"inactive\" status\n- All tenant data is preserved (soft delete)\n- Users of deleted tenants cannot log in\n- Tenants can be reactivated using batch activate\n\n**Limits**: Maximum 100 tenants per batch operation\n\n**Warning**: This operation affects user access immediately",
+                "operationId": "adminBatchDelete",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.BatchDeleteRequest",
+                                        "summary": "request",
+                                        "description": "Batch delete request (max 100 tenants)"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Batch delete request (max 100 tenants)",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_BatchOperationResponse"
+                                }
+                            }
+                        },
+                        "description": "Batch operation result"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BUSINESS_RULE: Cannot delete system tenant"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Execute batch delete operation",
+                "tags": [
+                    "admin-batch"
+                ]
+            }
+        },
+        "/admin/batch/delete/preview": {
+            "post": {
+                "description": "Preview the batch delete operation before execution. Returns which tenants can be deleted and which will be skipped.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Skip reasons**:\n- System tenant (protected)\n- Tenant not found\n- Tenant already inactive",
+                "operationId": "adminPreviewBatchDelete",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.BatchDeleteRequest",
+                                        "summary": "request",
+                                        "description": "Batch delete preview request (max 100 tenants)"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Batch delete preview request (max 100 tenants)",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_BatchPreviewResponse"
+                                }
+                            }
+                        },
+                        "description": "Preview of batch operation"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BUSINESS_RULE: Business rule violation"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Preview batch delete operation",
+                "tags": [
+                    "admin-batch"
+                ]
+            }
+        },
+        "/admin/batch/suspend": {
+            "post": {
+                "description": "Suspend multiple tenants at once. All operations are recorded in audit logs.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Behavior**:\n- Processes all valid tenants in the list\n- Skips tenants that cannot be suspended\n- Creates individual audit log entries for each tenant\n- Optional reason is applied to all suspensions\n- Optional scheduled_reactivate_at sets auto-reactivation for all\n\n**Limits**: Maximum 100 tenants per batch operation\n\n**Recommendation**: Use preview endpoint first to check impact",
+                "operationId": "adminBatchSuspend",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.BatchSuspendRequest",
+                                        "summary": "request",
+                                        "description": "Batch suspend request (max 100 tenants)"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Batch suspend request (max 100 tenants)",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_BatchOperationResponse"
+                                }
+                            }
+                        },
+                        "description": "Batch operation result"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BUSINESS_RULE: Business rule violation"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Execute batch suspend operation",
+                "tags": [
+                    "admin-batch"
+                ]
+            }
+        },
+        "/admin/batch/suspend/preview": {
+            "post": {
+                "description": "Preview the batch suspend operation before execution. Returns which tenants can be suspended and which will be skipped.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Preview shows**:\n- Total number of tenants in the request\n- How many can be processed\n- How many will be skipped (with reasons)\n- Warnings about potential issues\n\n**Skip reasons**:\n- Tenant is already suspended\n- Tenant is a system tenant (protected)\n- Tenant not found\n\n**Tip**: Always preview before executing batch operations",
+                "operationId": "adminPreviewBatchSuspend",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.BatchSuspendRequest",
+                                        "summary": "request",
+                                        "description": "Batch suspend preview request (max 100 tenants)"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Batch suspend preview request (max 100 tenants)",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_BatchPreviewResponse"
+                                }
+                            }
+                        },
+                        "description": "Preview of batch operation"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BUSINESS_RULE: Business rule violation"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Preview batch suspend operation",
+                "tags": [
+                    "admin-batch"
+                ]
+            }
+        },
         "/admin/plans": {
             "get": {
                 "description": "Get a list of all available subscription plans",
@@ -14102,6 +16284,1479 @@
                 "summary": "Update feature configurations for a plan",
                 "tags": [
                     "plan-features"
+                ]
+            }
+        },
+        "/admin/stats": {
+            "get": {
+                "description": "Get aggregated statistics across all tenants in the platform.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Statistics included**:\n- Tenant counts by status (active, trial, suspended, inactive)\n- Tenant distribution by plan\n- Aggregate user count across all tenants\n- Aggregate product count across all tenants\n- Aggregate order count across all tenants\n- Total storage usage in bytes\n\n**Use cases**:\n- Platform health dashboard\n- Revenue analysis (by plan distribution)\n- Growth monitoring",
+                "operationId": "adminGetPlatformStats",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_PlatformStatsResponse"
+                                }
+                            }
+                        },
+                        "description": "Platform statistics"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Get platform-wide statistics",
+                "tags": [
+                    "admin-stats"
+                ]
+            }
+        },
+        "/admin/stats/growth": {
+            "get": {
+                "description": "Get tenant growth trend data for charts and analytics.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Data included per period**:\n- Total tenant count\n- New tenants added\n- Churned tenants (deleted/inactive)\n\n**Period options**:\n- daily: Day-by-day data points\n- weekly: Aggregated by week\n- monthly: Aggregated by month\n\n**Use cases**:\n- Growth rate analysis\n- Churn monitoring\n- Trend visualization in dashboards",
+                "operationId": "adminGetTenantGrowth",
+                "parameters": [
+                    {
+                        "description": "Aggregation period",
+                        "in": "query",
+                        "name": "period",
+                        "schema": {
+                            "default": "daily",
+                            "enum": [
+                                "daily",
+                                "weekly",
+                                "monthly"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Number of days to look back (max 365)",
+                        "in": "query",
+                        "name": "days",
+                        "schema": {
+                            "default": 30,
+                            "maximum": 365,
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_TenantGrowthTrendResponse"
+                                }
+                            }
+                        },
+                        "description": "Growth trend data"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid parameters"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Get tenant growth trend",
+                "tags": [
+                    "admin-stats"
+                ]
+            }
+        },
+        "/admin/tenants": {
+            "get": {
+                "description": "Get a paginated list of all tenants with filtering and sorting options.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Filtering**:\n- Search by tenant name or code (partial match)\n- Filter by status: active, inactive, suspended, trial\n- Filter by plan: free, basic, pro, enterprise\n\n**Sorting**: Results can be sorted by name, code, status, plan, or created_at",
+                "operationId": "adminListTenants",
+                "parameters": [
+                    {
+                        "description": "Page number (1-based)",
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "default": 1,
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Items per page (max 100)",
+                        "in": "query",
+                        "name": "page_size",
+                        "schema": {
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1,
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Search by name or code (case-insensitive)",
+                        "in": "query",
+                        "name": "search",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Filter by tenant status",
+                        "in": "query",
+                        "name": "status",
+                        "schema": {
+                            "enum": [
+                                "active",
+                                "inactive",
+                                "suspended",
+                                "trial"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Filter by subscription plan",
+                        "in": "query",
+                        "name": "plan",
+                        "schema": {
+                            "enum": [
+                                "free",
+                                "basic",
+                                "pro",
+                                "enterprise"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Field to sort by",
+                        "in": "query",
+                        "name": "order_by",
+                        "schema": {
+                            "default": "created_at",
+                            "enum": [
+                                "name",
+                                "code",
+                                "status",
+                                "plan",
+                                "created_at"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Sort direction",
+                        "in": "query",
+                        "name": "order_dir",
+                        "schema": {
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_AdminTenantListResponse"
+                                }
+                            }
+                        },
+                        "description": "Paginated list of tenants"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid query parameters"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "List all tenants",
+                "tags": [
+                    "admin-tenants"
+                ]
+            },
+            "post": {
+                "description": "Create a new tenant in the system with the specified configuration.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Plan Options**:\n- free: Limited features, ideal for evaluation\n- basic: Standard features for small businesses\n- pro: Advanced features for growing businesses\n- enterprise: Full features with custom quotas\n\n**Trial**: Optionally specify trial_days (max 90) for trial period\n\n**Audit**: All create operations are logged in the audit trail",
+                "operationId": "adminCreateTenant",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.AdminCreateTenantRequest",
+                                        "summary": "request",
+                                        "description": "Tenant creation request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Tenant creation request",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_AdminTenantResponse"
+                                }
+                            }
+                        },
+                        "description": "Tenant created successfully"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid request body"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "409": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_ALREADY_EXISTS: Tenant code or name already exists"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BUSINESS_RULE: Business rule violation"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Create a new tenant",
+                "tags": [
+                    "admin-tenants"
+                ]
+            }
+        },
+        "/admin/tenants/{id}": {
+            "delete": {
+                "description": "Soft delete a tenant. The tenant is marked as inactive but data is preserved.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Behavior**:\n- Sets tenant status to \"inactive\"\n- All tenant data is preserved (soft delete)\n- Users of the tenant can no longer log in\n- Tenant can be reactivated using the activate endpoint\n\n**Restrictions**:\n- System tenant cannot be deleted (ERR_FORBIDDEN)\n\n**Audit**: All delete operations are logged in the audit trail",
+                "operationId": "adminDeleteTenant",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (UUID format)",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_MessageResponse"
+                                }
+                            }
+                        },
+                        "description": "Tenant deleted successfully"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid tenant ID format"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Cannot delete system tenant"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_NOT_FOUND: Tenant not found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BUSINESS_RULE: Business rule violation"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Delete a tenant",
+                "tags": [
+                    "admin-tenants"
+                ]
+            },
+            "get": {
+                "description": "Get detailed information about a specific tenant including configuration and statistics.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Response includes**:\n- Basic tenant info (name, code, status, plan)\n- Contact information\n- Configuration (quotas, cost strategy, regional settings)\n- Usage statistics (user count, product count, etc.)",
+                "operationId": "adminGetTenant",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (UUID format)",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_AdminTenantResponse"
+                                }
+                            }
+                        },
+                        "description": "Tenant details"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid tenant ID format"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_NOT_FOUND: Tenant not found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Get tenant details",
+                "tags": [
+                    "admin-tenants"
+                ]
+            },
+            "put": {
+                "description": "Update a tenant's basic information. All fields are optional - only provided fields will be updated.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Updatable fields**:\n- name, short_name: Display names\n- contact_name, contact_phone, contact_email: Contact info\n- address: Physical address\n- notes: Internal notes\n\n**Note**: To change plan or quotas, use the dedicated endpoints\n\n**Audit**: All update operations are logged in the audit trail",
+                "operationId": "adminUpdateTenant",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (UUID format)",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.AdminUpdateTenantRequest",
+                                        "summary": "request",
+                                        "description": "Tenant update request (all fields optional)"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Tenant update request (all fields optional)",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_AdminTenantResponse"
+                                }
+                            }
+                        },
+                        "description": "Updated tenant details"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_NOT_FOUND: Tenant not found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BUSINESS_RULE: Business rule violation"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Update tenant information",
+                "tags": [
+                    "admin-tenants"
+                ]
+            }
+        },
+        "/admin/tenants/{id}/activate": {
+            "post": {
+                "description": "Activate a suspended or inactive tenant, restoring full access.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Behavior**:\n- Sets tenant status to \"active\"\n- All users of the tenant can log in again\n- Clears any scheduled reactivation date\n\n**Use cases**:\n- Reactivating suspended tenants after payment\n- Restoring soft-deleted (inactive) tenants\n- Ending trial period early (converting to active)\n\n**Audit**: All activation operations are logged",
+                "operationId": "adminActivateTenant",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (UUID format)",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_AdminTenantResponse"
+                                }
+                            }
+                        },
+                        "description": "Tenant activated"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid tenant ID format"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_NOT_FOUND: Tenant not found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BUSINESS_RULE: Cannot activate (e.g., already active)"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Activate a tenant",
+                "tags": [
+                    "admin-tenants"
+                ]
+            }
+        },
+        "/admin/tenants/{id}/plan": {
+            "put": {
+                "description": "Change a tenant's subscription plan. Upgrades take effect immediately, downgrades are scheduled for cycle end.",
+                "operationId": "adminChangeTenantPlan",
+                "parameters": [
+                    {
+                        "description": "Tenant ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.ChangePlanRequest",
+                                        "summary": "request",
+                                        "description": "Plan change request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Plan change request",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_ChangePlanResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Change tenant subscription plan",
+                "tags": [
+                    "admin-tenants"
+                ]
+            }
+        },
+        "/admin/tenants/{id}/quota": {
+            "put": {
+                "description": "Update a tenant's quota limits. Changes take effect immediately.",
+                "operationId": "adminUpdateTenantQuota",
+                "parameters": [
+                    {
+                        "description": "Tenant ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.UpdateQuotaRequest",
+                                        "summary": "request",
+                                        "description": "Quota update request"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Quota update request",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_AdminTenantResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Update tenant quota limits",
+                "tags": [
+                    "admin-tenants"
+                ]
+            }
+        },
+        "/admin/tenants/{id}/scheduled-plan": {
+            "delete": {
+                "description": "Cancel a pending plan downgrade for a tenant",
+                "operationId": "adminCancelScheduledPlanChange",
+                "parameters": [
+                    {
+                        "description": "Tenant ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_AdminTenantResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Cancel scheduled plan change",
+                "tags": [
+                    "admin-tenants"
+                ]
+            }
+        },
+        "/admin/tenants/{id}/stats": {
+            "get": {
+                "description": "Get detailed usage statistics for a specific tenant including quota utilization.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Statistics included**:\n- User count vs max_users quota\n- Product count vs max_products quota\n- Warehouse count vs max_warehouses quota\n- Order count (historical)\n- Storage usage in bytes\n- API call count\n\n**Use cases**:\n- Monitoring tenant resource usage\n- Identifying tenants approaching quota limits\n- Capacity planning",
+                "operationId": "adminGetTenantStats",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (UUID format)",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_TenantUsageStatsResponse"
+                                }
+                            }
+                        },
+                        "description": "Tenant statistics"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid tenant ID format"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Not a super admin"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_NOT_FOUND: Tenant not found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Get tenant usage statistics",
+                "tags": [
+                    "admin-tenants"
+                ]
+            }
+        },
+        "/admin/tenants/{id}/subscription-history": {
+            "get": {
+                "description": "Retrieve subscription change history for a tenant",
+                "operationId": "adminGetSubscriptionHistory",
+                "parameters": [
+                    {
+                        "description": "Tenant ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Page number",
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "default": 1,
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Items per page",
+                        "in": "query",
+                        "name": "page_size",
+                        "schema": {
+                            "default": 20,
+                            "maximum": 100,
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Filter by change type (plan_upgrade, plan_downgrade, quota_update)",
+                        "in": "query",
+                        "name": "change_type",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_SubscriptionHistoryListResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Get tenant subscription history",
+                "tags": [
+                    "admin-tenants"
+                ]
+            }
+        },
+        "/admin/tenants/{id}/suspend": {
+            "post": {
+                "description": "Suspend a tenant with optional reason and scheduled reactivation date.\n\n**Authentication**: Requires SuperAdmin role (is_super_admin: true in JWT)\n\n**Behavior**:\n- Sets tenant status to \"suspended\"\n- All users of the tenant are immediately blocked from login\n- Optional reason is stored and visible in audit logs\n- Optional scheduled_reactivate_at sets automatic reactivation\n\n**Restrictions**:\n- System tenant cannot be suspended (ERR_FORBIDDEN)\n- Already suspended tenants return success (idempotent)\n\n**Audit**: All suspend operations are logged with reason",
+                "operationId": "adminSuspendTenant",
+                "parameters": [
+                    {
+                        "description": "Tenant ID (UUID format)",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "format": "uuid",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/handler.SuspendTenantRequest",
+                                        "summary": "request",
+                                        "description": "Suspension details (optional)"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Suspension details (optional)"
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.APIResponse-handler_AdminTenantResponse"
+                                }
+                            }
+                        },
+                        "description": "Tenant suspended"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BAD_REQUEST: Invalid request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_UNAUTHORIZED: Missing or invalid token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_FORBIDDEN: Cannot suspend system tenant"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_NOT_FOUND: Tenant not found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_BUSINESS_RULE: Business rule violation"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/handler.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "ERR_INTERNAL: Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Suspend a tenant",
+                "tags": [
+                    "admin-tenants"
                 ]
             }
         },

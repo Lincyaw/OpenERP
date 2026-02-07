@@ -35,6 +35,7 @@ import {
   useActivateTenant,
   getGetTenantByIdQueryKey,
 } from '@/api/tenants/tenants'
+import { useAdminGetSubscriptionHistory } from '@/api/admin-tenants/admin-tenants'
 import type { HandlerTenantResponse } from '@/api/models'
 import { useFormatters } from '@/hooks/useFormatters'
 import {
@@ -164,7 +165,19 @@ export default function TenantDetailPage() {
 
   // Note: Delete mutation is handled by DeleteTenantModal component
 
-  // Mock data for status history (will be replaced with API)
+  // Fetch subscription history from API
+  const { data: subscriptionHistoryData } = useAdminGetSubscriptionHistory(
+    id || '',
+    { page: 1, page_size: 10 },
+    {
+      query: {
+        enabled: !!id,
+      },
+    }
+  )
+
+  // Status history - derived from tenant status changes
+  // TODO: Add dedicated status history API endpoint
   const statusHistory: StatusHistoryItem[] = useMemo(
     () => [
       {
@@ -173,29 +186,53 @@ export default function TenantDetailPage() {
         timestamp: tenant?.created_at || '',
         actor: 'System',
       },
-      {
-        id: '2',
-        action: 'activated',
-        timestamp: tenant?.created_at || '',
-        actor: 'System',
-      },
+      ...(tenant?.status === 'active'
+        ? [
+            {
+              id: '2',
+              action: 'activated',
+              timestamp: tenant?.created_at || '',
+              actor: 'System',
+            },
+          ]
+        : []),
+      ...(tenant?.status === 'suspended' && tenant?.suspended_at
+        ? [
+            {
+              id: '3',
+              action: 'suspended',
+              timestamp: tenant.suspended_at,
+              actor: 'Admin',
+            },
+          ]
+        : []),
     ],
-    [tenant?.created_at]
+    [tenant?.created_at, tenant?.status, tenant?.suspended_at]
   )
 
-  // Mock data for subscription history (will be replaced with API)
-  const subscriptionHistory: SubscriptionHistoryItem[] = useMemo(
-    () => [
-      {
-        id: '1',
-        fromPlan: 'free',
-        toPlan: tenant?.plan || 'free',
-        timestamp: tenant?.created_at || '',
-        actor: 'System',
-      },
-    ],
-    [tenant?.plan, tenant?.created_at]
-  )
+  // Transform subscription history from API response
+  const subscriptionHistory: SubscriptionHistoryItem[] = useMemo(() => {
+    if (!subscriptionHistoryData?.data?.history) {
+      // Fallback to single entry if API data not available
+      return [
+        {
+          id: '1',
+          fromPlan: 'free',
+          toPlan: tenant?.plan || 'free',
+          timestamp: tenant?.created_at || '',
+          actor: 'System',
+        },
+      ]
+    }
+
+    return subscriptionHistoryData.data.history.map((item) => ({
+      id: item.id || '',
+      fromPlan: item.old_plan || 'unknown',
+      toPlan: item.new_plan || 'unknown',
+      timestamp: item.created_at || '',
+      actor: item.changed_by || 'System',
+    }))
+  }, [subscriptionHistoryData, tenant?.plan, tenant?.created_at])
 
   // Handlers
   const handleBack = useCallback(() => {

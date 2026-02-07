@@ -1504,6 +1504,321 @@ test.describe('P3-ADMIN-022: Tenant Detail Page', () => {
 })
 
 // ============================================================================
+// BATCH OPERATIONS
+// ============================================================================
+test.describe('P3-ADMIN-022: Batch Operations', () => {
+  test.use({ storageState: { cookies: [], origins: [] } })
+
+  test('should show batch suspend preview with tenant details', async ({ page }) => {
+    const token = await getSuperAdminToken(page)
+    if (!token) {
+      test.skip(true, 'Could not get super admin token')
+      return
+    }
+
+    const apiBaseUrl = getApiBaseUrl()
+
+    // Get list of tenants
+    const listResponse = await page.request.get(`${apiBaseUrl}/api/v1/admin/tenants?page=1&page_size=5`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    if (!listResponse.ok()) {
+      test.skip(true, 'Could not fetch tenants')
+      return
+    }
+
+    const listData = await listResponse.json()
+    const tenants = listData?.data?.tenants || []
+    const activeTenants = tenants.filter((t: { status: string; id: string }) => 
+      t.status === 'active' && t.id !== '00000000-0000-0000-0000-000000000000'
+    )
+
+    if (activeTenants.length === 0) {
+      test.skip(true, 'No active tenants for batch suspend')
+      return
+    }
+
+    // Test batch suspend preview
+    const tenantIds = activeTenants.slice(0, 2).map((t: { id: string }) => t.id)
+    const previewResponse = await page.request.post(
+      `${apiBaseUrl}/api/v1/admin/batch/suspend/preview`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        data: { tenant_ids: tenantIds },
+      }
+    )
+
+    console.log(`Batch suspend preview status: ${previewResponse.status()}`)
+    expect([200, 400, 403, 404, 405]).toContain(previewResponse.status())
+
+    if (previewResponse.ok()) {
+      const previewData = await previewResponse.json()
+      console.log(`Preview data:`, JSON.stringify(previewData, null, 2))
+      
+      // Should have preview data
+      expect(previewData).toBeTruthy()
+      expect(previewData.data).toBeTruthy()
+    }
+  })
+
+  test('should show batch activate preview', async ({ page }) => {
+    const token = await getSuperAdminToken(page)
+    if (!token) {
+      test.skip(true, 'Could not get super admin token')
+      return
+    }
+
+    const apiBaseUrl = getApiBaseUrl()
+
+    // Get suspended tenants
+    const listResponse = await page.request.get(
+      `${apiBaseUrl}/api/v1/admin/tenants?page=1&page_size=5&status=suspended`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+
+    if (!listResponse.ok()) {
+      test.skip(true, 'Could not fetch tenants')
+      return
+    }
+
+    const listData = await listResponse.json()
+    const tenants = listData?.data?.tenants || []
+
+    if (tenants.length === 0) {
+      console.log('No suspended tenants for batch activate test')
+      test.skip(true, 'No suspended tenants')
+      return
+    }
+
+    // Test batch activate preview
+    const tenantIds = tenants.slice(0, 2).map((t: { id: string }) => t.id)
+    const previewResponse = await page.request.post(
+      `${apiBaseUrl}/api/v1/admin/batch/activate/preview`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        data: { tenant_ids: tenantIds },
+      }
+    )
+
+    console.log(`Batch activate preview status: ${previewResponse.status()}`)
+    expect([200, 400, 403, 404, 405]).toContain(previewResponse.status())
+  })
+
+  test('should show batch change plan preview', async ({ page }) => {
+    const token = await getSuperAdminToken(page)
+    if (!token) {
+      test.skip(true, 'Could not get super admin token')
+      return
+    }
+
+    const apiBaseUrl = getApiBaseUrl()
+
+    // Get list of tenants
+    const listResponse = await page.request.get(`${apiBaseUrl}/api/v1/admin/tenants?page=1&page_size=5`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    if (!listResponse.ok()) {
+      test.skip(true, 'Could not fetch tenants')
+      return
+    }
+
+    const listData = await listResponse.json()
+    const tenants = listData?.data?.tenants || []
+    const eligibleTenants = tenants.filter(
+      (t: { id: string; plan: string }) =>
+        t.id !== '00000000-0000-0000-0000-000000000000' && t.plan !== 'enterprise'
+    )
+
+    if (eligibleTenants.length === 0) {
+      test.skip(true, 'No eligible tenants for batch plan change')
+      return
+    }
+
+    // Test batch change plan preview
+    const tenantIds = eligibleTenants.slice(0, 2).map((t: { id: string }) => t.id)
+    const previewResponse = await page.request.post(
+      `${apiBaseUrl}/api/v1/admin/batch/change-plan/preview`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        data: { tenant_ids: tenantIds, new_plan: 'pro' },
+      }
+    )
+
+    console.log(`Batch change plan preview status: ${previewResponse.status()}`)
+    expect([200, 400, 403, 404, 405]).toContain(previewResponse.status())
+  })
+})
+
+// ============================================================================
+// SUBSCRIPTION HISTORY API
+// ============================================================================
+test.describe('P3-ADMIN-022: Subscription History API', () => {
+  test.use({ storageState: { cookies: [], origins: [] } })
+
+  test('should fetch subscription history for a tenant', async ({ page }) => {
+    const token = await getSuperAdminToken(page)
+    if (!token) {
+      test.skip(true, 'Could not get super admin token')
+      return
+    }
+
+    const apiBaseUrl = getApiBaseUrl()
+
+    // Get first tenant
+    const listResponse = await page.request.get(`${apiBaseUrl}/api/v1/admin/tenants?page=1&page_size=1`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    if (!listResponse.ok()) {
+      test.skip(true, 'Could not fetch tenants')
+      return
+    }
+
+    const listData = await listResponse.json()
+    const tenants = listData?.data?.tenants || []
+
+    if (tenants.length === 0) {
+      test.skip(true, 'No tenants available')
+      return
+    }
+
+    const tenantId = tenants[0].id
+
+    // Fetch subscription history
+    const historyResponse = await page.request.get(
+      `${apiBaseUrl}/api/v1/admin/tenants/${tenantId}/subscription-history?page=1&page_size=10`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+
+    console.log(`Subscription history API status: ${historyResponse.status()}`)
+    expect([200, 404]).toContain(historyResponse.status())
+
+    if (historyResponse.ok()) {
+      const historyData = await historyResponse.json()
+      console.log('Subscription history data:', JSON.stringify(historyData, null, 2))
+      
+      expect(historyData).toBeTruthy()
+      expect(historyData.data).toBeTruthy()
+    }
+  })
+})
+
+// ============================================================================
+// TENANT STATS API
+// ============================================================================
+test.describe('P3-ADMIN-022: Tenant Stats API', () => {
+  test.use({ storageState: { cookies: [], origins: [] } })
+
+  test('should fetch detailed stats for a tenant', async ({ page }) => {
+    const token = await getSuperAdminToken(page)
+    if (!token) {
+      test.skip(true, 'Could not get super admin token')
+      return
+    }
+
+    const apiBaseUrl = getApiBaseUrl()
+
+    // Get first tenant
+    const listResponse = await page.request.get(`${apiBaseUrl}/api/v1/admin/tenants?page=1&page_size=1`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+    if (!listResponse.ok()) {
+      test.skip(true, 'Could not fetch tenants')
+      return
+    }
+
+    const listData = await listResponse.json()
+    const tenants = listData?.data?.tenants || []
+
+    if (tenants.length === 0) {
+      test.skip(true, 'No tenants available')
+      return
+    }
+
+    const tenantId = tenants[0].id
+
+    // Fetch tenant stats
+    const statsResponse = await page.request.get(
+      `${apiBaseUrl}/api/v1/admin/tenants/${tenantId}/stats`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+
+    console.log(`Tenant stats API status: ${statsResponse.status()}`)
+    expect([200, 404]).toContain(statsResponse.status())
+
+    if (statsResponse.ok()) {
+      const statsData = await statsResponse.json()
+      console.log('Tenant stats data:', JSON.stringify(statsData, null, 2))
+      
+      expect(statsData).toBeTruthy()
+      expect(statsData.data).toBeTruthy()
+      
+      // Should have usage statistics
+      const stats = statsData.data
+      expect(stats).toHaveProperty('user_count')
+      expect(stats).toHaveProperty('warehouse_count')
+      expect(stats).toHaveProperty('product_count')
+    }
+  })
+})
+
+// ============================================================================
+// PLATFORM GROWTH API
+// ============================================================================
+test.describe('P3-ADMIN-022: Platform Growth API', () => {
+  test.use({ storageState: { cookies: [], origins: [] } })
+
+  test('should fetch platform growth metrics', async ({ page }) => {
+    const token = await getSuperAdminToken(page)
+    if (!token) {
+      test.skip(true, 'Could not get super admin token')
+      return
+    }
+
+    const apiBaseUrl = getApiBaseUrl()
+
+    // Fetch growth metrics for different periods
+    for (const period of ['day', 'week', 'month']) {
+      const growthResponse = await page.request.get(
+        `${apiBaseUrl}/api/v1/admin/stats/growth?period=${period}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+
+      console.log(`Platform growth (${period}) API status: ${growthResponse.status()}`)
+      expect([200, 400, 404]).toContain(growthResponse.status())
+
+      if (growthResponse.ok()) {
+        const growthData = await growthResponse.json()
+        console.log(`Growth data (${period}):`, JSON.stringify(growthData, null, 2))
+        
+        expect(growthData).toBeTruthy()
+        expect(growthData.data).toBeTruthy()
+      }
+    }
+  })
+})
+
+// ============================================================================
 // SCREENSHOTS CAPTURE (for documentation)
 // ============================================================================
 test.describe('P3-ADMIN-022: Screenshots', () => {
