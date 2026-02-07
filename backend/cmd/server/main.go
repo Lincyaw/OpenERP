@@ -306,6 +306,13 @@ func main() {
 	// Auto print rule repository
 	autoPrintRuleRepo := persistence.NewGormAutoPrintRuleRepository(db.DB)
 
+	// Admin repositories (cross-tenant queries for super admin)
+	adminTenantRepo := persistence.NewGormAdminTenantRepository(db.DB)
+	subscriptionHistoryRepo := persistence.NewGormSubscriptionHistoryRepository(db.DB)
+	statusHistoryRepo := persistence.NewGormTenantStatusHistoryRepository(db.DB)
+	auditLogRepo := persistence.NewAuditLogRepository(db.DB)
+	tenantStatsRepo := persistence.NewGormTenantStatsRepository(db.DB)
+
 	// Initialize event serializer and register all event types
 	eventSerializer := event.NewEventSerializer()
 	event.RegisterAllEvents(eventSerializer)
@@ -424,6 +431,24 @@ func main() {
 	userService := identityapp.NewUserService(userRepo, roleRepo, log)
 	roleService := identityapp.NewRoleService(roleRepo, userRepo, log)
 	tenantService := identityapp.NewTenantService(tenantRepo, log)
+
+	// Admin services (super admin only - for cross-tenant management)
+	auditService := identityapp.NewAuditService(auditLogRepo, log)
+	adminTenantService := identityapp.NewAdminTenantService(
+		adminTenantRepo,
+		tenantRepo,
+		subscriptionHistoryRepo,
+		statusHistoryRepo,
+		auditService,
+		log,
+	)
+	tenantStatsService := identityapp.NewTenantStatsService(
+		tenantStatsRepo,
+		adminTenantRepo,
+		nil, // Redis client not available - caching disabled
+		log,
+		identityapp.DefaultTenantStatsServiceConfig(),
+	)
 
 	// Report services
 	reportService := reportapp.NewReportService(salesReportRepo, inventoryReportRepo, financeReportRepo)
@@ -760,6 +785,9 @@ func main() {
 	planFeatureHandler := handler.NewPlanFeatureHandler(tenantRepo, planFeatureRepo)
 	usageHandler := handler.NewUsageHandler(tenantRepo, userRepo, warehouseRepo, productRepo)
 	subscriptionHandler := handler.NewSubscriptionHandler(tenantRepo, planFeatureRepo, userRepo, warehouseRepo, productRepo)
+
+	// Admin handlers (super admin only - for cross-tenant tenant management)
+	adminHandler := handler.NewAdminHandler(adminTenantService, tenantStatsService, auditService)
 
 	// Initialize Stripe webhook handler (if Stripe is enabled)
 	var stripeWebhookHandler *handler.StripeWebhookHandler
@@ -1391,8 +1419,9 @@ func main() {
 	identityRoutes.GET("/tenants/current/usage/history", usageHandler.GetUsageHistory)
 	identityRoutes.GET("/tenants/current/quotas", usageHandler.GetQuotas)
 
-	// Admin routes for plan and feature management
-	adminRoutes := router.NewDomainGroup("admin", "/admin")
+	// Legacy admin routes for plan and feature management (to be migrated to super admin)
+	// TODO: Move these under super admin group for consistency
+	adminRoutes := router.NewDomainGroup("admin-legacy", "/admin")
 	adminRoutes.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "admin service ready"})
 	})
@@ -1517,6 +1546,11 @@ func main() {
 
 	// Setup routes
 	r.Setup()
+
+	// Register Super Admin routes for cross-tenant tenant management
+	// These routes are registered after Setup() because they use gin.RouterGroup directly
+	// All routes are protected by SuperAdminMiddleware (requires system tenant + super admin role)
+	handler.RegisterAdminRoutes(engine.Group("/api/v1"), adminHandler)
 
 	// Register PDF file serving route (outside the router system for direct file access)
 	// This needs authentication to validate tenant access
